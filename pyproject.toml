@@ -1,7 +1,7 @@
 [project]
 name = "popgames"
 version = "0.1.0"
-description = "A python package to simulate population games and evolutionary dynamics"
+description = "A Python package to simulate population games and evolutionary dynamics"
 authors = [
     {name = "Juan Martinez-Piazuelo",email = "juan@martinezpiazuelo.com"}
 ]
