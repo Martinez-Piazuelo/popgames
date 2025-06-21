@@ -1,0 +1,28 @@
+[project]
+name = "popgames"
+version = "0.1.0"
+description = "A python package to simulate population games and evolutionary dynamics"
+authors = [
+    {name = "Juan Martinez-Piazuelo",email = "juan@martinezpiazuelo.com"}
+]
+license = {text = "MIT License"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy (>=2.3.0,<3.0.0)",
+    "scipy (>=1.15.3,<2.0.0)",
+    "matplotlib (>=3.10.3,<4.0.0)",
+    "python-ternary (>=1.0.8,<2.0.0)",
+    "cvxpy (>=1.6.6,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^8.2.3"
+ghp-import = "^2.1.0"
+furo = "^2024.8.6"
+
