@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -236,14 +236,196 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="revision-protocol-module">
-<h1>Revision Protocol Module<a class="headerlink" href="#revision-protocol-module" title="Link to this heading">¶</a></h1>
+          <section id="module-popgames.revision_protocol">
+<span id="revision-protocol-module"></span><h1>Revision Protocol Module<a class="headerlink" href="#module-popgames.revision_protocol" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.revision_protocol.BNN">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.revision_protocol.</span></span><span class="sig-name descname"><span class="pre">BNN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.BNN" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RevisionProtocol</span></code></p>
+<p>Brown-von Neumann-Nash (BNN) revision protocol.</p>
+<p>Initialize the BNN revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>float</em>) – The scale parameter to ensure well-posed probabilities.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.BNN.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.BNN.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the BNN revision protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>np.ndarray</em>) – The payoff vector with shape (n, 1).</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The population state vector with shape (n, 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The switching probabilities as a matrix with shape (n, n).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">BNN</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bnn</span> <span class="o">=</span> <span class="n">BNN</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.1</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bnn</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">array([[0.  , 0.  , 0.  ],</span>
+<span class="go">       [0.08, 0.08, 0.08],</span>
+<span class="go">       [0.  , 0.  , 0.  ]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.BNN.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.BNN.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the BNN revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>float</em>) – The scale parameter to ensure well-posed probabilities.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Smith">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.revision_protocol.</span></span><span class="sig-name descname"><span class="pre">Smith</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Smith" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RevisionProtocol</span></code></p>
+<p>Smith revision protocol.</p>
+<p>Initialize the Smith revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>float</em>) – The scale parameter to ensure well-posed probabilities.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Smith.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Smith.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the Smith revision protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>np.ndarray</em>) – The payoff vector with shape (n, 1).</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The population state vector with shape (n, 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The switching probabilities as a matrix with shape (n, n).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Smith</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smith</span> <span class="o">=</span> <span class="n">Smith</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">smith</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">array([[0. , 0.2, 0. ],</span>
+<span class="go">       [0. , 0. , 0. ],</span>
+<span class="go">       [0.1, 0.3, 0. ]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Smith.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Smith.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the Smith revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>float</em>) – The scale parameter to ensure well-posed probabilities.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Softmax">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.revision_protocol.</span></span><span class="sig-name descname"><span class="pre">Softmax</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Softmax" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RevisionProtocol</span></code></p>
+<p>Softmax revision protocol. Also known as Logit-Choice revision protocol.</p>
+<p>Initialize the Softmax revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eta</strong> (<em>float</em>) – The <cite>temperature</cite> or <cite>noise</cite> parameter.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Softmax.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Softmax.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the Softmax revision protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>np.ndarray</em>) – The payoff vector with shape (n, 1).</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The population state vector with shape (n, 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The switching probabilities as a matrix with shape (n, n).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Softmax</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">softmax</span> <span class="o">=</span> <span class="n">Softmax</span><span class="p">(</span><span class="n">eta</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">softmax</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">array([[0.57611688, 0.57611688, 0.57611688],</span>
+<span class="go">       [0.21194156, 0.21194156, 0.21194156],</span>
+<span class="go">       [0.21194156, 0.21194156, 0.21194156]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">softmax</span> <span class="o">=</span> <span class="n">Softmax</span><span class="p">(</span><span class="n">eta</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">softmax</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">array([[3.3535013e-04, 3.3535013e-04],</span>
+<span class="go">       [9.9966465e-01, 9.9966465e-01]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Softmax.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eta</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.revision_protocol.Softmax.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the Softmax revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eta</strong> (<em>float</em>) – The <cite>temperature</cite> or <cite>noise</cite> parameter.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -281,8 +463,41 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Revision Protocol Module</a><ul>
+<li><a class="reference internal" href="#popgames.revision_protocol.BNN"><code class="docutils literal notranslate"><span class="pre">BNN</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.revision_protocol.BNN.__call__"><code class="docutils literal notranslate"><span class="pre">BNN.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.revision_protocol.BNN.__init__"><code class="docutils literal notranslate"><span class="pre">BNN.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.revision_protocol.Smith"><code class="docutils literal notranslate"><span class="pre">Smith</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.revision_protocol.Smith.__call__"><code class="docutils literal notranslate"><span class="pre">Smith.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.revision_protocol.Smith.__init__"><code class="docutils literal notranslate"><span class="pre">Smith.__init__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.revision_protocol.Softmax"><code class="docutils literal notranslate"><span class="pre">Softmax</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.revision_protocol.Softmax.__call__"><code class="docutils literal notranslate"><span class="pre">Softmax.__call__()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.revision_protocol.Softmax.__init__"><code class="docutils literal notranslate"><span class="pre">Softmax.__init__()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
