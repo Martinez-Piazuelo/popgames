@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: .
+          path: popgames
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,10 +27,11 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Install project (including docs group)
+        working-directory: popgames
         run: poetry install --with docs
 
       - name: Build Sphinx HTML docs
-        working-directory: ./docs
+        working-directory: popgames/docs
         run: |
           echo "PYTHONPATH during doc build:"
           echo $PYTHONPATH
@@ -41,4 +42,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: docs/build/html
+          publish_dir: popgames/docs/build/html
