@@ -1,7 +1,7 @@
-Alarm Clock Module
-===================
+Revision Protocol Module
+========================
 
-.. automodule:: popgames.alarm_clock
+.. automodule:: popgames.revision_protocol
     :members:
     :undoc-members:
     :show-inheritance:
