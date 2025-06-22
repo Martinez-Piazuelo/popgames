@@ -1,8 +1,0 @@
-Alarm Clock Module
-===================
-
-.. automodule:: popgames.alarm_clock
-    :members:
-    :undoc-members:
-    :show-inheritance:
-    :special-members: __init__, __call__
