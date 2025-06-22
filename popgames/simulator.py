@@ -430,7 +430,7 @@ class Simulator:
             self,
             scale : int = 30,
             fontsize : int = 8,
-            figsize : tuple[int] = (4, 3),
+            figsize : tuple[int, int] = (4, 3),
             filename : str = None,
             plot_edm_trajectory : bool = False,
             potential_function : Callable[[np.ndarray], np.ndarray] = None
@@ -443,7 +443,7 @@ class Simulator:
         Args:
             scale (int): Scaling factor for the ternary plot. Defaults to 30.
             fontsize (int): Fontsize for the plot. Defaults to 8.
-            figsize (tuple[int]): Figure size. Defaults to (4, 3).
+            figsize (tuple[int, int]): Figure size. Defaults to (4, 3).
             filename (str, optional): Filename to save the figure. Defaults to None.
             plot_edm_trajectory (bool): Whether to plot edm trajectory or not. Defaults to False.
             potential_function (Callable[[np.ndarray], np.ndarray]): Potential function to plot as a heatmap. Defaults to None.
@@ -483,7 +483,7 @@ class Simulator:
     def plot_pdm_trajectory(
             self,
             fontsize : int = 8,
-            figsize : tuple[int] = (4, 2),
+            figsize : tuple[int, int] = (4, 2),
             filename : str = None,
             plot_edm_related_trajectory : bool = False
     ) -> None:
@@ -492,7 +492,7 @@ class Simulator:
 
         Args:
             fontsize (int): Fontsize. Defaults to 8.
-            figsize (tuple[int]): Figure size. Defaults to (4,2)
+            figsize (tuple[int, int]): Figure size. Defaults to (4,2)
             filename (str, optional): Filename to save the figure. Defaults to None.
             plot_edm_related_trajectory (bool): Whether to plot edm trajectory or not. Defaults to False.
         """
