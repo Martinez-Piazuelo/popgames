@@ -24,7 +24,7 @@ __all__ = [
 
 class PopulationGame:
     """
-    Population game.
+    Multi-Population game.
     """
     def __init__(
             self,
