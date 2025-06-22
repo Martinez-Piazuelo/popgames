@@ -103,7 +103,7 @@ class PayoffMechanism:
         """
         Numerically integrate the PDM.
 
-        This method relies on scipy.integrate.solve_ivp.
+        This method relies on ``scipy.integrate.solve_ivp``.
 
         Args:
             q0 (np.ndarray): Initial PDM state vector of shape (d, 1).
@@ -182,7 +182,7 @@ class PayoffMechanism:
             y : np.ndarray
     ) -> np.ndarray:
         """
-        Internal method to wrap the h_map function and enable compatibility with scipy.integrate.solve_ivp.
+        Internal method to wrap the h_map function and enable compatibility with ``scipy.integrate.solve_ivp``.
 
         Should not be called from outside the class.
 
@@ -202,7 +202,7 @@ class PayoffMechanism:
             y : np.ndarray
     ) -> np.ndarray:
         """
-        Internal method to wrap the w_map function and enable compatibility with scipy.integrate.solve_ivp.
+        Internal method to wrap the w_map function and enable compatibility with ``scipy.integrate.solve_ivp``.
 
         Should not be called from outside the class.
 

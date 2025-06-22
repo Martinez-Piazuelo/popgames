@@ -11,7 +11,7 @@ Numerical integration is performed using ``scipy``.
 
 ---
 
-**PayoffMechanism**
+**Payoff Mechanism**
 
 .. autoclass:: popgames.payoff_mechanism.PayoffMechanism
    :members:
