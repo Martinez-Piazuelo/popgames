@@ -5,9 +5,14 @@ import numpy as np
 
 from popgames.utilities.input_validators import check_scalar_value_bounds
 
-__all__ = ['Softmax', 'Smith', 'BNN']
+__all__ = [
+    'RevisionProtocolABC',
+    'Softmax',
+    'Smith',
+    'BNN'
+]
 
-class RevisionProtocol(ABC):
+class RevisionProtocolABC(ABC):
     """
     Abstract base class for revision protocols.
     """
@@ -29,7 +34,7 @@ class RevisionProtocol(ABC):
             np.ndarray: The switching probabilities as a matrix with shape (n, n).
         """
 
-class Softmax(RevisionProtocol):
+class Softmax(RevisionProtocolABC):
     """
     Softmax revision protocol. Also known as Logit-Choice revision protocol.
     """
@@ -66,28 +71,22 @@ class Softmax(RevisionProtocol):
             np.ndarray: The switching probabilities as a matrix with shape (n, n).
 
         Examples:
+            >>> import numpy as np
             >>> from popgames.revision_protocol import Softmax
             >>> softmax = Softmax(eta=1)
-            >>> p = np.array([[1], [0], [0]])
-            >>> x = np.array([[1/3], [1/3], [1/3]])
+            >>> p = np.array([1, -1, 2]).reshape(3, 1)
+            >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
             >>> softmax(p, x)
-            array([[0.57611688, 0.57611688, 0.57611688],
-                   [0.21194156, 0.21194156, 0.21194156],
-                   [0.21194156, 0.21194156, 0.21194156]])
-
-            >>> softmax = Softmax(eta=0.5)
-            >>> p = np.array([[-1], [3]])
-            >>> x = np.array([[1], [0]])
-            >>> softmax(p, x)
-            array([[3.3535013e-04, 3.3535013e-04],
-                   [9.9966465e-01, 9.9966465e-01]])
+            array([[0.25949646, 0.25949646, 0.25949646],
+                   [0.03511903, 0.03511903, 0.03511903],
+                   [0.70538451, 0.70538451, 0.70538451]])
         """
 
         logits = np.exp((p/self.eta) - np.max(p/self.eta))
         probabilities = logits/(logits.sum())
         return np.dot(probabilities, np.ones_like(probabilities).T)
 
-class Smith(RevisionProtocol):
+class Smith(RevisionProtocolABC):
     """
     Smith revision protocol.
     """
@@ -125,10 +124,11 @@ class Smith(RevisionProtocol):
             np.ndarray: The switching probabilities as a matrix with shape (n, n).
 
         Examples:
+            >>> import numpy as np
             >>> from popgames.revision_protocol import Smith
             >>> smith = Smith(scale=0.1)
-            >>> p = np.array([[1], [-1], [2]])
-            >>> x = np.array([[1], [0], [0]])
+            >>> p = np.array([1, -1, 2]).reshape(3, 1)
+            >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
             >>> smith(p, x)
             array([[0. , 0.2, 0. ],
                    [0. , 0. , 0. ],
@@ -137,7 +137,7 @@ class Smith(RevisionProtocol):
 
         return np.maximum(p - p.T, 0)*self.scale
 
-class BNN(RevisionProtocol):
+class BNN(RevisionProtocolABC):
     """
     Brown-von Neumann-Nash (BNN) revision protocol.
     """
@@ -175,14 +175,15 @@ class BNN(RevisionProtocol):
             np.ndarray: The switching probabilities as a matrix with shape (n, n).
 
         Examples:
+            >>> import numpy as np
             >>> from popgames.revision_protocol import BNN
             >>> bnn = BNN(scale=0.1)
-            >>> p = np.array([[-1], [2], [0]])
-            >>> x = np.array([[0.2], [0.7], [0.1]])
+            >>> p = np.array([1, -1, 2]).reshape(3, 1)
+            >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
             >>> bnn(p, x)
-            array([[0.  , 0.  , 0.  ],
-                   [0.08, 0.08, 0.08],
-                   [0.  , 0.  , 0.  ]])
+            array([[0.12, 0.12, 0.12],
+                   [0.  , 0.  , 0.  ],
+                   [0.22, 0.22, 0.22]])
         """
 
         p_hat = np.dot(x.T, p)/(x.sum())
