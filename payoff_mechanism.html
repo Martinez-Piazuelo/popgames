@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -242,7 +242,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -257,6 +257,52 @@ how payoffs evolve over time based on the current state of the system.</p>
 <p>Numerical integration is performed using <code class="docutils literal notranslate"><span class="pre">scipy</span></code>.</p>
 <p>—</p>
 <p><strong>Payoff Mechanism</strong></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.payoff_mechanism.PayoffMechanism">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.payoff_mechanism.</span></span><span class="sig-name descname"><span class="pre">PayoffMechanism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/payoff_mechanism.html#PayoffMechanism"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.payoff_mechanism.PayoffMechanism" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Payoff mechanism implemented as a payoff dynamics model (PDM).</p>
+<p>Initialize the payoff mechanism instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h_map</strong> (<em>Union</em><em>[</em><em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em><em>, </em><em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>, </em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em><em>]</em>) – Output function of the PDM.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Dimensionality of the expected input vector x.</p></li>
+<li><p><strong>w_map</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>, </em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em><em>, </em><em>optional</em>) – Right-hand side of the PDM dynamics.</p></li>
+<li><p><strong>None</strong> (<em>Defaults to</em>)</p></li>
+<li><p><strong>PDM.</strong> (<em>corresponding to a memory-less</em>)</p></li>
+<li><p><strong>d</strong> (<em>int</em><em>, </em><em>optional</em>) – Dimensionality of the PDM state vector x. Defaults to 0 (in the memoryless case).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.payoff_mechanism.PayoffMechanism.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Radau'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/payoff_mechanism.html#PayoffMechanism.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.payoff_mechanism.PayoffMechanism.integrate" title="Link to this definition">¶</a></dt>
+<dd><p>Numerically integrate the PDM.</p>
+<p>This method relies on <code class="docutils literal notranslate"><span class="pre">scipy.integrate.solve_ivp</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q0</strong> (<em>np.ndarray</em>) – Initial PDM state vector of shape (d, 1).</p></li>
+<li><p><strong>x0</strong> (<em>np.ndarray</em>) – Initial PDM input vector of shape (n, 1).</p></li>
+<li><p><strong>t_span</strong> (<em>tuple</em>) – Time span of integration.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Integration method. Defaults to ‘Radau’.</p></li>
+<li><p><strong>output_trajectory</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to output the trajectory or just the final state-output pair.
+Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Contains results of the integration as a SimpleNameSpace with keys <code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, and <code class="docutils literal notranslate"><span class="pre">p</span></code>,
+for the time, state, and output vectors, respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -302,8 +348,30 @@ how payoffs evolve over time based on the current state of the system.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Payoff Mechanism</a><ul>
+<li><a class="reference internal" href="#popgames.payoff_mechanism.PayoffMechanism"><code class="docutils literal notranslate"><span class="pre">PayoffMechanism</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.payoff_mechanism.PayoffMechanism.integrate"><code class="docutils literal notranslate"><span class="pre">PayoffMechanism.integrate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

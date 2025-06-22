@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -242,7 +242,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -255,9 +255,130 @@ It supports both single- and multi-population scenarios.</p>
 <p>—</p>
 <p><strong>Multi-Population Game</strong></p>
 <p>Supports games with multiple interacting populations, each possibly with a different strategy space.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.population_game.PopulationGame">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.population_game.</span></span><span class="sig-name descname"><span class="pre">PopulationGame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_populations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_strategies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitness_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dg_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitness_lipschitz_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/population_game.html#PopulationGame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.population_game.PopulationGame" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Multi-Population game.</p>
+<p>Initialize the population game object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_populations</strong> (<em>int</em>) – Number of populations.</p></li>
+<li><p><strong>num_strategies</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Number of strategies.</p></li>
+<li><p><strong>fitness_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Fitness function.</p></li>
+<li><p><strong>masses</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – Population masses.</p></li>
+<li><p><strong>A_eq</strong> (<em>np.ndarray</em>) – Matrix A in equality constraints of the form Ax = b.</p></li>
+<li><p><strong>b_eq</strong> (<em>np.ndarray</em>) – Vector b in equality constraints of the form Ax = b.</p></li>
+<li><p><strong>A_ineq</strong> (<em>np.ndarray</em>) – Matrix A in inequality constraints of the form Ax &lt;= b.</p></li>
+<li><p><strong>b_ineq</strong> (<em>np.ndarray</em>) – Vector b in inequality constraints of the form Ax &lt;= b.</p></li>
+<li><p><strong>g_ineq</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Function g(x) in inequality constraints of the form g(x) &lt;= 0.</p></li>
+<li><p><strong>Dg_ineq</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Jacobian matrix of g(x).</p></li>
+<li><p><strong>fitness_lipschitz_constant</strong> (<em>float</em>) – Lipschitz constant of the fitness function.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.population_game.PopulationGame.compute_gne">
+<span class="sig-name descname"><span class="pre">compute_gne</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/population_game.html#PopulationGame.compute_gne"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.population_game.PopulationGame.compute_gne" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a generalized Nash equilibrium (GNE) for the population game, assuming one exists.</p>
+<p>The GNE is computed using the <cite>Modified Forward-Backward Operator Splitting Method</cite> (Tseng, P., 2000).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_iter</strong> (<em>int</em>) – Maximum number of iterations.</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – Convergence tolerance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The computed GNE (if any).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.population_game.PopulationGame.compute_polyhedron_vertices">
+<span class="sig-name descname"><span class="pre">compute_polyhedron_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/population_game.html#PopulationGame.compute_polyhedron_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.population_game.PopulationGame.compute_polyhedron_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the polyhedron vertices of the feasible set of the population game.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The vertices of the feasible set of the population game.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <p>—</p>
 <p><strong>Single-Population Game</strong></p>
 <p>A simplified version of the population game model for single-population settings.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.population_game.SinglePopulationGame">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.population_game.</span></span><span class="sig-name descname"><span class="pre">SinglePopulationGame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_strategies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitness_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_eq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">A_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">g_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Dg_ineq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitness_lipschitz_constant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/population_game.html#SinglePopulationGame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.population_game.SinglePopulationGame" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#popgames.population_game.PopulationGame" title="popgames.population_game.PopulationGame"><code class="xref py py-class docutils literal notranslate"><span class="pre">PopulationGame</span></code></a></p>
+<p>Population game with a single population.</p>
+<p>Initialize the single-population game object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_populations</strong> (<em>int</em>) – Number of populations.</p></li>
+<li><p><strong>num_strategies</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – Number of strategies.</p></li>
+<li><p><strong>fitness_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Fitness function.</p></li>
+<li><p><strong>masses</strong> (<em>list</em><em>[</em><em>float</em><em>]</em>) – Population masses.</p></li>
+<li><p><strong>A_eq</strong> (<em>np.ndarray</em>) – Matrix A in equality constraints of the form Ax = b.</p></li>
+<li><p><strong>b_eq</strong> (<em>np.ndarray</em>) – Vector b in equality constraints of the form Ax = b.</p></li>
+<li><p><strong>A_ineq</strong> (<em>np.ndarray</em>) – Matrix A in inequality constraints of the form Ax &lt;= b.</p></li>
+<li><p><strong>b_ineq</strong> (<em>np.ndarray</em>) – Vector b in inequality constraints of the form Ax &lt;= b.</p></li>
+<li><p><strong>g_ineq</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Function g(x) in inequality constraints of the form g(x) &lt;= 0.</p></li>
+<li><p><strong>Dg_ineq</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Jacobian matrix of g(x).</p></li>
+<li><p><strong>fitness_lipschitz_constant</strong> (<em>float</em>) – Lipschitz constant of the fitness function.</p></li>
+<li><p><strong>mass</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.population_game.SinglePopulationGame.compute_gne">
+<span class="sig-name descname"><span class="pre">compute_gne</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.population_game.SinglePopulationGame.compute_gne" title="Link to this definition">¶</a></dt>
+<dd><p>Compute a generalized Nash equilibrium (GNE) for the population game, assuming one exists.</p>
+<p>The GNE is computed using the <cite>Modified Forward-Backward Operator Splitting Method</cite> (Tseng, P., 2000).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_iter</strong> (<em>int</em>) – Maximum number of iterations.</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – Convergence tolerance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The computed GNE (if any).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.population_game.SinglePopulationGame.compute_polyhedron_vertices">
+<span class="sig-name descname"><span class="pre">compute_polyhedron_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#popgames.population_game.SinglePopulationGame.compute_polyhedron_vertices" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the polyhedron vertices of the feasible set of the population game.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The vertices of the feasible set of the population game.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -303,8 +424,36 @@ It supports both single- and multi-population scenarios.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Population Game</a><ul>
+<li><a class="reference internal" href="#popgames.population_game.PopulationGame"><code class="docutils literal notranslate"><span class="pre">PopulationGame</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.population_game.PopulationGame.compute_gne"><code class="docutils literal notranslate"><span class="pre">PopulationGame.compute_gne()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.population_game.PopulationGame.compute_polyhedron_vertices"><code class="docutils literal notranslate"><span class="pre">PopulationGame.compute_polyhedron_vertices()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.population_game.SinglePopulationGame"><code class="docutils literal notranslate"><span class="pre">SinglePopulationGame</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.population_game.SinglePopulationGame.compute_gne"><code class="docutils literal notranslate"><span class="pre">SinglePopulationGame.compute_gne()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.population_game.SinglePopulationGame.compute_polyhedron_vertices"><code class="docutils literal notranslate"><span class="pre">SinglePopulationGame.compute_polyhedron_vertices()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

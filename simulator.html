@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -242,7 +242,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -256,6 +256,139 @@ interplay between population games, payoff mechanisms, and revision processes.</
 It supports both finite-agent simulations and numerical integration of deterministic dynamics models.</p>
 <p>—</p>
 <p><strong>Simulator</strong></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population_game</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payoff_mechanism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revision_processes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simulates the interplay between the three core objects: i) A population game, ii) A payoff mechanism, and iii) a
+list of revision processes (one per population).</p>
+<p>Initialize the simulator object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>population_game</strong> (<a class="reference internal" href="population_game.html#popgames.population_game.PopulationGame" title="popgames.population_game.PopulationGame"><em>PopulationGame</em></a>) – The population game object.</p></li>
+<li><p><strong>payoff_mechanism</strong> (<a class="reference internal" href="payoff_mechanism.html#popgames.payoff_mechanism.PayoffMechanism" title="popgames.payoff_mechanism.PayoffMechanism"><em>PayoffMechanism</em></a>) – The payoff mechanism object.</p></li>
+<li><p><strong>revision_processes</strong> (<em>list</em><em>[</em><a class="reference internal" href="revision_process/index.html#popgames.revision_process.RevisionProcessABC" title="popgames.revision_process.RevisionProcessABC"><em>RevisionProcessABC</em></a><em>]</em>) – The list of revision processes (one for each population).</p></li>
+<li><p><strong>num_agents</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – A list specifying the <cite>finite</cite> number of agents in each population.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.integrate_edm_pdm">
+<span class="sig-name descname"><span class="pre">integrate_edm_pdm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Radau'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.integrate_edm_pdm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.integrate_edm_pdm" title="Link to this definition">¶</a></dt>
+<dd><p>Numerically integrate the underlying EDM-PDM system.</p>
+<p>This method relies on <code class="docutils literal notranslate"><span class="pre">scipy.integrate.solve_ivp</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_span</strong> (<em>tuple</em>) – The time span of the integration.</p></li>
+<li><p><strong>x0</strong> (<em>np.ndarray</em>) – The initial strategic distribution of the society.</p></li>
+<li><p><strong>q0</strong> (<em>np.ndarray</em>) – The initial state of the PDM. Defaults to None.</p></li>
+<li><p><strong>t_eval</strong> (<em>list</em>) – The times at which to evaluate the integration. Defaults to None.</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – The integration method. Defaults to ‘Radau’.</p></li>
+<li><p><strong>output_trajectory</strong> (<em>bool</em>) – Whether to output the trajectory or just the final state-output pair. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The integration results as a SimpleNamespace object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.plot_distance_to_gne">
+<span class="sig-name descname"><span class="pre">plot_distance_to_gne</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.plot_distance_to_gne"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.plot_distance_to_gne" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the Euclidean distance to a generalized Nash equilibrium (GNE) of the underlying game.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.plot_pdm_trajectory">
+<span class="sig-name descname"><span class="pre">plot_pdm_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_edm_related_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.plot_pdm_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.plot_pdm_trajectory" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the PDM trajectory over time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fontsize</strong> (<em>int</em>) – Fontsize. Defaults to 8.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – Figure size. Defaults to (4,2)</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figure. Defaults to None.</p></li>
+<li><p><strong>plot_edm_related_trajectory</strong> (<em>bool</em>) – Whether to plot edm trajectory or not. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.reset" title="Link to this definition">¶</a></dt>
+<dd><p>Resets the simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x0</strong> (<em>np.ndarray</em><em>, </em><em>Optional</em>) – The initial state for the strategic distribution of the society. Defaults to None.</p></li>
+<li><p><strong>q0</strong> (<em>np.ndarray</em><em>, </em><em>Optional</em>) – The initial state for the payoff mechanism’s PDM. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.run" title="Link to this definition">¶</a></dt>
+<dd><p>Run the simulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T_sim</strong> (<em>int</em>) – The total time to simulate (in units specified by the agents’ alarm clocks).</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to print simulation information. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The simulation results as a SimpleNamespace object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.ternary_plot">
+<span class="sig-name descname"><span class="pre">ternary_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_edm_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.ternary_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.ternary_plot" title="Link to this definition">¶</a></dt>
+<dd><p>Make a ternary plot for the simulated scenario.</p>
+<p>This method is only supported for single-population games with n=3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scale</strong> (<em>int</em>) – Scaling factor for the ternary plot. Defaults to 30.</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em>) – Fontsize for the plot. Defaults to 8.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – Figure size. Defaults to (4, 3).</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figure. Defaults to None.</p></li>
+<li><p><strong>plot_edm_trajectory</strong> (<em>bool</em>) – Whether to plot edm trajectory or not. Defaults to False.</p></li>
+<li><p><strong>potential_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Potential function to plot as a heatmap. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
         </article>
@@ -293,8 +426,35 @@ It supports both finite-agent simulations and numerical integration of determini
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Simulator</a><ul>
+<li><a class="reference internal" href="#popgames.simulator.Simulator"><code class="docutils literal notranslate"><span class="pre">Simulator</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.integrate_edm_pdm"><code class="docutils literal notranslate"><span class="pre">Simulator.integrate_edm_pdm()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.plot_distance_to_gne"><code class="docutils literal notranslate"><span class="pre">Simulator.plot_distance_to_gne()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.plot_pdm_trajectory"><code class="docutils literal notranslate"><span class="pre">Simulator.plot_pdm_trajectory()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.reset"><code class="docutils literal notranslate"><span class="pre">Simulator.reset()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.run"><code class="docutils literal notranslate"><span class="pre">Simulator.run()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.ternary_plot"><code class="docutils literal notranslate"><span class="pre">Simulator.ternary_plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
