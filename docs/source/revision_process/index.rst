@@ -7,9 +7,13 @@ It consists of two components:
 - An **alarm clock**, which determines the timing of revision events.
 - A **revision protocol**, which governs the choice of strategy after a revision.
 
+See also:
+
+- :doc:`Alarm Clock <alarm_clock>`
+- :doc:`Revision Protocol <revision_protocol>`
+
 .. toctree::
-   :maxdepth: 1
-   :caption: Components
+   :hidden:
 
    alarm_clock
    revision_protocol
