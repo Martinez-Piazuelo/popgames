@@ -279,7 +279,7 @@
 <span class="p">)</span>
 
 <span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -307,8 +307,12 @@
 <span class="sd">        Args:</span>
 <span class="sd">            population_game (PopulationGame): The population game object.</span>
 <span class="sd">            payoff_mechanism (PayoffMechanism): The payoff mechanism object.</span>
-<span class="sd">            revision_processes (list[RevisionProcessABC]): The list of revision processes (one for each population).</span>
-<span class="sd">            num_agents (list[int]): A list specifying the `finite` number of agents in each population.</span>
+<span class="sd">            revision_processes (Union[RevisionProcessABC, list[RevisionProcessABC]]):</span>
+<span class="sd">                A single revision process for the single-population case, or a list of revision processes</span>
+<span class="sd">                for the multi-population case, where each element corresponds to a specific population.</span>
+<span class="sd">            num_agents (Union[int, list[int]]):</span>
+<span class="sd">                The number of agents as an integer for the single-population case, or a list of integers</span>
+<span class="sd">                specifying the number of agents in each population for the multi-population case.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Numerical precision</span>

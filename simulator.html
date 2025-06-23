@@ -272,8 +272,10 @@ list of revision processes (one per population).</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>population_game</strong> (<a class="reference internal" href="population_game.html#popgames.population_game.PopulationGame" title="popgames.population_game.PopulationGame"><em>PopulationGame</em></a>) – The population game object.</p></li>
 <li><p><strong>payoff_mechanism</strong> (<a class="reference internal" href="payoff_mechanism.html#popgames.payoff_mechanism.PayoffMechanism" title="popgames.payoff_mechanism.PayoffMechanism"><em>PayoffMechanism</em></a>) – The payoff mechanism object.</p></li>
-<li><p><strong>revision_processes</strong> (<em>list</em><em>[</em><a class="reference internal" href="revision_process/index.html#popgames.revision_process.RevisionProcessABC" title="popgames.revision_process.RevisionProcessABC"><em>RevisionProcessABC</em></a><em>]</em>) – The list of revision processes (one for each population).</p></li>
-<li><p><strong>num_agents</strong> (<em>list</em><em>[</em><em>int</em><em>]</em>) – A list specifying the <cite>finite</cite> number of agents in each population.</p></li>
+<li><p><strong>revision_processes</strong> (<em>Union</em><em>[</em><a class="reference internal" href="revision_process/index.html#popgames.revision_process.RevisionProcessABC" title="popgames.revision_process.RevisionProcessABC"><em>RevisionProcessABC</em></a><em>, </em><em>list</em><em>[</em><a class="reference internal" href="revision_process/index.html#popgames.revision_process.RevisionProcessABC" title="popgames.revision_process.RevisionProcessABC"><em>RevisionProcessABC</em></a><em>]</em><em>]</em>) – A single revision process for the single-population case, or a list of revision processes
+for the multi-population case, where each element corresponds to a specific population.</p></li>
+<li><p><strong>num_agents</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>list</em><em>[</em><em>int</em><em>]</em><em>]</em>) – The number of agents as an integer for the single-population case, or a list of integers
+specifying the number of agents in each population for the multi-population case.</p></li>
 </ul>
 </dd>
 </dl>
