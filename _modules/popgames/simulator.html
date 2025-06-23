@@ -207,6 +207,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../simulator.html">Simulator</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../usage_examples/index.html">Usage Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Usage Examples</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../usage_examples/prisoners_dilemma.html">Prisoner’s Dilemma</a></li>
+</ul>
+</li>
 </ul>
 
 </div>
@@ -294,8 +298,8 @@
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">population_game</span> <span class="p">:</span> <span class="n">PopulationGame</span><span class="p">,</span>
             <span class="n">payoff_mechanism</span> <span class="p">:</span> <span class="n">PayoffMechanism</span><span class="p">,</span>
-            <span class="n">revision_processes</span> <span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">RevisionProcessABC</span><span class="p">],</span>
-            <span class="n">num_agents</span> <span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+            <span class="n">revision_processes</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">RevisionProcessABC</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">RevisionProcessABC</span><span class="p">]],</span>
+            <span class="n">num_agents</span> <span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the simulator object.</span>

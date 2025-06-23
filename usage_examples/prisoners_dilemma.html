@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Revision Protocol" href="revision_protocol.html" /><link rel="prev" title="Revision Process" href="index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="prev" title="Usage Examples" href="index.html" />
 
     <!-- Generated with Sphinx 8.2.3 and Furo 2024.08.06 -->
-        <title>Alarm Clock - popgames 0.1.0 documentation</title>
+        <title>Prisoner’s Dilemma - popgames 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
@@ -178,7 +178,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -202,14 +202,14 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../population_game.html">Population Game</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../payoff_mechanism.html">Payoff Mechanism</a></li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Revision Process</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Revision Process</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Alarm Clock</a></li>
-<li class="toctree-l2"><a class="reference internal" href="revision_protocol.html">Revision Protocol</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../revision_process/index.html">Revision Process</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Revision Process</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../revision_process/alarm_clock.html">Alarm Clock</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../revision_process/revision_protocol.html">Revision Protocol</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../simulator.html">Simulator</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../usage_examples/index.html">Usage Examples</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Usage Examples</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../usage_examples/prisoners_dilemma.html">Prisoner’s Dilemma</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Usage Examples</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Usage Examples</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Prisoner’s Dilemma</a></li>
 </ul>
 </li>
 </ul>
@@ -232,7 +232,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/revision_process/alarm_clock.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/usage_examples/prisoners_dilemma.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -246,81 +246,76 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="alarm-clock">
-<h1>Alarm Clock<a class="headerlink" href="#alarm-clock" title="Link to this heading">¶</a></h1>
-<p>—</p>
-<p><strong>Base Class</strong></p>
-<p>The abstract base class for all alarm clocks is defined below.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="popgames.alarm_clock.AlarmClockABC">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.alarm_clock.</span></span><span class="sig-name descname"><span class="pre">AlarmClockABC</span></span><a class="reference internal" href="../_modules/popgames/alarm_clock.html#AlarmClockABC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.alarm_clock.AlarmClockABC" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
-<p>Abstract base class for alarm clocks.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="popgames.alarm_clock.AlarmClockABC.__call__">
-<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/alarm_clock.html#AlarmClockABC.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.alarm_clock.AlarmClockABC.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Subclasses must implement this method to enable the alarm clock to be called as a function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>size</strong> (<em>int</em>) – Number of samples to retrieve from the clock.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The revision times.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[float, np.ndarray]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<p>—</p>
-<p><strong>Poisson Alarm Clock</strong></p>
-<p>An alarm clock where inter-revision times are independently sampled from an exponential distribution.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="popgames.alarm_clock.Poisson">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.alarm_clock.</span></span><span class="sig-name descname"><span class="pre">Poisson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/alarm_clock.html#Poisson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.alarm_clock.Poisson" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#popgames.alarm_clock.AlarmClockABC" title="popgames.alarm_clock.AlarmClockABC"><code class="xref py py-class docutils literal notranslate"><span class="pre">AlarmClockABC</span></code></a></p>
-<p>Poisson alarm clock.</p>
-<p>Initialize the Poisson alarm clock.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>rate</strong> (<em>float</em>) – The rate of the alarm clock. Defaults to 1.0.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="popgames.alarm_clock.Poisson.__call__">
-<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/alarm_clock.html#Poisson.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.alarm_clock.Poisson.__call__" title="Link to this definition">¶</a></dt>
-<dd><p>Call the Poisson alarm clock.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>size</strong> (<em>int</em>) – Number of samples to retrieve from the clock.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The revision times.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[float, np.ndarray]</p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.alarm_clock</span><span class="w"> </span><span class="kn">import</span> <span class="n">Poisson</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">clock</span> <span class="o">=</span> <span class="n">Poisson</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">clock</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-<span class="go">array([2.34438986, 0.53956626, 0.80216914])</span>
+          <section id="prisoner-s-dilemma">
+<h1>Prisoner’s Dilemma<a class="headerlink" href="#prisoner-s-dilemma" title="Link to this heading">¶</a></h1>
+<p>This example models a population of agents repeatedly choosing between two strategies:
+<strong>cooperate</strong> or <strong>defect</strong>, as in the classic Prisoner’s Dilemma game.</p>
+<p>It demonstrates how revision dynamics can drive the population toward defection,
+even when mutual cooperation would be socially optimal.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="linenos"> 4</span>    <span class="n">SinglePopulationGame</span><span class="p">,</span>
+<span class="linenos"> 5</span>    <span class="n">PayoffMechanism</span><span class="p">,</span>
+<span class="linenos"> 6</span>    <span class="n">PoissonRevisionProcess</span><span class="p">,</span>
+<span class="linenos"> 7</span>    <span class="n">Simulator</span><span class="p">,</span>
+<span class="linenos"> 8</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Softmax</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="c1"># Prisoner&#39;s dilemma parameters</span>
+<span class="linenos">12</span>                        <span class="c1"># s.t. T &gt; R &gt; P &gt; S</span>
+<span class="linenos">13</span>                        <span class="c1"># https://en.wikipedia.org/wiki/Prisoner%27s_dilemma</span>
+<span class="linenos">14</span><span class="k">def</span><span class="w"> </span><span class="nf">fitness_function</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="linenos">15</span>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+<span class="linenos">16</span>        <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">R</span><span class="p">,</span> <span class="n">S</span><span class="p">],</span> <span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">P</span><span class="p">]]),</span>
+<span class="linenos">17</span>        <span class="n">x</span>
+<span class="linenos">18</span>    <span class="p">)</span>
+<span class="linenos">19</span>
+<span class="linenos">20</span><span class="n">population_game</span> <span class="o">=</span> <span class="n">SinglePopulationGame</span><span class="p">(</span>
+<span class="linenos">21</span>    <span class="n">num_strategies</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">22</span>    <span class="n">fitness_function</span><span class="o">=</span><span class="n">fitness_function</span><span class="p">,</span>
+<span class="linenos">23</span><span class="p">)</span>
+<span class="linenos">24</span>
+<span class="linenos">25</span><span class="n">payoff_mechanism</span> <span class="o">=</span> <span class="n">PayoffMechanism</span><span class="p">(</span>
+<span class="linenos">26</span>    <span class="n">h_map</span><span class="o">=</span><span class="n">fitness_function</span><span class="p">,</span>
+<span class="linenos">27</span>    <span class="n">n</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">28</span><span class="p">)</span>
+<span class="linenos">29</span>
+<span class="linenos">30</span><span class="n">revision_process</span> <span class="o">=</span> <span class="n">PoissonRevisionProcess</span><span class="p">(</span>
+<span class="linenos">31</span>    <span class="n">Poisson_clock_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="linenos">32</span>    <span class="n">revision_protocol</span><span class="o">=</span><span class="n">Softmax</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+<span class="linenos">33</span><span class="p">)</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span>
+<span class="linenos">36</span>    <span class="n">population_game</span><span class="o">=</span><span class="n">population_game</span><span class="p">,</span>
+<span class="linenos">37</span>    <span class="n">payoff_mechanism</span><span class="o">=</span><span class="n">payoff_mechanism</span><span class="p">,</span>
+<span class="linenos">38</span>    <span class="n">revision_processes</span><span class="o">=</span><span class="n">revision_process</span><span class="p">,</span>
+<span class="linenos">39</span>    <span class="n">num_agents</span><span class="o">=</span><span class="mi">1000</span>
+<span class="linenos">40</span><span class="p">)</span>
+<span class="linenos">41</span>
+<span class="linenos">42</span><span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos">43</span><span class="n">sim</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
+<span class="linenos">44</span><span class="n">out</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">T_sim</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+<span class="linenos">45</span>
+<span class="linenos">46</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="linenos">47</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Cooperators&#39;</span><span class="p">)</span>
+<span class="linenos">48</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Defectors&#39;</span><span class="p">)</span>
+<span class="linenos">49</span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time&#39;</span><span class="p">)</span>
+<span class="linenos">50</span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Portion of agents choosing each strategy&#39;</span><span class="p">)</span>
+<span class="linenos">51</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="linenos">52</span><span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+<span class="linenos">53</span><span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="linenos">54</span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-</dd></dl>
-
-</dd></dl>
-
+<a class="reference internal image-reference" href="../_images/prisoners_dilemma.png"><img alt="../_images/prisoners_dilemma.png" class="align-center" src="../_images/prisoners_dilemma.png" style="width: 50%;" />
+</a>
 </section>
 
         </article>
@@ -328,15 +323,7 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="revision_protocol.html">
-              <div class="page-info">
-                <div class="context">
-                  <span>Next</span>
-                </div>
-                <div class="title">Revision Protocol</div>
-              </div>
-              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
-            </a>
+          
           <a class="prev-page" href="index.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
@@ -344,7 +331,7 @@
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Revision Process</div>
+                <div class="title">Usage Examples</div>
                 
               </div>
             </a>
@@ -366,34 +353,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Alarm Clock</a><ul>
-<li><a class="reference internal" href="#popgames.alarm_clock.AlarmClockABC"><code class="docutils literal notranslate"><span class="pre">AlarmClockABC</span></code></a><ul>
-<li><a class="reference internal" href="#popgames.alarm_clock.AlarmClockABC.__call__"><code class="docutils literal notranslate"><span class="pre">AlarmClockABC.__call__()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#popgames.alarm_clock.Poisson"><code class="docutils literal notranslate"><span class="pre">Poisson</span></code></a><ul>
-<li><a class="reference internal" href="#popgames.alarm_clock.Poisson.__call__"><code class="docutils literal notranslate"><span class="pre">Poisson.__call__()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
