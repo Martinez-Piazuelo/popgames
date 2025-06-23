@@ -13,3 +13,5 @@ A Python package to simulate population games and evolutionary dynamics.
    revision_process/index
 
    simulator
+
+   usage_examples/index
