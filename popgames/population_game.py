@@ -226,7 +226,7 @@ class SinglePopulationGame(PopulationGame):
             num_populations=1,
             num_strategies=[num_strategies],
             fitness_function=fitness_function,
-            masses=[mass],
+            masses=[mass] if mass is not None else None,
             A_eq=A_eq,
             b_eq=b_eq,
             A_ineq=A_ineq,

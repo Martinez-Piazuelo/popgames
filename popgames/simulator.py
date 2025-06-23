@@ -48,8 +48,8 @@ class Simulator:
             self,
             population_game : PopulationGame,
             payoff_mechanism : PayoffMechanism,
-            revision_processes : list[RevisionProcessABC],
-            num_agents : list[int]
+            revision_processes : Union[RevisionProcessABC, list[RevisionProcessABC]],
+            num_agents : Union[int, list[int]]
     ) -> None:
         """
         Initialize the simulator object.
