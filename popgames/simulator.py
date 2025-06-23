@@ -31,7 +31,7 @@ from popgames.utilities.plotters import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Callable
+    from typing import Callable, Union
 
 
 __all__ = [
@@ -57,8 +57,12 @@ class Simulator:
         Args:
             population_game (PopulationGame): The population game object.
             payoff_mechanism (PayoffMechanism): The payoff mechanism object.
-            revision_processes (list[RevisionProcessABC]): The list of revision processes (one for each population).
-            num_agents (list[int]): A list specifying the `finite` number of agents in each population.
+            revision_processes (Union[RevisionProcessABC, list[RevisionProcessABC]]):
+                A single revision process for the single-population case, or a list of revision processes
+                for the multi-population case, where each element corresponds to a specific population.
+            num_agents (Union[int, list[int]]):
+                The number of agents as an integer for the single-population case, or a list of integers
+                specifying the number of agents in each population for the multi-population case.
 
         """
         # Numerical precision
