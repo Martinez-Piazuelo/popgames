@@ -15,7 +15,7 @@ from popgames.utilities.gnep_solvers import fbos
 from popgames.utilities.polyhedron import compute_vertices
 
 if typing.TYPE_CHECKING:
-    from typing import Callable
+    from typing import Optional, Callable
 
 __all__ = [
     'PopulationGame',
@@ -179,7 +179,7 @@ class PopulationGame:
             tolerance=tolerance
         )
 
-    def compute_polyhedron_vertices(self) -> list:
+    def compute_polyhedron_vertices(self) -> Optional[np.ndarray]:
         """
         Compute the polyhedron vertices of the feasible set of the population game.
 
