@@ -335,7 +335,7 @@ class Simulator:
     def _microscopic_step(
             self,
             time_step : float
-    ) -> SimpleNamespace:
+    ) -> None:
         """
         Internal method to numerically integrate the PDM over a microscopic step.
 
@@ -343,9 +343,6 @@ class Simulator:
 
         Args:
             time_step (float): The time step for the integration.
-
-        Returns:
-            SimpleNamespace: The integration results as a SimpleNamespace object.
         """
         out = self.payoff_mechanism.integrate(
             q0=self.q,
