@@ -263,7 +263,7 @@ It supports both finite-agent simulations and numerical integration of determini
 <dl class="py class">
 <dt class="sig sig-object py" id="popgames.simulator.Simulator">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">popgames.simulator.</span></span><span class="sig-name descname"><span class="pre">Simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">population_game</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payoff_mechanism</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">revision_processes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">VisualizationMixin</span></code></p>
 <p>Simulates the interplay between the three core objects: i) A population game, ii) A payoff mechanism, and iii) a
 list of revision processes (one per population).</p>
 <p>Initialize the simulator object.</p>
@@ -305,27 +305,21 @@ specifying the number of agents in each population for the multi-population case
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="popgames.simulator.Simulator.plot_distance_to_gne">
-<span class="sig-name descname"><span class="pre">plot_distance_to_gne</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.plot_distance_to_gne"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.plot_distance_to_gne" title="Link to this definition">¶</a></dt>
-<dd><p>Plot the Euclidean distance to a generalized Nash equilibrium (GNE) of the underlying game.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="popgames.simulator.Simulator.plot_pdm_trajectory">
-<span class="sig-name descname"><span class="pre">plot_pdm_trajectory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_edm_related_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.plot_pdm_trajectory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.plot_pdm_trajectory" title="Link to this definition">¶</a></dt>
-<dd><p>Plot the PDM trajectory over time.</p>
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'univariate'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(3,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.simulator.Simulator.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Unified plotting interface supporting some predefined plot types.</p>
+<p>Plot the results of the last simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fontsize</strong> (<em>int</em>) – Fontsize. Defaults to 8.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – Figure size. Defaults to (4,2)</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figure. Defaults to None.</p></li>
-<li><p><strong>plot_edm_related_trajectory</strong> (<em>bool</em>) – Whether to plot edm trajectory or not. Defaults to False.</p></li>
+<li><p><strong>plot_type</strong> (<em>str</em>) – Plot type. Defaults to ‘x(t)’.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – If not None the figure is saved with that filename. Defaults to None.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em><em>, </em><em>optional</em>) – Matplotlib’s figsize. Defaults to (3, 3).</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Matplotlib’s fontsize. Defaults to 10.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to show the figure. Defaults to True.</p></li>
+<li><p><strong>**kwargs</strong> – Additional keyword arguments to bypass to the selected plot_type.
+Warning: unrecognized arguments are silently ignored.</p></li>
+<li><p><strong>self</strong> (<a class="reference internal" href="#popgames.simulator.Simulator" title="popgames.simulator.Simulator"><em>Simulator</em></a>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -367,28 +361,6 @@ specifying the number of agents in each population for the multi-population case
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleNamespace</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="popgames.simulator.Simulator.ternary_plot">
-<span class="sig-name descname"><span class="pre">ternary_plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_edm_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/popgames/simulator.html#Simulator.ternary_plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.ternary_plot" title="Link to this definition">¶</a></dt>
-<dd><p>Make a ternary plot for the simulated scenario.</p>
-<p>This method is only supported for single-population games with n=3.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>scale</strong> (<em>int</em>) – Scaling factor for the ternary plot. Defaults to 30.</p></li>
-<li><p><strong>fontsize</strong> (<em>int</em>) – Fontsize for the plot. Defaults to 8.</p></li>
-<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – Figure size. Defaults to (4, 3).</p></li>
-<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figure. Defaults to None.</p></li>
-<li><p><strong>plot_edm_trajectory</strong> (<em>bool</em>) – Whether to plot edm trajectory or not. Defaults to False.</p></li>
-<li><p><strong>potential_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>np.ndarray</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – Potential function to plot as a heatmap. Defaults to None.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -455,11 +427,9 @@ specifying the number of agents in each population for the multi-population case
 <li><a class="reference internal" href="#">Simulator</a><ul>
 <li><a class="reference internal" href="#popgames.simulator.Simulator"><code class="docutils literal notranslate"><span class="pre">Simulator</span></code></a><ul>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.integrate_edm_pdm"><code class="docutils literal notranslate"><span class="pre">Simulator.integrate_edm_pdm()</span></code></a></li>
-<li><a class="reference internal" href="#popgames.simulator.Simulator.plot_distance_to_gne"><code class="docutils literal notranslate"><span class="pre">Simulator.plot_distance_to_gne()</span></code></a></li>
-<li><a class="reference internal" href="#popgames.simulator.Simulator.plot_pdm_trajectory"><code class="docutils literal notranslate"><span class="pre">Simulator.plot_pdm_trajectory()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.plot"><code class="docutils literal notranslate"><span class="pre">Simulator.plot()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.reset"><code class="docutils literal notranslate"><span class="pre">Simulator.reset()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.run"><code class="docutils literal notranslate"><span class="pre">Simulator.run()</span></code></a></li>
-<li><a class="reference internal" href="#popgames.simulator.Simulator.ternary_plot"><code class="docutils literal notranslate"><span class="pre">Simulator.ternary_plot()</span></code></a></li>
 </ul>
 </li>
 </ul>
