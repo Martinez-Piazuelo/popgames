@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing
 
 import logging
-logger = logging.getLogger("core")
+logger = logging.getLogger(__name__)
 
 from types import SimpleNamespace
 
@@ -20,18 +20,12 @@ from popgames.utilities.input_validators import (
     check_scalar_value_bounds,
     check_array_in_simplex,
     check_array_shape,
-    check_function_signature
 )
 
-from popgames.utilities.plotters import (
-    make_ternary_plot_single_population,
-    make_ternary_plot_multi_population,
-    make_pdm_trajectory_plot,
-    make_distance_to_gne_plot
-)
+from popgames.plotting import VisualizationMixin
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Union
+    from typing import Union
 
 
 __all__ = [
@@ -39,7 +33,7 @@ __all__ = [
 ]
 
 
-class Simulator:
+class Simulator(VisualizationMixin):
     """
     Simulates the interplay between the three core objects: i) A population game, ii) A payoff mechanism, and iii) a
     list of revision processes (one per population).
@@ -315,12 +309,12 @@ class Simulator:
 
     def _get_strategic_distribution(self) -> np.ndarray:
         """
-        Internal method to get the strategic distribution of the soceity.
+        Internal method to get the strategic distribution of the society.
 
         Should not be called directly from outside the class.
 
         Returns:
-            np.ndarray: The strategic distribution of the soceity.
+            np.ndarray: The strategic distribution of the society.
         """
         x = []
         for k in range(self.population_game.num_populations):
@@ -426,88 +420,3 @@ class Simulator:
             p = np.hstack(self.log.p)
         )
         return flattened_log
-
-    def ternary_plot(
-            self,
-            scale : int = 30,
-            fontsize : int = 8,
-            figsize : tuple[int, int] = (4, 3),
-            filename : str = None,
-            plot_edm_trajectory : bool = False,
-            potential_function : Callable[[np.ndarray], np.ndarray] = None
-    ) -> None:
-        """
-        Make a ternary plot for the simulated scenario.
-
-        This method is only supported for single-population games with n=3.
-
-        Args:
-            scale (int): Scaling factor for the ternary plot. Defaults to 30.
-            fontsize (int): Fontsize for the plot. Defaults to 8.
-            figsize (tuple[int, int]): Figure size. Defaults to (4, 3).
-            filename (str, optional): Filename to save the figure. Defaults to None.
-            plot_edm_trajectory (bool): Whether to plot edm trajectory or not. Defaults to False.
-            potential_function (Callable[[np.ndarray], np.ndarray]): Potential function to plot as a heatmap. Defaults to None.
-        """
-        
-        if self.population_game.num_populations > 1:
-            if potential_function is not None:
-                logger.warning('Plotting potential functions over the ternary plot is only supported for single population games.')
-            
-            make_ternary_plot_multi_population(
-                self,
-                scale = scale,
-                fontsize = fontsize,
-                figsize = figsize,
-                plot_edm_trajectory=plot_edm_trajectory,
-                filename = filename
-            )
-        else:
-            if potential_function is not None:
-                check_function_signature(
-                    arg=potential_function,
-                    expected_input_shapes=[(self.population_game.n, 1)],
-                    expected_output_shape=(1, 1),
-                    name='potential_function'
-                )
-
-            make_ternary_plot_single_population(
-                self,
-                potential_function = potential_function,
-                plot_edm_trajectory = plot_edm_trajectory,
-                scale = scale,
-                fontsize = fontsize,
-                figsize = figsize,
-                filename = filename
-            )
-
-    def plot_pdm_trajectory(
-            self,
-            fontsize : int = 8,
-            figsize : tuple[int, int] = (4, 2),
-            filename : str = None,
-            plot_edm_related_trajectory : bool = False
-    ) -> None:
-        """
-        Plot the PDM trajectory over time.
-
-        Args:
-            fontsize (int): Fontsize. Defaults to 8.
-            figsize (tuple[int, int]): Figure size. Defaults to (4,2)
-            filename (str, optional): Filename to save the figure. Defaults to None.
-            plot_edm_related_trajectory (bool): Whether to plot edm trajectory or not. Defaults to False.
-        """
-            
-        make_pdm_trajectory_plot(
-            self,
-            fontsize = fontsize,
-            figsize = figsize,
-            plot_edm_related_trajectory=plot_edm_related_trajectory,
-            filename = filename
-        )
-
-    def plot_distance_to_gne(self) -> None:
-        """
-        Plot the Euclidean distance to a generalized Nash equilibrium (GNE) of the underlying game.
-        """
-        make_distance_to_gne_plot(self)
