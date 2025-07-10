@@ -11,6 +11,7 @@ from popgames.plotting._plot_config import (
 )
 
 from popgames.plotting.plotters import (
+    plot_kpi_over_time,
     plot_univariate_trajectories,
     plot_ternary_trajectories,
 )
@@ -30,6 +31,7 @@ SUPPORTED_PLOT_TYPES_LITERAL = typing.Literal[
 ]
 
 PLOT_DISPATCH : dict[SUPPORTED_PLOT_TYPES_LITERAL, Callable[..., None]] = {
+    'kpi': plot_kpi_over_time,
     'univariate' : plot_univariate_trajectories,
     'ternary' : plot_ternary_trajectories,
 }
@@ -45,12 +47,12 @@ class VisualizationMixin:
     def plot(
             self : Simulator,
             *,
-            plot_type : SUPPORTED_PLOT_TYPES_LITERAL = 'univariate',
+            plot_type : SUPPORTED_PLOT_TYPES_LITERAL = 'kpi',
             filename : str = None,
             figsize : tuple[int, int] = FIGSIZE,
             fontsize : int = FONTSIZE,
             show : bool = True,
-            **kwargs : dict[str, Any],
+            **kwargs : dict[str, Any] | Any,
     ) -> None:
         """
         Unified plotting interface supporting some predefined plot types.
