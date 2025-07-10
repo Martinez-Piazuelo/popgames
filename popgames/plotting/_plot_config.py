@@ -2,8 +2,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 DPI = 200
-FIGSIZE = (3, 3)
-FONTSIZE = 10
+FIGSIZE = (4, 2)
+FONTSIZE = 8
 matplotlib.rcParams['figure.dpi'] = DPI
 matplotlib.rcParams['figure.figsize'] = FIGSIZE
 matplotlib.rcParams['mathtext.fontset'] = 'cm'
