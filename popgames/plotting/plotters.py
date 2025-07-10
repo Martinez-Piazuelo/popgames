@@ -4,6 +4,8 @@ import typing
 import logging
 logger = logging.getLogger(__name__)
 
+import numpy as np
+
 import matplotlib
 import matplotlib.pyplot as plt
 import ternary
@@ -20,8 +22,103 @@ from popgames.utilities.input_validators import check_function_signature
 if typing.TYPE_CHECKING:
     from typing import Any, Callable
     from popgames import Simulator
-    import numpy as np
+    from types import SimpleNamespace
 
+
+def plot_kpi_over_time(
+        simulator : Simulator,
+        plot_deterministic_approximation : bool = False,
+        **kwargs : dict[str, Any]
+) -> None:
+    filename = kwargs.get('filename', None)
+    figsize = kwargs.get('figsize', FIGSIZE)
+    fontsize = kwargs.get('fontsize', FONTSIZE)
+    show = kwargs.get('show', True)
+
+    xlim = kwargs.get('xlim', None)
+    ylim = kwargs.get('ylim', None)
+    xscale = kwargs.get('xscale', 'linear')
+    yscale = kwargs.get('yscale', 'linear')
+
+    kpi_function = kwargs.get('kpi_function', None)
+    if kpi_function is None:
+
+        gne = simulator.population_game.compute_gne()
+
+        if gne is None:
+            logger.warning(
+                "No GNE was found. Consider setting the kpi_function argument explicitly."
+            )
+            return None
+
+        def kpi_function(flattened_sim_log: SimpleNamespace) -> np.ndarray:
+            """
+            Default kpi_function (normalized Euclidean distance to GNE over time).
+
+            Args:
+                flattened_sim_log (SimpleNamespace): Simulation log.
+
+            Returns:
+                np.ndarray: KPI evaluation results (normalized Euclidean distance to GNE over time).
+            """
+            _kpi = np.linalg.norm(gne.reshape(-1, 1) - flattened_sim_log.x, ord=2, axis=0)
+            return _kpi / max(_kpi[0], 1e-8)
+
+    if plot_deterministic_approximation:
+        t_sim = (0, simulator.t)
+        x0 = simulator.log.x[0]
+        q0 = simulator.log.q[0]
+        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        kpi_det = kpi_function(out_det)
+
+    out = simulator._get_flattened_log()  # TODO: enable a non-protected method in Simulator for this
+    kpi = kpi_function(out)
+
+    plt.figure(figsize=figsize)
+    plt.plot(
+        simulator.log.t, kpi,
+        label='Finite agents',
+        color='black',
+        linewidth=1
+    )
+
+    if plot_deterministic_approximation:
+        plt.plot(
+            simulator.log.t, kpi_det,
+            label='EDM-PDM',
+            linestyle='dotted',
+            color='magenta',
+            linewidth=1.5
+        )
+
+    if xlim is not None:
+        plt.xlim(xlim)
+
+    if ylim is not None:
+        plt.ylim(ylim)
+
+    plt.xscale(xscale)
+    plt.yscale(yscale)
+    plt.xticks(fontsize=fontsize)
+    plt.yticks(fontsize=fontsize)
+    plt.xlabel(r'$t$', fontsize=fontsize)
+    plt.ylabel(r'$\operatorname{KPI}(t)$', fontsize=fontsize)
+    plt.grid()
+    plt.tight_layout()
+
+    if plot_deterministic_approximation:
+        plt.legend(fontsize=fontsize)
+
+    if filename is not None:
+        name, ext = filename.split('.')
+        dpi = DPI if ext == '.png' else None
+        plt.savefig(filename, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+
+    if show:
+        plt.show()
+
+    else:
+        plt.close()
 
 def plot_univariate_trajectories(
         simulator : Simulator,
@@ -49,6 +146,8 @@ def plot_univariate_trajectories(
 
     xlim = kwargs.get('xlim', None)
     ylim = kwargs.get('ylim', None)
+    xscale = kwargs.get('xscale', None)
+    yscale = kwargs.get('yscale', None)
 
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
@@ -56,7 +155,7 @@ def plot_univariate_trajectories(
         q0 = simulator.log.q[0]
         out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
 
-    out = simulator._get_flattened_log() # TODO: enable a non-protected method in Simulator for this
+    out = simulator._get_flattened_log()
 
     for var in ['x', 'p']:
         val = getattr(out, var)
@@ -87,6 +186,12 @@ def plot_univariate_trajectories(
 
                 if isinstance(ylim, dict) and var in ylim:
                     plt.ylim(ylim[var])
+
+                if isinstance(xscale, dict) and var in xscale:
+                    plt.xscale(xscale[var])
+
+                if isinstance(yscale, dict) and var in yscale:
+                    plt.yscale(yscale[var])
 
                 plt.xticks(fontsize=fontsize)
                 plt.yticks(fontsize=fontsize)
