@@ -87,7 +87,7 @@ class PopulationGame:
                 name='masses',
                 strictly_positive=True
             )
-        self.masses = masses if masses is not None else self.n*[1.]
+        self.masses = masses if masses is not None else self.num_populations*[1.]
 
         check_function_signature(
             arg=fitness_function,
@@ -221,7 +221,6 @@ class SinglePopulationGame(PopulationGame):
             Dg_ineq (Callable[[np.ndarray], np.ndarray]): Jacobian matrix of g(x).
             fitness_lipschitz_constant (float): Lipschitz constant of the fitness function.
         """
-
         super().__init__(
             num_populations=1,
             num_strategies=[num_strategies],
