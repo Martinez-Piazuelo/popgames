@@ -1,3 +1,10 @@
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+)
+
 from popgames.revision_process import PoissonRevisionProcess
 from popgames.population_game import PopulationGame, SinglePopulationGame
 from popgames.payoff_mechanism import PayoffMechanism
