@@ -190,14 +190,14 @@ class Simulator(VisualizationMixin):
     def run(
             self,
             T_sim : int,
-            verbose : bool = True
+            verbose : bool = False
     ) -> SimpleNamespace:
         """
         Run the simulation.
 
         Args:
             T_sim (int): The total time to simulate (in units specified by the agents' alarm clocks).
-            verbose (bool): Whether to print simulation information. Defaults to True.
+            verbose (bool): Whether to print simulation information. Defaults to False.
 
         Returns:
             SimpleNamespace: The simulation results as a SimpleNamespace object.
