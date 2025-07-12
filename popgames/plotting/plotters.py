@@ -552,13 +552,16 @@ def make_ternary_plot_single_population(
         tax.heatmap(points_potential, style='hexagonal', vmin=vmin, vmax=vmax, cmap='viridis', colorbar=False)
 
     # Plot feasible region (if possible)
+    num_constraints = simulator.population_game.d_eq + simulator.population_game.d_ineq
     vertices = simulator.population_game.compute_polyhedron_vertices()
     vertices_scaled = []
     if len(vertices) == 2:
         for vertex in vertices:
             point = scale * vertex / vertex.sum()
             vertices_scaled.append((point[2], point[0], point[1]))
-        tax.plot(vertices_scaled, linewidth=1, linestyle='dashed', color="tab:red", label=r'$\mathcal{X}$')
+        tax.plot(
+            vertices_scaled, linewidth=1, linestyle='dashed', color="tab:red",
+            label=r'$\mathcal{X}$' if num_constraints > 0 else None)
     else:
         # TODO: IMPLEMENT THIS
         pass
@@ -576,19 +579,23 @@ def make_ternary_plot_single_population(
     # Plot GNE (if available)
     if gne is not None:
         tax.plot(gne, marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                 label=r'$\operatorname{GNE}$')
+                 label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$')
 
     # Plot formating
     custom_legend = []
     if gne is not None:
         custom_legend.append(
-            matplotlib.lines.Line2D([], [], marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                                    label=r'$\operatorname{GNE}$')
+            matplotlib.lines.Line2D(
+                [], [],
+                marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
+                label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$')
         )
 
-    if len(vertices) >= 2:
+    if len(vertices) >= 2 and num_constraints > 0:
         custom_legend.append(
-            matplotlib.lines.Line2D([], [], linewidth=1, linestyle='dashed', color="tab:red", label=r'$\mathcal{X}$'),
+            matplotlib.lines.Line2D(
+                [], [], linewidth=1, linestyle='dashed', color="tab:red",
+                label=r'$\mathcal{X}$'),
         )
 
     custom_legend.append(
@@ -683,6 +690,8 @@ def make_ternary_plot_multi_population(
             gnes[k] = [(gne_k[2], gne_k[0], gne_k[1])]  # Permute
             pos += nk
 
+    num_constraints = simulator.population_game.d_eq + simulator.population_game.d_ineq
+
     # Make ternary plots (one for each population)
     for k in range(simulator.population_game.num_populations):
 
@@ -703,15 +712,19 @@ def make_ternary_plot_multi_population(
 
         # Plot GNE (if available)
         if gne is not None:
-            tax.plot(gnes[k], marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                     label=r'$\operatorname{GNE}$')
+            tax.plot(
+                gnes[k], marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
+                label=r'$\operatorname{GNE}$' if num_constraints == 1 else r'$\operatorname{NE}$'
+            )
 
         # Plot formating
         custom_legend = []
         if gne is not None:
             custom_legend.append(
-                matplotlib.lines.Line2D([], [], marker=r'$\star$', markersize=7, color='tab:red', linestyle='',
-                                        linewidth=0, label=r'$\operatorname{GNE}$')
+                matplotlib.lines.Line2D(
+                    [], [], marker=r'$\star$', markersize=7, color='tab:red', linestyle='',
+                    linewidth=0, label=r'$\operatorname{GNE}$' if num_constraints == 1 else r'$\operatorname{NE}$'
+                )
             )
 
         custom_legend.append(
