@@ -255,12 +255,14 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting._plot_config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">FIGSIZE</span><span class="p">,</span>
+    <span class="n">FIGSIZE_TERNARY</span><span class="p">,</span>
     <span class="n">FONTSIZE</span><span class="p">,</span>
 <span class="p">)</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">plot_kpi_over_time</span><span class="p">,</span>
-    <span class="n">plot_univariate_trajectories</span><span class="p">,</span>
+    <span class="n">plot_univariate_trajectories_joint</span><span class="p">,</span>
+    <span class="n">plot_univariate_trajectories_split</span><span class="p">,</span>
     <span class="n">plot_ternary_trajectories</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -275,12 +277,14 @@
 <span class="n">SUPPORTED_PLOT_TYPES_LITERAL</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
     <span class="s1">&#39;kpi&#39;</span><span class="p">,</span>
     <span class="s1">&#39;univariate&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;univariate_split&#39;</span><span class="p">,</span>
     <span class="s1">&#39;ternary&#39;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">PLOT_DISPATCH</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="n">SUPPORTED_PLOT_TYPES_LITERAL</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s1">&#39;kpi&#39;</span><span class="p">:</span> <span class="n">plot_kpi_over_time</span><span class="p">,</span>
-    <span class="s1">&#39;univariate&#39;</span> <span class="p">:</span> <span class="n">plot_univariate_trajectories</span><span class="p">,</span>
+    <span class="s1">&#39;univariate&#39;</span> <span class="p">:</span> <span class="n">plot_univariate_trajectories_joint</span><span class="p">,</span>
+    <span class="s1">&#39;univariate_split&#39;</span> <span class="p">:</span> <span class="n">plot_univariate_trajectories_split</span><span class="p">,</span>
     <span class="s1">&#39;ternary&#39;</span> <span class="p">:</span> <span class="n">plot_ternary_trajectories</span><span class="p">,</span>
 <span class="p">}</span>
 
@@ -301,8 +305,8 @@
             <span class="o">*</span><span class="p">,</span>
             <span class="n">plot_type</span> <span class="p">:</span> <span class="n">SUPPORTED_PLOT_TYPES_LITERAL</span> <span class="o">=</span> <span class="s1">&#39;kpi&#39;</span><span class="p">,</span>
             <span class="n">filename</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">figsize</span> <span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">FIGSIZE</span><span class="p">,</span>
-            <span class="n">fontsize</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
+            <span class="n">figsize</span> <span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">fontsize</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">show</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -329,10 +333,11 @@
             <span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">DEFAULT_FIGSIZE</span> <span class="o">=</span> <span class="n">FIGSIZE_TERNARY</span> <span class="k">if</span> <span class="n">plot_type</span> <span class="ow">is</span> <span class="s1">&#39;ternary&#39;</span> <span class="k">else</span> <span class="n">FIGSIZE</span>
             <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="o">|</span> <span class="p">{</span>
                 <span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span>
-                <span class="s1">&#39;figsize&#39;</span> <span class="p">:</span> <span class="n">figsize</span><span class="p">,</span>
-                <span class="s1">&#39;fontsize&#39;</span> <span class="p">:</span> <span class="n">fontsize</span><span class="p">,</span>
+                <span class="s1">&#39;figsize&#39;</span> <span class="p">:</span> <span class="n">figsize</span> <span class="k">if</span> <span class="n">figsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">DEFAULT_FIGSIZE</span><span class="p">,</span>
+                <span class="s1">&#39;fontsize&#39;</span> <span class="p">:</span> <span class="n">fontsize</span> <span class="k">if</span> <span class="n">fontsize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">FONTSIZE</span><span class="p">,</span>
                 <span class="s1">&#39;show&#39;</span> <span class="p">:</span> <span class="n">show</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="n">plot_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>

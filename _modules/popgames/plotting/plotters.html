@@ -371,9 +371,161 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="plot_univariate_trajectories">
-<a class="viewcode-back" href="../../../simulator.html#popgames.plotting.plotters.plot_univariate_trajectories">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">plot_univariate_trajectories</span><span class="p">(</span>
+<div class="viewcode-block" id="plot_univariate_trajectories_joint">
+<a class="viewcode-back" href="../../../simulator.html#popgames.plotting.plotters.plot_univariate_trajectories_joint">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_univariate_trajectories_joint</span><span class="p">(</span>
+        <span class="n">simulator</span> <span class="p">:</span> <span class="n">Simulator</span><span class="p">,</span>
+        <span class="n">plot_deterministic_approximation</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method generates ``2(num_populations)+1``  plots, one for each vector ``x``, ``q``, and ``p``, against time,</span>
+<span class="sd">    and for ``x`` and ``p`` the plots are generated per population.</span>
+
+<span class="sd">    Optionally: It also plots the trajectory of each element under the deterministic approximation</span>
+<span class="sd">    of the evolutionary dynamics model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        simulator (Simulator): The simulator object holding the data to plot.</span>
+<span class="sd">        plot_deterministic_approximation (bool, optional): Whether to plot the related trajectories under</span>
+<span class="sd">            the deterministic approximation. Defaults to False.</span>
+<span class="sd">        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">figsize</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;figsize&#39;</span><span class="p">,</span> <span class="n">FIGSIZE</span><span class="p">)</span>
+    <span class="n">fontsize</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;fontsize&#39;</span><span class="p">,</span> <span class="n">FONTSIZE</span><span class="p">)</span>
+    <span class="n">show</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;show&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">xlim</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xlim&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ylim</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ylim&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">xscale</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;xscale&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">yscale</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;yscale&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
+        <span class="n">t_sim</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">simulator</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">q0</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">out_det</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">integrate_edm_pdm</span><span class="p">(</span><span class="n">t_sim</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">q0</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">=</span><span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">_get_flattened_log</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;p&#39;</span><span class="p">]:</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+
+        <span class="n">P</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_populations</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">idx_det</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+            <span class="n">nk</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nk</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                    <span class="n">label</span><span class="o">=</span><span class="sa">fr</span><span class="s1">&#39;$</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s1">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span> <span class="k">if</span> <span class="n">P</span><span class="o">==</span><span class="mi">1</span> <span class="k">else</span> <span class="sa">fr</span><span class="s1">&#39;$</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s1">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span>
+                <span class="p">)</span>
+                <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_prop_cycle</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nk</span><span class="p">):</span>
+                    <span class="n">val_det</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">out_det</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                        <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">val_det</span><span class="p">[</span><span class="n">idx_det</span><span class="p">,:],</span>
+                        <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">,</span>
+                        <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span>
+                    <span class="p">)</span>
+                    <span class="n">idx_det</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xlim</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">xlim</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ylim</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ylim</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xscale</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">xscale</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">xscale</span><span class="p">(</span><span class="n">xscale</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">yscale</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">yscale</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="n">yscale</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$t$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="sa">fr</span><span class="s1">&#39;$\mathbf</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s1">(t)$&#39;</span> <span class="k">if</span> <span class="n">P</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">fr</span><span class="s1">&#39;$\mathbf</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s1">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">(t)$&#39;</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">nk</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+                <span class="n">filename_k</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+                <span class="n">filename_k</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">filename_k</span><span class="p">,</span> <span class="n">ext</span><span class="p">])</span>
+                <span class="n">dpi</span> <span class="o">=</span> <span class="n">DPI</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.png&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename_k</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
+    <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">label</span><span class="o">=</span><span class="sa">fr</span><span class="s1">&#39;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">$&#39;</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_prop_cycle</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out_det</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span>
+                    <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;dotted&#39;</span><span class="p">,</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">xlim</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;q&#39;</span> <span class="ow">in</span> <span class="n">xlim</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ylim</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;q&#39;</span> <span class="ow">in</span> <span class="n">ylim</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$t$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">fr</span><span class="s1">&#39;$\mathbf</span><span class="se">{{</span><span class="s1">q</span><span class="se">}}</span><span class="s1">(t)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+            <span class="n">filename_q</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;q&#39;</span><span class="p">])</span>
+            <span class="n">filename_q</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">filename_q</span><span class="p">,</span> <span class="n">ext</span><span class="p">])</span>
+            <span class="n">dpi</span> <span class="o">=</span> <span class="n">DPI</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.png&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename_q</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="plot_univariate_trajectories_split">
+<a class="viewcode-back" href="../../../simulator.html#popgames.plotting.plotters.plot_univariate_trajectories_split">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_univariate_trajectories_split</span><span class="p">(</span>
         <span class="n">simulator</span> <span class="p">:</span> <span class="n">Simulator</span><span class="p">,</span>
         <span class="n">plot_deterministic_approximation</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span> <span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
@@ -415,7 +567,7 @@
 
         <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_populations</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]):</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
                     <span class="n">simulator</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">val</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
@@ -449,7 +601,7 @@
                 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">yticks</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$t$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">fr</span><span class="s1">&#39;$</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">(t)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">fr</span><span class="s1">&#39;$</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s1">(t)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 
@@ -458,7 +610,7 @@
 
                 <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
-                    <span class="n">filename_ik</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+                    <span class="n">filename_ik</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
                     <span class="n">filename_ik</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">filename_ik</span><span class="p">,</span> <span class="n">ext</span><span class="p">])</span>
                     <span class="n">dpi</span> <span class="o">=</span> <span class="n">DPI</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s1">&#39;.png&#39;</span> <span class="k">else</span> <span class="kc">None</span>
                     <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename_ik</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">,</span> <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">)</span>
