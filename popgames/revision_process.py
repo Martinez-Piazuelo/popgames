@@ -111,7 +111,7 @@ class PoissonRevisionProcess(RevisionProcessABC):
     """
     def __init__(
             self,
-            Poisson_clock_rate : int = 0.1,
+            Poisson_clock_rate : int | float = 0.1,
             revision_protocol : RevisionProtocolABC = Softmax(eta=0.1)
     ) -> None:
         """
