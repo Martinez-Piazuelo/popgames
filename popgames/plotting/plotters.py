@@ -120,7 +120,157 @@ def plot_kpi_over_time(
     else:
         plt.close()
 
-def plot_univariate_trajectories(
+def plot_univariate_trajectories_joint(
+        simulator : Simulator,
+        plot_deterministic_approximation : bool = False,
+        **kwargs : dict[str, Any]
+) -> None:
+    """
+    This method generates ``2(num_populations)+1``  plots, one for each vector ``x``, ``q``, and ``p``, against time,
+    and for ``x`` and ``p`` the plots are generated per population.
+
+    Optionally: It also plots the trajectory of each element under the deterministic approximation
+    of the evolutionary dynamics model.
+
+    Args:
+        simulator (Simulator): The simulator object holding the data to plot.
+        plot_deterministic_approximation (bool, optional): Whether to plot the related trajectories under
+            the deterministic approximation. Defaults to False.
+        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.
+    """
+
+    filename = kwargs.get('filename', None)
+    figsize = kwargs.get('figsize', FIGSIZE)
+    fontsize = kwargs.get('fontsize', FONTSIZE)
+    show = kwargs.get('show', True)
+
+    xlim = kwargs.get('xlim', None)
+    ylim = kwargs.get('ylim', None)
+    xscale = kwargs.get('xscale', None)
+    yscale = kwargs.get('yscale', None)
+
+    if plot_deterministic_approximation:
+        t_sim = (0, simulator.t)
+        x0 = simulator.log.x[0]
+        q0 = simulator.log.q[0]
+        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+
+    out = simulator._get_flattened_log()
+
+    for var in ['x', 'p']:
+        val = getattr(out, var)
+
+        P = simulator.population_game.num_populations
+        idx = 0
+        idx_det = 0
+        for k in range(P):
+            plt.figure(figsize=figsize)
+            nk = simulator.population_game.num_strategies[k]
+            for _ in range(nk):
+                plt.plot(
+                    simulator.log.t, val[idx],
+                    label=fr'$x_{{{idx+1}}}$' if P==1 else fr'${{{var}}}_{{{idx+1}}}^{{{k+1}}}$',
+                    linewidth=1
+                )
+                idx += 1
+
+            if plot_deterministic_approximation:
+                plt.gca().set_prop_cycle(None)
+                for _ in range(nk):
+                    val_det = getattr(out_det, var)
+                    plt.plot(
+                        simulator.log.t, val_det[idx_det,:],
+                        linestyle='dotted',
+                        linewidth=1.5
+                    )
+                    idx_det += 1
+
+            if isinstance(xlim, dict) and var in xlim:
+                plt.xlim(xlim[var])
+
+            if isinstance(ylim, dict) and var in ylim:
+                plt.ylim(ylim[var])
+
+            if isinstance(xscale, dict) and var in xscale:
+                plt.xscale(xscale[var])
+
+            if isinstance(yscale, dict) and var in yscale:
+                plt.yscale(yscale[var])
+
+            plt.xticks(fontsize=fontsize)
+            plt.yticks(fontsize=fontsize)
+            plt.xlabel(r'$t$', fontsize=fontsize)
+            ylabel = fr'$\mathbf{{{var}}}(t)$' if P == 1 else fr'$\mathbf{{{var}}}^{{{k+1}}}(t)$'
+            plt.ylabel(ylabel, fontsize=fontsize)
+            plt.grid()
+            plt.tight_layout()
+
+            plt.legend(fontsize=fontsize, ncol=nk)
+
+            if filename is not None:
+                name, ext = filename.split('.')
+                filename_k = '_'.join([name, f'{var}_{k+1}'])
+                filename_k = '.'.join([filename_k, ext])
+                dpi = DPI if ext == '.png' else None
+                plt.savefig(filename_k, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+
+            if show:
+                plt.show()
+
+            else:
+                plt.close()
+
+
+    d = simulator.payoff_mechanism.d
+    if d > 0:
+        plt.figure(figsize=figsize)
+        for i in range(d):
+            plt.plot(
+                simulator.log.t, out.q[i, :],
+                label='Finite agents' if i==0 else None,
+                color='black',
+                linewidth=1
+            )
+
+        if plot_deterministic_approximation:
+            plt.gca().set_prop_cycle(None)
+            for i in range(d):
+                plt.plot(
+                    simulator.log.t, out_det.q[i, :],
+                    linestyle='dotted',
+                    linewidth=1.5
+                )
+
+        if isinstance(xlim, dict) and 'q' in xlim:
+            plt.xlim(xlim['q'])
+
+        if isinstance(ylim, dict) and 'q' in ylim:
+            plt.ylim(ylim['q'])
+
+        plt.xticks(fontsize=fontsize)
+        plt.yticks(fontsize=fontsize)
+        plt.xlabel(r'$t$', fontsize=fontsize)
+        plt.ylabel(fr'$q_{{{i + 1}}}(t)$', fontsize=fontsize)
+        plt.grid()
+        plt.tight_layout()
+
+        plt.legend(fontsize=fontsize, ncol=d)
+
+        if filename is not None:
+            name, ext = filename.split('.')
+            filename_q = '_'.join([name, f'q'])
+            filename_q = '.'.join([filename_q, ext])
+            dpi = DPI if ext == '.png' else None
+            plt.savefig(filename_q, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+
+        if show:
+            plt.show()
+
+        else:
+            plt.close()
+
+
+def plot_univariate_trajectories_split(
         simulator : Simulator,
         plot_deterministic_approximation : bool = False,
         **kwargs : dict[str, Any]
@@ -162,7 +312,7 @@ def plot_univariate_trajectories(
 
         idx = 0
         for k in range(simulator.population_game.num_populations):
-            for i in range(simulator.population_game.num_strategies[k]):
+            for _ in range(simulator.population_game.num_strategies[k]):
                 plt.figure(figsize=figsize)
                 plt.plot(
                     simulator.log.t, val[idx],
@@ -196,7 +346,7 @@ def plot_univariate_trajectories(
                 plt.xticks(fontsize=fontsize)
                 plt.yticks(fontsize=fontsize)
                 plt.xlabel(r'$t$', fontsize=fontsize)
-                plt.ylabel(fr'${var}_{{{i+1}}}^{{{k+1}}}(t)$', fontsize=fontsize)
+                plt.ylabel(fr'${var}_{{{idx+1}}}^{{{k+1}}}(t)$', fontsize=fontsize)
                 plt.grid()
                 plt.tight_layout()
 
@@ -205,7 +355,7 @@ def plot_univariate_trajectories(
 
                 if filename is not None:
                     name, ext = filename.split('.')
-                    filename_ik = '_'.join([name, f'{var}_{i+1}_{k+1}'])
+                    filename_ik = '_'.join([name, f'{var}_{idx+1}_{k+1}'])
                     filename_ik = '.'.join([filename_ik, ext])
                     dpi = DPI if ext == '.png' else None
                     plt.savefig(filename_ik, bbox_inches='tight', pad_inches=0.05, dpi=dpi)

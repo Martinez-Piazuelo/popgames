@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 DPI = 200
 FIGSIZE = (4, 2)
+FIGSIZE_TERNARY = (4, 3)
 FONTSIZE = 8
 matplotlib.rcParams['figure.dpi'] = DPI
 matplotlib.rcParams['figure.figsize'] = FIGSIZE
