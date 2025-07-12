@@ -7,12 +7,14 @@ logger = logging.getLogger(__name__)
 
 from popgames.plotting._plot_config import (
     FIGSIZE,
+    FIGSIZE_TERNARY,
     FONTSIZE,
 )
 
 from popgames.plotting.plotters import (
     plot_kpi_over_time,
-    plot_univariate_trajectories,
+    plot_univariate_trajectories_joint,
+    plot_univariate_trajectories_split,
     plot_ternary_trajectories,
 )
 
@@ -27,12 +29,14 @@ __all__ = [
 SUPPORTED_PLOT_TYPES_LITERAL = typing.Literal[
     'kpi',
     'univariate',
+    'univariate_split',
     'ternary',
 ]
 
 PLOT_DISPATCH : dict[SUPPORTED_PLOT_TYPES_LITERAL, Callable[..., None]] = {
     'kpi': plot_kpi_over_time,
-    'univariate' : plot_univariate_trajectories,
+    'univariate' : plot_univariate_trajectories_joint,
+    'univariate_split' : plot_univariate_trajectories_split,
     'ternary' : plot_ternary_trajectories,
 }
 
@@ -49,8 +53,8 @@ class VisualizationMixin:
             *,
             plot_type : SUPPORTED_PLOT_TYPES_LITERAL = 'kpi',
             filename : str = None,
-            figsize : tuple[int, int] = FIGSIZE,
-            fontsize : int = FONTSIZE,
+            figsize : tuple[int, int] = None,
+            fontsize : int = None,
             show : bool = True,
             **kwargs : dict[str, Any] | Any,
     ) -> None:
@@ -77,10 +81,11 @@ class VisualizationMixin:
             )
 
         else:
+            DEFAULT_FIGSIZE = FIGSIZE_TERNARY if plot_type is 'ternary' else FIGSIZE
             kwargs = kwargs | {
                 'filename': filename,
-                'figsize' : figsize,
-                'fontsize' : fontsize,
+                'figsize' : figsize if figsize is not None else DEFAULT_FIGSIZE,
+                'fontsize' : fontsize if fontsize is not None else FONTSIZE,
                 'show' : show,
             }
             plot_method(self, **kwargs)

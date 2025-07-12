@@ -169,7 +169,7 @@ def plot_univariate_trajectories_joint(
             for _ in range(nk):
                 plt.plot(
                     simulator.log.t, val[idx],
-                    label=fr'$x_{{{idx+1}}}$' if P==1 else fr'${{{var}}}_{{{idx+1}}}^{{{k+1}}}$',
+                    label=fr'${{{var}}}_{{{idx+1}}}$' if P==1 else fr'${{{var}}}_{{{idx+1}}}^{{{k+1}}}$',
                     linewidth=1
                 )
                 idx += 1
@@ -227,8 +227,7 @@ def plot_univariate_trajectories_joint(
         for i in range(d):
             plt.plot(
                 simulator.log.t, out.q[i, :],
-                label='Finite agents' if i==0 else None,
-                color='black',
+                label=fr'$q_{{{i+1}}}$',
                 linewidth=1
             )
 
@@ -250,7 +249,7 @@ def plot_univariate_trajectories_joint(
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
         plt.xlabel(r'$t$', fontsize=fontsize)
-        plt.ylabel(fr'$q_{{{i + 1}}}(t)$', fontsize=fontsize)
+        plt.ylabel(fr'$\mathbf{{q}}(t)$', fontsize=fontsize)
         plt.grid()
         plt.tight_layout()
 
