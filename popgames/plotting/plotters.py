@@ -547,7 +547,7 @@ def make_ternary_plot_single_population(
         for (i, j, k) in simplex_iterator(scale):
             x = np.array([j, k, i]).reshape(n, )  # Permutation for desired orientation: (e1 top, e2 left, e3 right)
             x = simulator.population_game.masses[0] * x / x.sum()
-            points_potential[(i, j)] = potential_function(x)
+            points_potential[(i, j)] = potential_function(x.reshape(n, 1)).reshape(-1)
         vmin, vmax = min(points_potential.values()), max(points_potential.values())
         tax.heatmap(points_potential, style='hexagonal', vmin=vmin, vmax=vmax, cmap='viridis', colorbar=False)
 
