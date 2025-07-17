@@ -3,7 +3,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import numpy as np
 
-from popgames.utilities.input_validators import check_scalar_value_bounds
+from popgames.utilities.input_validators import (
+    check_scalar_value_bounds,
+    check_array_shape,
+)
 
 __all__ = [
     'RevisionProtocolABC',
@@ -190,3 +193,49 @@ class BNN(RevisionProtocolABC):
         delta_p = p - p_hat[0]
         return np.maximum(np.dot(delta_p, np.ones_like(delta_p).T), 0)*self.scale
 
+class CCSmith(RevisionProtocolABC):
+    """
+    Capacity constrained Smith revision protocol.
+    """
+    def __init__(
+            self,
+            scale : float,
+            x_bar : np.ndarray,
+    ) -> None:
+        """
+        Initialize the CCSmith revision protocol object.
+
+        Args:
+            scale (float): The scale parameter to ensure well-posed probabilities.
+            x_bar (np.ndarray): The capacity upper bounds for the available strategies, with shape (n, 1).
+        """
+        check_scalar_value_bounds(
+            arg=scale,
+            arg_name='scale',
+            strictly_positive=True
+        )
+        self.scale = scale
+
+        check_array_shape(
+            arg=x_bar,
+            expected_shape=(len(x_bar), 1),
+            arg_name='x_bar'
+        )
+        self.x_bar = x_bar
+
+    def __call__(
+            self,
+            p : np.ndarray,
+            x : np.ndarray,
+    ) -> np.ndarray:
+        """
+        Evaluate the CCSmith revision protocol.
+
+        Args:
+            p (np.ndarray): The payoff vector with shape (n, 1).
+            x (np.ndarray): The population state vector with shape (n, 1).
+
+        Returns:
+            np.ndarray: The switching probabilities as a matrix with shape (n, n).
+        """
+        return np.maximum(self.x_bar - x, 0) * np.maximum(p - p.T, 0) * self.scale
