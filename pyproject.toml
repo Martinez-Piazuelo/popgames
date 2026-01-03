@@ -1,3 +1,7 @@
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
 [project]
 name = "popgames"
 version = "0.1.0"
@@ -9,23 +13,23 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "numpy (>=2.3.0,<3.0.0)",
-    "scipy (>=1.15.3,<2.0.0)",
-    "matplotlib (>=3.10.3,<4.0.0)",
-    "python-ternary (>=1.0.8,<2.0.0)",
-    "cvxpy (>=1.6.6,<2.0.0)",
-    "colorlog (>=6.9.0,<7.0.0)"
+    "colorlog>=6.10.1",
+    "cvxpy>=1.7.5",
+    "matplotlib>=3.10.8",
+    "numpy>=1.26,<2.1",
+    "python-ternary>=1.0.8",
+    "scipy>=1.16.3",
 ]
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+]
+docs = [
+    "furo>=2025.12.19",
+    "ghp-import>=2.1.0",
+    "sphinx>=9.0.4",
+]
 
-[tool.poetry]
-packages = [{ include = "popgames" }]
-
-[tool.poetry.group.docs.dependencies]
-sphinx = "^8.2.3"
-ghp-import = "^2.1.0"
-furo = "^2024.8.6"
-
+[tool.uv]
+default-groups = ["dev", "docs"]
