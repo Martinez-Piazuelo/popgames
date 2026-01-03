@@ -714,7 +714,7 @@ def make_ternary_plot_multi_population(
         if gne is not None:
             tax.plot(
                 gnes[k], marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                label=r'$\operatorname{GNE}$' if num_constraints == 1 else r'$\operatorname{NE}$'
+                label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$'
             )
 
         # Plot formating
@@ -723,7 +723,7 @@ def make_ternary_plot_multi_population(
             custom_legend.append(
                 matplotlib.lines.Line2D(
                     [], [], marker=r'$\star$', markersize=7, color='tab:red', linestyle='',
-                    linewidth=0, label=r'$\operatorname{GNE}$' if num_constraints == 1 else r'$\operatorname{NE}$'
+                    linewidth=0, label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$'
                 )
             )
 
@@ -745,7 +745,7 @@ def make_ternary_plot_multi_population(
         tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
         if filename is not None:
             name, ext = filename.split('.')
-            filename_k = '_'.join([name, f'pop_{k}'])
+            filename_k = '_'.join([name, f'pop_{k+1}'])
             filename_k = '.'.join([filename_k, ext])
             figure.savefig(filename_k, format="pdf", bbox_inches="tight")
         tax.show()
