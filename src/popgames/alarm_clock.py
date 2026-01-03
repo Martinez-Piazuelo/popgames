@@ -79,7 +79,7 @@ class Poisson(AlarmClockABC):
              Union[float, np.ndarray]: The revision times.
 
         Examples:
-            >>> from popgames.alarm_clock import Poisson
+            >>> from popgames import Poisson
             >>> clock = Poisson(rate=1.0)
             >>> clock(3)
             array([2.34438986, 0.53956626, 0.80216914])
