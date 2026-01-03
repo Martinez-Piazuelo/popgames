@@ -17,22 +17,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
-      - name: Install project (including docs group)
-        run: poetry install --with docs
+      - name: Install project (docs deps only)
+        run: uv sync --frozen --no-default-groups --group docs
 
       - name: Build Sphinx HTML docs
         working-directory: docs
-        run: |
-          echo "PYTHONPATH during doc build:"
-          echo $PYTHONPATH
-          poetry run make html
+        run: uv run --frozen make html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
