@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+
 import numpy as np
 
 from popgames.utilities.input_validators import (
-    check_scalar_value_bounds,
     check_array_shape,
+    check_scalar_value_bounds,
 )
 
-__all__ = [
-    'RevisionProtocolABC',
-    'Softmax',
-    'Smith',
-    'BNN'
-]
+__all__ = ["RevisionProtocolABC", "Softmax", "Smith", "BNN"]
+
 
 class RevisionProtocolABC(ABC):
     """
@@ -21,11 +18,7 @@ class RevisionProtocolABC(ABC):
     """
 
     @abstractmethod
-    def __call__(
-            self,
-            p : np.ndarray,
-            x : np.ndarray
-    ) -> np.ndarray:
+    def __call__(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         """
         Subclasses must implement this method to enable the revision protocol to be called as a function.
 
@@ -37,32 +30,23 @@ class RevisionProtocolABC(ABC):
             np.ndarray: The switching probabilities as a matrix with shape (n, n).
         """
 
+
 class Softmax(RevisionProtocolABC):
     """
     Softmax revision protocol. Also known as Logit-Choice revision protocol.
     """
-    def __init__(
-            self,
-            eta : float
-    ) -> None:
+
+    def __init__(self, eta: float) -> None:
         """
         Initialize the Softmax revision protocol object.
 
         Args:
             eta (float): The `temperature` or `noise` parameter.
         """
-        check_scalar_value_bounds(
-            arg=eta,
-            arg_name='eta',
-            strictly_positive=True
-        )
+        check_scalar_value_bounds(arg=eta, arg_name="eta", strictly_positive=True)
         self.eta = eta
 
-    def __call__(
-            self,
-            p : np.ndarray,
-            x : np.ndarray
-    ) -> np.ndarray:
+    def __call__(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         """
         Evaluate the Softmax revision protocol.
 
@@ -85,18 +69,17 @@ class Softmax(RevisionProtocolABC):
                    [0.70538451, 0.70538451, 0.70538451]])
         """
 
-        logits = np.exp((p/self.eta) - np.max(p/self.eta))
-        probabilities = logits/(logits.sum())
+        logits = np.exp((p / self.eta) - np.max(p / self.eta))
+        probabilities = logits / (logits.sum())
         return np.dot(probabilities, np.ones_like(probabilities).T)
+
 
 class Smith(RevisionProtocolABC):
     """
     Smith revision protocol.
     """
-    def __init__(
-            self,
-            scale : float
-    ) -> None:
+
+    def __init__(self, scale: float) -> None:
         """
         Initialize the Smith revision protocol object.
 
@@ -104,18 +87,10 @@ class Smith(RevisionProtocolABC):
             scale (float): The scale parameter to ensure well-posed probabilities.
         """
 
-        check_scalar_value_bounds(
-            arg=scale,
-            arg_name='scale',
-            strictly_positive=True
-        )
+        check_scalar_value_bounds(arg=scale, arg_name="scale", strictly_positive=True)
         self.scale = scale
-    
-    def __call__(
-            self,
-            p : np.ndarray,
-            x : np.ndarray
-    ) -> np.ndarray:
+
+    def __call__(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         """
         Evaluate the Smith revision protocol.
 
@@ -138,16 +113,15 @@ class Smith(RevisionProtocolABC):
                    [0.1, 0.3, 0. ]])
         """
 
-        return np.maximum(p - p.T, 0)*self.scale
+        return np.maximum(p - p.T, 0) * self.scale
+
 
 class BNN(RevisionProtocolABC):
     """
     Brown-von Neumann-Nash (BNN) revision protocol.
     """
-    def __init__(
-            self,
-            scale : float
-    ) -> None:
+
+    def __init__(self, scale: float) -> None:
         """
         Initialize the BNN revision protocol object.
 
@@ -155,18 +129,10 @@ class BNN(RevisionProtocolABC):
             scale (float): The scale parameter to ensure well-posed probabilities.
         """
 
-        check_scalar_value_bounds(
-            arg=scale,
-            arg_name='scale',
-            strictly_positive=True
-        )
+        check_scalar_value_bounds(arg=scale, arg_name="scale", strictly_positive=True)
         self.scale = scale
-    
-    def __call__(
-            self,
-            p : np.ndarray,
-            x : np.ndarray
-    ) -> np.ndarray:
+
+    def __call__(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
         """
         Evaluate the BNN revision protocol.
 
@@ -189,18 +155,20 @@ class BNN(RevisionProtocolABC):
                    [0.22, 0.22, 0.22]])
         """
 
-        p_hat = np.dot(x.T, p)/(x.sum())
+        p_hat = np.dot(x.T, p) / (x.sum())
         delta_p = p - p_hat[0]
-        return np.maximum(np.dot(delta_p, np.ones_like(delta_p).T), 0)*self.scale
+        return np.maximum(np.dot(delta_p, np.ones_like(delta_p).T), 0) * self.scale
+
 
 class CCSmith(RevisionProtocolABC):
     """
     Capacity constrained Smith revision protocol.
     """
+
     def __init__(
-            self,
-            scale : float,
-            x_bar : np.ndarray,
+        self,
+        scale: float,
+        x_bar: np.ndarray,
     ) -> None:
         """
         Initialize the CCSmith revision protocol object.
@@ -209,24 +177,16 @@ class CCSmith(RevisionProtocolABC):
             scale (float): The scale parameter to ensure well-posed probabilities.
             x_bar (np.ndarray): The capacity upper bounds for the available strategies, with shape (n, 1).
         """
-        check_scalar_value_bounds(
-            arg=scale,
-            arg_name='scale',
-            strictly_positive=True
-        )
+        check_scalar_value_bounds(arg=scale, arg_name="scale", strictly_positive=True)
         self.scale = scale
 
-        check_array_shape(
-            arg=x_bar,
-            expected_shape=(len(x_bar), 1),
-            arg_name='x_bar'
-        )
+        check_array_shape(arg=x_bar, expected_shape=(len(x_bar), 1), arg_name="x_bar")
         self.x_bar = x_bar
 
     def __call__(
-            self,
-            p : np.ndarray,
-            x : np.ndarray,
+        self,
+        p: np.ndarray,
+        x: np.ndarray,
     ) -> np.ndarray:
         """
         Evaluate the CCSmith revision protocol.

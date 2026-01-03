@@ -1,13 +1,11 @@
 from __future__ import annotations
-import typing
 
 import logging
-logger = logging.getLogger(__name__)
-
-import numpy as np
+import typing
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import ternary
 from ternary.helpers import simplex_iterator
 
@@ -16,33 +14,34 @@ from popgames.plotting._plot_config import (
     FIGSIZE,
     FONTSIZE,
 )
-
 from popgames.utilities.input_validators import check_function_signature
 
 if typing.TYPE_CHECKING:
-    from typing import Any, Callable
-    from popgames import Simulator
     from types import SimpleNamespace
+    from typing import Any, Callable
+
+    from popgames import Simulator
+
+logger = logging.getLogger(__name__)
 
 
 def plot_kpi_over_time(
-        simulator : Simulator,
-        plot_deterministic_approximation : bool = False,
-        **kwargs : dict[str, Any]
+    simulator: Simulator,
+    plot_deterministic_approximation: bool = False,
+    **kwargs: dict[str, Any],
 ) -> None:
-    filename = kwargs.get('filename', None)
-    figsize = kwargs.get('figsize', FIGSIZE)
-    fontsize = kwargs.get('fontsize', FONTSIZE)
-    show = kwargs.get('show', True)
+    filename = kwargs.get("filename", None)
+    figsize = kwargs.get("figsize", FIGSIZE)
+    fontsize = kwargs.get("fontsize", FONTSIZE)
+    show = kwargs.get("show", True)
 
-    xlim = kwargs.get('xlim', None)
-    ylim = kwargs.get('ylim', None)
-    xscale = kwargs.get('xscale', 'linear')
-    yscale = kwargs.get('yscale', 'linear')
+    xlim = kwargs.get("xlim", None)
+    ylim = kwargs.get("ylim", None)
+    xscale = kwargs.get("xscale", "linear")
+    yscale = kwargs.get("yscale", "linear")
 
-    kpi_function = kwargs.get('kpi_function', None)
+    kpi_function = kwargs.get("kpi_function", None)
     if kpi_function is None:
-
         gne = simulator.population_game.compute_gne()
 
         if gne is None:
@@ -61,7 +60,9 @@ def plot_kpi_over_time(
             Returns:
                 np.ndarray: KPI evaluation results (normalized Euclidean distance to GNE over time).
             """
-            _kpi = np.linalg.norm(gne.reshape(-1, 1) - flattened_sim_log.x, ord=2, axis=0)
+            _kpi = np.linalg.norm(
+                gne.reshape(-1, 1) - flattened_sim_log.x, ord=2, axis=0
+            )
             return _kpi / max(_kpi[0], 1e-8)
 
     if plot_deterministic_approximation:
@@ -71,24 +72,22 @@ def plot_kpi_over_time(
         out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
         kpi_det = kpi_function(out_det)
 
-    out = simulator._get_flattened_log()  # TODO: enable a non-protected method in Simulator for this
+    out = (
+        simulator._get_flattened_log()
+    )  # TODO: enable a non-protected method in Simulator for this
     kpi = kpi_function(out)
 
     plt.figure(figsize=figsize)
-    plt.plot(
-        simulator.log.t, kpi,
-        label='Finite agents',
-        color='black',
-        linewidth=1
-    )
+    plt.plot(simulator.log.t, kpi, label="Finite agents", color="black", linewidth=1)
 
     if plot_deterministic_approximation:
         plt.plot(
-            simulator.log.t, kpi_det,
-            label='EDM-PDM',
-            linestyle='dotted',
-            color='magenta',
-            linewidth=1.5
+            simulator.log.t,
+            kpi_det,
+            label="EDM-PDM",
+            linestyle="dotted",
+            color="magenta",
+            linewidth=1.5,
         )
 
     if xlim is not None:
@@ -101,8 +100,8 @@ def plot_kpi_over_time(
     plt.yscale(yscale)
     plt.xticks(fontsize=fontsize)
     plt.yticks(fontsize=fontsize)
-    plt.xlabel(r'$t$', fontsize=fontsize)
-    plt.ylabel(r'$\operatorname{KPI}(t)$', fontsize=fontsize)
+    plt.xlabel(r"$t$", fontsize=fontsize)
+    plt.ylabel(r"$\operatorname{KPI}(t)$", fontsize=fontsize)
     plt.grid()
     plt.tight_layout()
 
@@ -110,9 +109,9 @@ def plot_kpi_over_time(
         plt.legend(fontsize=fontsize)
 
     if filename is not None:
-        name, ext = filename.split('.')
-        dpi = DPI if ext == '.png' else None
-        plt.savefig(filename, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+        name, ext = filename.split(".")
+        dpi = DPI if ext == ".png" else None
+        plt.savefig(filename, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
 
     if show:
         plt.show()
@@ -120,10 +119,11 @@ def plot_kpi_over_time(
     else:
         plt.close()
 
+
 def plot_univariate_trajectories_joint(
-        simulator : Simulator,
-        plot_deterministic_approximation : bool = False,
-        **kwargs : dict[str, Any]
+    simulator: Simulator,
+    plot_deterministic_approximation: bool = False,
+    **kwargs: dict[str, Any],
 ) -> None:
     """
     This method generates ``2(num_populations)+1``  plots, one for each vector ``x``, ``q``, and ``p``, against time,
@@ -139,15 +139,15 @@ def plot_univariate_trajectories_joint(
         **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.
     """
 
-    filename = kwargs.get('filename', None)
-    figsize = kwargs.get('figsize', FIGSIZE)
-    fontsize = kwargs.get('fontsize', FONTSIZE)
-    show = kwargs.get('show', True)
+    filename = kwargs.get("filename", None)
+    figsize = kwargs.get("figsize", FIGSIZE)
+    fontsize = kwargs.get("fontsize", FONTSIZE)
+    show = kwargs.get("show", True)
 
-    xlim = kwargs.get('xlim', None)
-    ylim = kwargs.get('ylim', None)
-    xscale = kwargs.get('xscale', None)
-    yscale = kwargs.get('yscale', None)
+    xlim = kwargs.get("xlim", None)
+    ylim = kwargs.get("ylim", None)
+    xscale = kwargs.get("xscale", None)
+    yscale = kwargs.get("yscale", None)
 
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
@@ -157,7 +157,7 @@ def plot_univariate_trajectories_joint(
 
     out = simulator._get_flattened_log()
 
-    for var in ['x', 'p']:
+    for var in ["x", "p"]:
         val = getattr(out, var)
 
         P = simulator.population_game.num_populations
@@ -168,9 +168,12 @@ def plot_univariate_trajectories_joint(
             nk = simulator.population_game.num_strategies[k]
             for _ in range(nk):
                 plt.plot(
-                    simulator.log.t, val[idx],
-                    label=fr'${{{var}}}_{{{idx+1}}}$' if P==1 else fr'${{{var}}}_{{{idx+1}}}^{{{k+1}}}$',
-                    linewidth=1
+                    simulator.log.t,
+                    val[idx],
+                    label=rf"${{{var}}}_{{{idx + 1}}}$"
+                    if P == 1
+                    else rf"${{{var}}}_{{{idx + 1}}}^{{{k + 1}}}$",
+                    linewidth=1,
                 )
                 idx += 1
 
@@ -179,9 +182,10 @@ def plot_univariate_trajectories_joint(
                 for _ in range(nk):
                     val_det = getattr(out_det, var)
                     plt.plot(
-                        simulator.log.t, val_det[idx_det,:],
-                        linestyle='dotted',
-                        linewidth=1.5
+                        simulator.log.t,
+                        val_det[idx_det, :],
+                        linestyle="dotted",
+                        linewidth=1.5,
                     )
                     idx_det += 1
 
@@ -199,8 +203,12 @@ def plot_univariate_trajectories_joint(
 
             plt.xticks(fontsize=fontsize)
             plt.yticks(fontsize=fontsize)
-            plt.xlabel(r'$t$', fontsize=fontsize)
-            ylabel = fr'$\mathbf{{{var}}}(t)$' if P == 1 else fr'$\mathbf{{{var}}}^{{{k+1}}}(t)$'
+            plt.xlabel(r"$t$", fontsize=fontsize)
+            ylabel = (
+                rf"$\mathbf{{{var}}}(t)$"
+                if P == 1
+                else rf"$\mathbf{{{var}}}^{{{k + 1}}}(t)$"
+            )
             plt.ylabel(ylabel, fontsize=fontsize)
             plt.grid()
             plt.tight_layout()
@@ -208,11 +216,11 @@ def plot_univariate_trajectories_joint(
             plt.legend(fontsize=fontsize, ncol=nk)
 
             if filename is not None:
-                name, ext = filename.split('.')
-                filename_k = '_'.join([name, f'{var}_{k+1}'])
-                filename_k = '.'.join([filename_k, ext])
-                dpi = DPI if ext == '.png' else None
-                plt.savefig(filename_k, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+                name, ext = filename.split(".")
+                filename_k = "_".join([name, f"{var}_{k + 1}"])
+                filename_k = ".".join([filename_k, ext])
+                dpi = DPI if ext == ".png" else None
+                plt.savefig(filename_k, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
 
             if show:
                 plt.show()
@@ -220,47 +228,42 @@ def plot_univariate_trajectories_joint(
             else:
                 plt.close()
 
-
     d = simulator.payoff_mechanism.d
     if d > 0:
         plt.figure(figsize=figsize)
         for i in range(d):
             plt.plot(
-                simulator.log.t, out.q[i, :],
-                label=fr'$q_{{{i+1}}}$',
-                linewidth=1
+                simulator.log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1
             )
 
         if plot_deterministic_approximation:
             plt.gca().set_prop_cycle(None)
             for i in range(d):
                 plt.plot(
-                    simulator.log.t, out_det.q[i, :],
-                    linestyle='dotted',
-                    linewidth=1.5
+                    simulator.log.t, out_det.q[i, :], linestyle="dotted", linewidth=1.5
                 )
 
-        if isinstance(xlim, dict) and 'q' in xlim:
-            plt.xlim(xlim['q'])
+        if isinstance(xlim, dict) and "q" in xlim:
+            plt.xlim(xlim["q"])
 
-        if isinstance(ylim, dict) and 'q' in ylim:
-            plt.ylim(ylim['q'])
+        if isinstance(ylim, dict) and "q" in ylim:
+            plt.ylim(ylim["q"])
 
         plt.xticks(fontsize=fontsize)
         plt.yticks(fontsize=fontsize)
-        plt.xlabel(r'$t$', fontsize=fontsize)
-        plt.ylabel(fr'$\mathbf{{q}}(t)$', fontsize=fontsize)
+        plt.xlabel(r"$t$", fontsize=fontsize)
+        plt.ylabel(r"$\mathbf{q}(t)$", fontsize=fontsize)
         plt.grid()
         plt.tight_layout()
 
         plt.legend(fontsize=fontsize, ncol=d)
 
         if filename is not None:
-            name, ext = filename.split('.')
-            filename_q = '_'.join([name, f'q'])
-            filename_q = '.'.join([filename_q, ext])
-            dpi = DPI if ext == '.png' else None
-            plt.savefig(filename_q, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+            name, ext = filename.split(".")
+            filename_q = "_".join([name, "q"])
+            filename_q = ".".join([filename_q, ext])
+            dpi = DPI if ext == ".png" else None
+            plt.savefig(filename_q, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
 
         if show:
             plt.show()
@@ -270,9 +273,9 @@ def plot_univariate_trajectories_joint(
 
 
 def plot_univariate_trajectories_split(
-        simulator : Simulator,
-        plot_deterministic_approximation : bool = False,
-        **kwargs : dict[str, Any]
+    simulator: Simulator,
+    plot_deterministic_approximation: bool = False,
+    **kwargs: dict[str, Any],
 ) -> None:
     """
     This method generates several plots, one for each element of the vectors ``x``, ``q``, and ``p``,
@@ -288,15 +291,15 @@ def plot_univariate_trajectories_split(
         **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.
     """
 
-    filename = kwargs.get('filename', None)
-    figsize = kwargs.get('figsize', FIGSIZE)
-    fontsize = kwargs.get('fontsize', FONTSIZE)
-    show = kwargs.get('show', True)
+    filename = kwargs.get("filename", None)
+    figsize = kwargs.get("figsize", FIGSIZE)
+    fontsize = kwargs.get("fontsize", FONTSIZE)
+    show = kwargs.get("show", True)
 
-    xlim = kwargs.get('xlim', None)
-    ylim = kwargs.get('ylim', None)
-    xscale = kwargs.get('xscale', None)
-    yscale = kwargs.get('yscale', None)
+    xlim = kwargs.get("xlim", None)
+    ylim = kwargs.get("ylim", None)
+    xscale = kwargs.get("xscale", None)
+    yscale = kwargs.get("yscale", None)
 
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
@@ -306,7 +309,7 @@ def plot_univariate_trajectories_split(
 
     out = simulator._get_flattened_log()
 
-    for var in ['x', 'p']:
+    for var in ["x", "p"]:
         val = getattr(out, var)
 
         idx = 0
@@ -314,20 +317,22 @@ def plot_univariate_trajectories_split(
             for _ in range(simulator.population_game.num_strategies[k]):
                 plt.figure(figsize=figsize)
                 plt.plot(
-                    simulator.log.t, val[idx],
-                    label='Finite agents',
-                    color='black',
-                    linewidth=1
+                    simulator.log.t,
+                    val[idx],
+                    label="Finite agents",
+                    color="black",
+                    linewidth=1,
                 )
 
                 if plot_deterministic_approximation:
                     val_det = getattr(out_det, var)
                     plt.plot(
-                        simulator.log.t, val_det[idx,:],
-                        label='EDM-PDM',
-                        linestyle='dotted',
-                        color='magenta',
-                        linewidth=1.5
+                        simulator.log.t,
+                        val_det[idx, :],
+                        label="EDM-PDM",
+                        linestyle="dotted",
+                        color="magenta",
+                        linewidth=1.5,
                     )
 
                 if isinstance(xlim, dict) and var in xlim:
@@ -344,8 +349,8 @@ def plot_univariate_trajectories_split(
 
                 plt.xticks(fontsize=fontsize)
                 plt.yticks(fontsize=fontsize)
-                plt.xlabel(r'$t$', fontsize=fontsize)
-                plt.ylabel(fr'${var}_{{{idx+1}}}^{{{k+1}}}(t)$', fontsize=fontsize)
+                plt.xlabel(r"$t$", fontsize=fontsize)
+                plt.ylabel(rf"${var}_{{{idx + 1}}}^{{{k + 1}}}(t)$", fontsize=fontsize)
                 plt.grid()
                 plt.tight_layout()
 
@@ -353,11 +358,13 @@ def plot_univariate_trajectories_split(
                     plt.legend(fontsize=fontsize)
 
                 if filename is not None:
-                    name, ext = filename.split('.')
-                    filename_ik = '_'.join([name, f'{var}_{idx+1}_{k+1}'])
-                    filename_ik = '.'.join([filename_ik, ext])
-                    dpi = DPI if ext == '.png' else None
-                    plt.savefig(filename_ik, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+                    name, ext = filename.split(".")
+                    filename_ik = "_".join([name, f"{var}_{idx + 1}_{k + 1}"])
+                    filename_ik = ".".join([filename_ik, ext])
+                    dpi = DPI if ext == ".png" else None
+                    plt.savefig(
+                        filename_ik, bbox_inches="tight", pad_inches=0.05, dpi=dpi
+                    )
 
                 if show:
                     plt.show()
@@ -368,35 +375,36 @@ def plot_univariate_trajectories_split(
                 idx += 1
 
     if simulator.payoff_mechanism.d > 0:
-
         for i in range(simulator.payoff_mechanism.d):
             plt.figure(figsize=figsize)
             plt.plot(
-                simulator.log.t, out.q[i, :],
-                label='Finite agents',
-                color='black',
-                linewidth=1
+                simulator.log.t,
+                out.q[i, :],
+                label="Finite agents",
+                color="black",
+                linewidth=1,
             )
 
             if plot_deterministic_approximation:
                 plt.plot(
-                    simulator.log.t, out_det.q[i, :],
-                    label='EDM-PDM',
-                    linestyle='dotted',
-                    color='magenta',
-                    linewidth=1.5
+                    simulator.log.t,
+                    out_det.q[i, :],
+                    label="EDM-PDM",
+                    linestyle="dotted",
+                    color="magenta",
+                    linewidth=1.5,
                 )
 
-            if isinstance(xlim, dict) and 'q' in xlim:
-                plt.xlim(xlim['q'])
+            if isinstance(xlim, dict) and "q" in xlim:
+                plt.xlim(xlim["q"])
 
-            if isinstance(ylim, dict) and 'q' in ylim:
-                plt.ylim(ylim['q'])
+            if isinstance(ylim, dict) and "q" in ylim:
+                plt.ylim(ylim["q"])
 
             plt.xticks(fontsize=fontsize)
             plt.yticks(fontsize=fontsize)
-            plt.xlabel(r'$t$', fontsize=fontsize)
-            plt.ylabel(fr'$q_{{{i + 1}}}(t)$', fontsize=fontsize)
+            plt.xlabel(r"$t$", fontsize=fontsize)
+            plt.ylabel(rf"$q_{{{i + 1}}}(t)$", fontsize=fontsize)
             plt.grid()
             plt.tight_layout()
 
@@ -404,11 +412,11 @@ def plot_univariate_trajectories_split(
                 plt.legend(fontsize=fontsize)
 
             if filename is not None:
-                name, ext = filename.split('.')
-                filename_qi = '_'.join([name, f'q{i + 1}'])
-                filename_qi = '.'.join([filename_qi, ext])
-                dpi = DPI if ext == '.png' else None
-                plt.savefig(filename_qi, bbox_inches='tight', pad_inches=0.05, dpi=dpi)
+                name, ext = filename.split(".")
+                filename_qi = "_".join([name, f"q{i + 1}"])
+                filename_qi = ".".join([filename_qi, ext])
+                dpi = DPI if ext == ".png" else None
+                plt.savefig(filename_qi, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
 
             if show:
                 plt.show()
@@ -418,11 +426,11 @@ def plot_univariate_trajectories_split(
 
 
 def plot_ternary_trajectories(
-        simulator: Simulator,
-        plot_deterministic_approximation: bool = False,
-        scale: int = 30,
-        potential_function: Callable[[np.ndarray], np.ndarray] = None,
-        **kwargs: dict[str, Any]
+    simulator: Simulator,
+    plot_deterministic_approximation: bool = False,
+    scale: int = 30,
+    potential_function: Callable[[np.ndarray], np.ndarray] = None,
+    **kwargs: dict[str, Any],
 ) -> None:
     """
     Make a ternary plot for the simulated scenario.
@@ -439,14 +447,14 @@ def plot_ternary_trajectories(
         potential_function (Callable[[np.ndarray], np.ndarray]): Potential function to plot as a heatmap. Defaults to None.
     """
 
-    filename = kwargs.get('filename', None)
-    figsize = kwargs.get('figsize', FIGSIZE)
-    fontsize = kwargs.get('fontsize', FONTSIZE)
+    filename = kwargs.get("filename", None)
+    figsize = kwargs.get("figsize", FIGSIZE)
+    fontsize = kwargs.get("fontsize", FONTSIZE)
 
     if simulator.population_game.num_populations > 1:
         if potential_function is not None:
             logger.warning(
-                'Plotting potential functions over the ternary plot is only supported for single population games.'
+                "Plotting potential functions over the ternary plot is only supported for single population games."
             )
 
         make_ternary_plot_multi_population(
@@ -455,7 +463,7 @@ def plot_ternary_trajectories(
             fontsize=fontsize,
             figsize=figsize,
             plot_edm_trajectory=plot_deterministic_approximation,
-            filename=filename
+            filename=filename,
         )
 
     else:
@@ -464,7 +472,7 @@ def plot_ternary_trajectories(
                 arg=potential_function,
                 expected_input_shapes=[(simulator.population_game.n, 1)],
                 expected_output_shape=(1, 1),
-                name='potential_function'
+                name="potential_function",
             )
 
         make_ternary_plot_single_population(
@@ -474,18 +482,18 @@ def plot_ternary_trajectories(
             scale=scale,
             fontsize=fontsize,
             figsize=figsize,
-            filename=filename
+            filename=filename,
         )
 
 
 def make_ternary_plot_single_population(
-        simulator: Simulator,
-        potential_function: Callable[[np.ndarray], np.ndarray] = None,
-        scale: int = 30,
-        fontsize: int = 8,
-        figsize: tuple[int, int] = (4, 3),
-        plot_edm_trajectory: bool = False,
-        filename: str = None
+    simulator: Simulator,
+    potential_function: Callable[[np.ndarray], np.ndarray] = None,
+    scale: int = 30,
+    fontsize: int = 8,
+    figsize: tuple[int, int] = (4, 3),
+    plot_edm_trajectory: bool = False,
+    filename: str = None,
 ) -> None:
     """
     Plot the trajectory of a single population in a ternary plot.
@@ -508,7 +516,8 @@ def make_ternary_plot_single_population(
     n = simulator.population_game.n
     if n != 3:
         logger.error(
-            f'ternary_plot() is only supported for games with 3 strategies per population. Population has {n} strategies.')
+            f"ternary_plot() is only supported for games with 3 strategies per population. Population has {n} strategies."
+        )
         return None
 
     # Compute edm trajectory (if enabled)
@@ -521,19 +530,25 @@ def make_ternary_plot_single_population(
 
     # Slice trajectories
     for t, point in enumerate(simulator.log.x):
-        point_k = point.reshape(n, )
+        point_k = point.reshape(
+            n,
+        )
         point_k = scale * point_k / point_k.sum()  # Scale points
         points.append((point_k[2], point_k[0], point_k[1]))  # Permute points
 
         if plot_edm_trajectory:
-            point_k_edm = x_edm[:, t].reshape(n, )
+            point_k_edm = x_edm[:, t].reshape(
+                n,
+            )
             point_k_edm = scale * point_k_edm / point_k_edm.sum()
             points_edm.append((point_k_edm[2], point_k_edm[0], point_k_edm[1]))
 
     # Compute and slice GNE
     gne = simulator.population_game.compute_gne()
     if gne is not None:
-        gne = gne.reshape(n, )
+        gne = gne.reshape(
+            n,
+        )
         gne = scale * gne / gne.sum()  # Scale GNE
         gne = [(gne[2], gne[0], gne[1])]  # Permute
 
@@ -544,12 +559,21 @@ def make_ternary_plot_single_population(
     # Plot heatmap (if a potential function is provided)
     if potential_function is not None:
         points_potential = {}
-        for (i, j, k) in simplex_iterator(scale):
-            x = np.array([j, k, i]).reshape(n, )  # Permutation for desired orientation: (e1 top, e2 left, e3 right)
+        for i, j, k in simplex_iterator(scale):
+            x = np.array([j, k, i]).reshape(
+                n,
+            )  # Permutation for desired orientation: (e1 top, e2 left, e3 right)
             x = simulator.population_game.masses[0] * x / x.sum()
             points_potential[(i, j)] = potential_function(x.reshape(n, 1)).reshape(-1)
         vmin, vmax = min(points_potential.values()), max(points_potential.values())
-        tax.heatmap(points_potential, style='hexagonal', vmin=vmin, vmax=vmax, cmap='viridis', colorbar=False)
+        tax.heatmap(
+            points_potential,
+            style="hexagonal",
+            vmin=vmin,
+            vmax=vmax,
+            cmap="viridis",
+            colorbar=False,
+        )
 
     # Plot feasible region (if possible)
     num_constraints = simulator.population_game.d_eq + simulator.population_game.d_ineq
@@ -560,8 +584,12 @@ def make_ternary_plot_single_population(
             point = scale * vertex / vertex.sum()
             vertices_scaled.append((point[2], point[0], point[1]))
         tax.plot(
-            vertices_scaled, linewidth=1, linestyle='dashed', color="tab:red",
-            label=r'$\mathcal{X}$' if num_constraints > 0 else None)
+            vertices_scaled,
+            linewidth=1,
+            linestyle="dashed",
+            color="tab:red",
+            label=r"$\mathcal{X}$" if num_constraints > 0 else None,
+        )
     else:
         # TODO: IMPLEMENT THIS
         pass
@@ -570,49 +598,85 @@ def make_ternary_plot_single_population(
     tax.boundary(linewidth=1.0)
 
     # Plot trajectory
-    tax.plot(points, linewidth=1, color='black', label=r'$\mathbf{x}(t)$')
+    tax.plot(points, linewidth=1, color="black", label=r"$\mathbf{x}(t)$")
 
     # Plot EDM trajectory (if enabled)
     if plot_edm_trajectory:
-        tax.plot(points_edm, linewidth=1.5, linestyle='dotted', color='magenta', label=r'$\mathbf{x}(t)$ (EDM)')
+        tax.plot(
+            points_edm,
+            linewidth=1.5,
+            linestyle="dotted",
+            color="magenta",
+            label=r"$\mathbf{x}(t)$ (EDM)",
+        )
 
     # Plot GNE (if available)
     if gne is not None:
-        tax.plot(gne, marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                 label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$')
+        tax.plot(
+            gne,
+            marker=r"$\star$",
+            markersize=7,
+            color="tab:red",
+            linestyle="",
+            linewidth=0,
+            label=r"$\operatorname{GNE}$"
+            if num_constraints > 0
+            else r"$\operatorname{NE}$",
+        )
 
     # Plot formating
     custom_legend = []
     if gne is not None:
         custom_legend.append(
             matplotlib.lines.Line2D(
-                [], [],
-                marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$')
+                [],
+                [],
+                marker=r"$\star$",
+                markersize=7,
+                color="tab:red",
+                linestyle="",
+                linewidth=0,
+                label=r"$\operatorname{GNE}$"
+                if num_constraints > 0
+                else r"$\operatorname{NE}$",
+            )
         )
 
     if len(vertices) >= 2 and num_constraints > 0:
         custom_legend.append(
             matplotlib.lines.Line2D(
-                [], [], linewidth=1, linestyle='dashed', color="tab:red",
-                label=r'$\mathcal{X}$'),
+                [],
+                [],
+                linewidth=1,
+                linestyle="dashed",
+                color="tab:red",
+                label=r"$\mathcal{X}$",
+            ),
         )
 
     custom_legend.append(
-        matplotlib.lines.Line2D([], [], linewidth=1, color='black', label=r'$\mathbf{x}(t)$')
+        matplotlib.lines.Line2D(
+            [], [], linewidth=1, color="black", label=r"$\mathbf{x}(t)$"
+        )
     )
 
     if plot_edm_trajectory:
         custom_legend.append(
-            matplotlib.lines.Line2D([], [], linewidth=1.5, linestyle='dotted', color='magenta',
-                                    label=r'$\mathbf{x}(t)$ (EDM)')
+            matplotlib.lines.Line2D(
+                [],
+                [],
+                linewidth=1.5,
+                linestyle="dotted",
+                color="magenta",
+                label=r"$\mathbf{x}(t)$ (EDM)",
+            )
         )
 
-    tax.top_corner_label(r'$e_1$', fontsize=fontsize)
-    tax.left_corner_label(r'$e_2$', fontsize=fontsize)
-    tax.right_corner_label(r'$e_3$', fontsize=fontsize)
+    tax.top_corner_label(r"$e_1$", fontsize=fontsize)
+    tax.left_corner_label(r"$e_2$", fontsize=fontsize)
+    tax.right_corner_label(r"$e_3$", fontsize=fontsize)
     tax.clear_matplotlib_ticks()
-    tax.get_axes().axis('off')
+    tax.get_axes().axis("off")
     tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
     if filename is not None:
         figure.savefig(filename, format="pdf", bbox_inches="tight")
@@ -620,12 +684,12 @@ def make_ternary_plot_single_population(
 
 
 def make_ternary_plot_multi_population(
-        simulator: Simulator,
-        scale=30,
-        fontsize=8,
-        figsize=(4, 3),
-        plot_edm_trajectory=False,
-        filename=None
+    simulator: Simulator,
+    scale=30,
+    fontsize=8,
+    figsize=(4, 3),
+    plot_edm_trajectory=False,
+    filename=None,
 ) -> None:
     """
     Plot the trajectory of a multiple population in multiple ternary plots.
@@ -650,7 +714,8 @@ def make_ternary_plot_multi_population(
         nk = simulator.population_game.num_strategies[k]
         if nk != 3:
             logger.error(
-                f'ternary_plot() is only supported for games with 3 strategies per population. Population {k} has {nk} strategies.')
+                f"ternary_plot() is only supported for games with 3 strategies per population. Population {k} has {nk} strategies."
+            )
             return None
 
     # Compute edm trajectory (if enabled)
@@ -666,12 +731,16 @@ def make_ternary_plot_multi_population(
         pos = 0
         for k in range(simulator.population_game.num_populations):
             nk = simulator.population_game.num_strategies[k]
-            point_k = point[pos:pos + nk].reshape(nk, )  # Slice trajectory
+            point_k = point[pos : pos + nk].reshape(
+                nk,
+            )  # Slice trajectory
             point_k = scale * point_k / point_k.sum()  # Scale points
             points[k].append((point_k[2], point_k[0], point_k[1]))  # Permute points
 
             if plot_edm_trajectory:
-                point_k_edm = x_edm[pos:pos + nk, t].reshape(nk, )
+                point_k_edm = x_edm[pos : pos + nk, t].reshape(
+                    nk,
+                )
                 point_k_edm = scale * point_k_edm / point_k_edm.sum()
                 points_edm[k].append((point_k_edm[2], point_k_edm[0], point_k_edm[1]))
 
@@ -679,13 +748,15 @@ def make_ternary_plot_multi_population(
 
     # Compute and slice GNE
     gne = simulator.population_game.compute_gne()
-    print(f'Computed GNE = {gne.reshape(-1).round(3)}')
+    print(f"Computed GNE = {gne.reshape(-1).round(3)}")
     if gne is not None:
         gnes = dict()
         pos = 0
         for k in range(simulator.population_game.num_populations):
             nk = simulator.population_game.num_strategies[k]
-            gne_k = gne[pos:pos + nk].reshape(nk, )  # Slice GNE
+            gne_k = gne[pos : pos + nk].reshape(
+                nk,
+            )  # Slice GNE
             gne_k = scale * gne_k / gne_k.sum()  # Scale GNE
             gnes[k] = [(gne_k[2], gne_k[0], gne_k[1])]  # Permute
             pos += nk
@@ -694,7 +765,6 @@ def make_ternary_plot_multi_population(
 
     # Make ternary plots (one for each population)
     for k in range(simulator.population_game.num_populations):
-
         # Initialize plot
         figure, tax = ternary.figure(scale=scale)
         figure.set_size_inches(figsize[0], figsize[1])
@@ -703,18 +773,35 @@ def make_ternary_plot_multi_population(
         tax.boundary(linewidth=1.0)
 
         # Plot trajectory
-        tax.plot(points[k], linewidth=1, color='black', label=rf'$\mathbf{{x}}^{{{k + 1}}}(t)$')
+        tax.plot(
+            points[k],
+            linewidth=1,
+            color="black",
+            label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$",
+        )
 
         # Plot EDM trajectory (if enabled)
         if plot_edm_trajectory:
-            tax.plot(points_edm[k], linewidth=1.5, linestyle='dotted', color='magenta',
-                     label=rf'$\mathbf{{x}}^{{{k + 1}}}(t)$ (EDM)')
+            tax.plot(
+                points_edm[k],
+                linewidth=1.5,
+                linestyle="dotted",
+                color="magenta",
+                label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$ (EDM)",
+            )
 
         # Plot GNE (if available)
         if gne is not None:
             tax.plot(
-                gnes[k], marker=r'$\star$', markersize=7, color='tab:red', linestyle='', linewidth=0,
-                label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$'
+                gnes[k],
+                marker=r"$\star$",
+                markersize=7,
+                color="tab:red",
+                linestyle="",
+                linewidth=0,
+                label=r"$\operatorname{GNE}$"
+                if num_constraints > 0
+                else r"$\operatorname{NE}$",
             )
 
         # Plot formating
@@ -722,30 +809,50 @@ def make_ternary_plot_multi_population(
         if gne is not None:
             custom_legend.append(
                 matplotlib.lines.Line2D(
-                    [], [], marker=r'$\star$', markersize=7, color='tab:red', linestyle='',
-                    linewidth=0, label=r'$\operatorname{GNE}$' if num_constraints > 0 else r'$\operatorname{NE}$'
+                    [],
+                    [],
+                    marker=r"$\star$",
+                    markersize=7,
+                    color="tab:red",
+                    linestyle="",
+                    linewidth=0,
+                    label=r"$\operatorname{GNE}$"
+                    if num_constraints > 0
+                    else r"$\operatorname{NE}$",
                 )
             )
 
         custom_legend.append(
-            matplotlib.lines.Line2D([], [], linewidth=1, color='black', label=rf'$\mathbf{{x}}^{{{k + 1}}}(t)$')
+            matplotlib.lines.Line2D(
+                [],
+                [],
+                linewidth=1,
+                color="black",
+                label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$",
+            )
         )
 
         if plot_edm_trajectory:
             custom_legend.append(
-                matplotlib.lines.Line2D([], [], linewidth=1.5, linestyle='dotted', color='magenta',
-                                        label=rf'$\mathbf{{x}}^{{{k + 1}}}(t)$ (EDM)')
+                matplotlib.lines.Line2D(
+                    [],
+                    [],
+                    linewidth=1.5,
+                    linestyle="dotted",
+                    color="magenta",
+                    label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$ (EDM)",
+                )
             )
 
-        tax.top_corner_label(r'$e_1$', fontsize=fontsize)
-        tax.left_corner_label(r'$e_2$', fontsize=fontsize)
-        tax.right_corner_label(r'$e_3$', fontsize=fontsize)
+        tax.top_corner_label(r"$e_1$", fontsize=fontsize)
+        tax.left_corner_label(r"$e_2$", fontsize=fontsize)
+        tax.right_corner_label(r"$e_3$", fontsize=fontsize)
         tax.clear_matplotlib_ticks()
-        tax.get_axes().axis('off')
+        tax.get_axes().axis("off")
         tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
         if filename is not None:
-            name, ext = filename.split('.')
-            filename_k = '_'.join([name, f'pop_{k+1}'])
-            filename_k = '.'.join([filename_k, ext])
+            name, ext = filename.split(".")
+            filename_k = "_".join([name, f"pop_{k + 1}"])
+            filename_k = ".".join([filename_k, ext])
             figure.savefig(filename_k, format="pdf", bbox_inches="tight")
         tax.show()

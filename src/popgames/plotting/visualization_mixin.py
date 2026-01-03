@@ -1,25 +1,23 @@
 from __future__ import annotations
-import typing
 
 import logging
-logger = logging.getLogger(__name__)
-
+import typing
 
 from popgames.plotting._plot_config import (
     FIGSIZE,
     FIGSIZE_TERNARY,
     FONTSIZE,
 )
-
 from popgames.plotting.plotters import (
     plot_kpi_over_time,
+    plot_ternary_trajectories,
     plot_univariate_trajectories_joint,
     plot_univariate_trajectories_split,
-    plot_ternary_trajectories,
 )
 
 if typing.TYPE_CHECKING:
     from typing import Any, Callable
+
     from popgames import Simulator
 
 __all__ = [
@@ -27,18 +25,22 @@ __all__ = [
 ]
 
 SUPPORTED_PLOT_TYPES_LITERAL = typing.Literal[
-    'kpi',
-    'univariate',
-    'univariate_split',
-    'ternary',
+    "kpi",
+    "univariate",
+    "univariate_split",
+    "ternary",
 ]
 
-PLOT_DISPATCH : dict[SUPPORTED_PLOT_TYPES_LITERAL, Callable[..., None]] = {
-    'kpi': plot_kpi_over_time,
-    'univariate' : plot_univariate_trajectories_joint,
-    'univariate_split' : plot_univariate_trajectories_split,
-    'ternary' : plot_ternary_trajectories,
+PLOT_DISPATCH: dict[SUPPORTED_PLOT_TYPES_LITERAL, Callable[..., None]] = {
+    "kpi": plot_kpi_over_time,
+    "univariate": plot_univariate_trajectories_joint,
+    "univariate_split": plot_univariate_trajectories_split,
+    "ternary": plot_ternary_trajectories,
 }
+
+
+logger = logging.getLogger(__name__)
+
 
 class VisualizationMixin:
     """
@@ -49,14 +51,14 @@ class VisualizationMixin:
     """
 
     def plot(
-            self : Simulator,
-            *,
-            plot_type : SUPPORTED_PLOT_TYPES_LITERAL = 'kpi',
-            filename : str = None,
-            figsize : tuple[int, int] = None,
-            fontsize : int = None,
-            show : bool = True,
-            **kwargs : dict[str, Any] | Any,
+        self: Simulator,
+        *,
+        plot_type: SUPPORTED_PLOT_TYPES_LITERAL = "kpi",
+        filename: str = None,
+        figsize: tuple[int, int] = None,
+        fontsize: int = None,
+        show: bool = True,
+        **kwargs: dict[str, Any] | Any,
     ) -> None:
         """
         Unified plotting interface supporting some predefined plot types.
@@ -76,17 +78,16 @@ class VisualizationMixin:
 
         if plot_method is None:
             logger.warning(
-                f'Provided plot type {plot_type} is not supported.'
-                f'Use one of: {list(PLOT_DISPATCH.keys())}.'
+                f"Provided plot type {plot_type} is not supported."
+                f"Use one of: {list(PLOT_DISPATCH.keys())}."
             )
 
         else:
-            DEFAULT_FIGSIZE = FIGSIZE_TERNARY if plot_type is 'ternary' else FIGSIZE
+            DEFAULT_FIGSIZE = FIGSIZE_TERNARY if plot_type == "ternary" else FIGSIZE
             kwargs = kwargs | {
-                'filename': filename,
-                'figsize' : figsize if figsize is not None else DEFAULT_FIGSIZE,
-                'fontsize' : fontsize if fontsize is not None else FONTSIZE,
-                'show' : show,
+                "filename": filename,
+                "figsize": figsize if figsize is not None else DEFAULT_FIGSIZE,
+                "fontsize": fontsize if fontsize is not None else FONTSIZE,
+                "show": show,
             }
             plot_method(self, **kwargs)
-

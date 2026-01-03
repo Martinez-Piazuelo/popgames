@@ -1,8 +1,9 @@
 from __future__ import annotations
-import typing
 
+import typing
 from abc import ABC, abstractmethod
 from functools import partial
+
 import numpy as np
 
 if typing.TYPE_CHECKING:
@@ -10,10 +11,7 @@ if typing.TYPE_CHECKING:
 
 from popgames.utilities.input_validators import check_scalar_value_bounds
 
-__all__ = [
-    "AlarmClockABC",
-    "Poisson"
-]
+__all__ = ["AlarmClockABC", "Poisson"]
 
 
 class AlarmClockABC(ABC):
@@ -22,10 +20,7 @@ class AlarmClockABC(ABC):
     """
 
     @abstractmethod
-    def __call__(
-            self,
-            size : int
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, size: int) -> Union[float, np.ndarray]:
         """
         Subclasses must implement this method to enable the alarm clock to be called as a function.
 
@@ -36,15 +31,13 @@ class AlarmClockABC(ABC):
              Union[float, np.ndarray]: The revision times.
         """
 
+
 class Poisson(AlarmClockABC):
     """
     Poisson alarm clock.
     """
 
-    def __init__(
-            self,
-            rate : float = 1.0
-    ) -> None:
+    def __init__(self, rate: float = 1.0) -> None:
         """
         Initialize the Poisson alarm clock.
 
@@ -52,23 +45,13 @@ class Poisson(AlarmClockABC):
             rate (float): The rate of the alarm clock. Defaults to 1.0.
         """
 
-        check_scalar_value_bounds(
-            rate,
-            'rate',
-            strictly_positive=True
-        )
+        check_scalar_value_bounds(rate, "rate", strictly_positive=True)
 
         self.rate = rate
 
-        self._pdf = partial(
-            np.random.exponential,
-            scale=1/self.rate
-        )
+        self._pdf = partial(np.random.exponential, scale=1 / self.rate)
 
-    def __call__(
-            self,
-            size : int
-    ) -> Union[float, np.ndarray]:
+    def __call__(self, size: int) -> Union[float, np.ndarray]:
         """
         Call the Poisson alarm clock.
 
@@ -84,6 +67,4 @@ class Poisson(AlarmClockABC):
             >>> clock(3)
             array([2.34438986, 0.53956626, 0.80216914])
         """
-        return self._pdf(size = size)
-
-
+        return self._pdf(size=size)
