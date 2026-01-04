@@ -26,6 +26,11 @@ class PopulationGame:
     Multi-Population game.
     """
 
+    A_eq: np.ndarray
+    b_eq: np.ndarray
+    A_ineq: np.ndarray
+    b_ineq: np.ndarray
+
     def __init__(
         self,
         num_populations: int,
@@ -204,10 +209,9 @@ class SinglePopulationGame(PopulationGame):
         Initialize the single-population game object.
 
         Args:
-            num_populations (int): Number of populations.
             num_strategies (list[int]): Number of strategies.
             fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.
-            masses (list[float]): Population masses.
+            mass (float): Population mass.
             A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.
             b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.
             A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax <= b.
