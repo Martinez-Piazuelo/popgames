@@ -1,0 +1,26 @@
+version: "3"
+
+tasks:
+
+  check:
+    desc: Check code with ruff
+    cmds:
+      - ruff check src tests
+
+  format:
+    desc: Format code with ruff
+    cmds:
+      - |
+        ruff format src tests
+        ruff check src tests --select I --fix
+
+  test:
+    desc: Run unit tests with coverage
+    cmds:
+      - |
+        python -m coverage run \
+          --source=popgames \
+          -m unittest discover \
+          -s tests \
+          -p "test_*.py"
+      - python -m coverage report -m
