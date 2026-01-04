@@ -301,7 +301,8 @@ class Simulator(VisualizationMixin):
             )
         else:
             p = self.payoff_mechanism.h_map(
-                q[:, -1].reshape(self.payoff_mechanism.d, 1), x0
+                q[:, -1].reshape(self.payoff_mechanism.d, 1),
+                x[:, -1].reshape(self.population_game.n, 1),
             )
 
             out = SimpleNamespace(
