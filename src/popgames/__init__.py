@@ -1,6 +1,6 @@
+import importlib.metadata
 import logging.config
 
-# Aliases
 import popgames.alarm_clock as clock
 import popgames.revision_protocol as protocol
 from popgames.payoff_mechanism import PayoffMechanism
@@ -18,7 +18,10 @@ __all__ = [
     "protocol",
 ]
 
-__version__ = "0.1.0"
+try:
+    __version__ = importlib.metadata.version("popgames")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = None
 
 
 LOGGING_CONFIG = {
