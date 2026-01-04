@@ -17,8 +17,5 @@ exclude_lines =
     raise NotImplementedError
     pass
 
-# Do not fail if files are intentionally empty
-ignore_empty = True
-
 # Improve readability
 show_missing = True
