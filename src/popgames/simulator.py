@@ -275,11 +275,13 @@ class Simulator(VisualizationMixin):
             method=method,
         )
 
-        q = sol.y[: self.payoff_mechanism.d, :]
-        x = sol.y[self.payoff_mechanism.d :, :]
+        q = sol.y[: self.payoff_mechanism.d, :]  # type: ignore[attr-defined]
+        x = sol.y[self.payoff_mechanism.d :, :]  # type: ignore[attr-defined]
 
         if output_trajectory:
-            T = sol.y.shape[1]
+            T = (
+                sol.y  # type: ignore[attr-defined]
+            ).shape[1]
             p = np.zeros((self.population_game.n, T))
             for t in range(T):
                 q_t = q[:, t].reshape(self.payoff_mechanism.d, 1)
@@ -291,14 +293,21 @@ class Simulator(VisualizationMixin):
                     self.population_game.n,
                 )
 
-            out = SimpleNamespace(t=sol.t, x=x, q=q, p=p)
+            out = SimpleNamespace(
+                t=sol.t,  # type: ignore[attr-defined]
+                x=x,
+                q=q,
+                p=p,
+            )
         else:
             p = self.payoff_mechanism.h_map(
                 q[:, -1].reshape(self.payoff_mechanism.d, 1), x0
             )
 
             out = SimpleNamespace(
-                t=sol.t[-1],
+                t=(
+                    sol.t  # type: ignore[attr-defined]
+                )[-1],
                 x=x[:, -1].reshape(self.population_game.n, 1),
                 q=q[:, -1].reshape(self.payoff_mechanism.d, 1),
                 p=p,
