@@ -208,7 +208,9 @@ class Simulator(VisualizationMixin):
 
         while time_remaining > 0:
             if verbose:
-                logger.info(f"Simulator's remaining time = {time_remaining:.3F}")
+                logger.info(
+                    f"Simulator's remaining time = {time_remaining:.3F}"
+                )  # pragma: no cover
 
             time_step = np.min(
                 [
