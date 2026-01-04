@@ -144,7 +144,7 @@ class PopulationGame:
             Dg_ineq,
         )  # TODO: These are place holders for now
         if self.g_ineq is not None:
-            pass  # TODO
+            pass  # pragma: no cover (TODO)
 
         if fitness_lipschitz_constant is not None:
             check_scalar_value_bounds(
