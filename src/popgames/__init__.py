@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib.metadata
 import logging.config
 
@@ -16,6 +18,7 @@ __all__ = [
     "Simulator",
     "clock",
     "protocol",
+    "configure_logging",
 ]
 
 try:
@@ -24,33 +27,32 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = None
 
 
-LOGGING_CONFIG = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "colored": {
-            "()": "colorlog.ColoredFormatter",
-            "format": "%(log_color)s%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-            "log_colors": {
-                "DEBUG": "cyan",
-                "INFO": "green",
-                "WARNING": "yellow",
-                "ERROR": "red",
-                "CRITICAL": "bold_red",
+def configure_logging(level: str | int = "INFO") -> None:
+    """
+    Configures the logging system for the application with a specified logging level.
+
+    Args:
+        level (str | int): Logging level. Defaults to "INFO".
+    """
+    cfg = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "standard": {
+                "format": "%(asctime)s.%(msecs)03d [%(levelname)s] %(name)s: %(message)s",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
             },
         },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "colored",
-            "level": "DEBUG",
+        "handlers": {
+            "console": {
+                "class": "logging.StreamHandler",
+                "formatter": "standard",
+                "level": "DEBUG",
+            },
         },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
-}
-
-logging.config.dictConfig(LOGGING_CONFIG)
+        "root": {
+            "handlers": ["console"],
+            "level": level,
+        },
+    }
+    logging.config.dictConfig(cfg)
