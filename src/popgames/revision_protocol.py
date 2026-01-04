@@ -9,7 +9,7 @@ from popgames.utilities.input_validators import (
     check_scalar_value_bounds,
 )
 
-__all__ = ["RevisionProtocolABC", "Softmax", "Smith", "BNN"]
+__all__ = ["RevisionProtocolABC", "Softmax", "Smith", "BNN", "CCSmith"]
 
 
 class RevisionProtocolABC(ABC):
