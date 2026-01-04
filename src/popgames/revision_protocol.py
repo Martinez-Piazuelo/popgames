@@ -59,7 +59,7 @@ class Softmax(RevisionProtocolABC):
 
         Examples:
             >>> import numpy as np
-            >>> from popgames import Softmax
+            >>> from popgames.revision_protocol import Softmax
             >>> softmax = Softmax(eta=1)
             >>> p = np.array([1, -1, 2]).reshape(3, 1)
             >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
@@ -103,7 +103,7 @@ class Smith(RevisionProtocolABC):
 
         Examples:
             >>> import numpy as np
-            >>> from popgames import Smith
+            >>> from popgames.revision_protocol import Smith
             >>> smith = Smith(scale=0.1)
             >>> p = np.array([1, -1, 2]).reshape(3, 1)
             >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
@@ -145,7 +145,7 @@ class BNN(RevisionProtocolABC):
 
         Examples:
             >>> import numpy as np
-            >>> from popgames import BNN
+            >>> from popgames.revision_protocol import BNN
             >>> bnn = BNN(scale=0.1)
             >>> p = np.array([1, -1, 2]).reshape(3, 1)
             >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
