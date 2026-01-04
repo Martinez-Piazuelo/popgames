@@ -38,9 +38,9 @@ class PopulationGame:
         fitness_function: Callable[[np.ndarray], np.ndarray],
         masses: list[float] = None,
         A_eq: np.ndarray = None,
-        b_eq: np.ndarray = None,
+        b_eq: np.ndarray | numbers.Number = None,
         A_ineq: np.ndarray = None,
-        b_ineq: np.ndarray = None,
+        b_ineq: np.ndarray | numbers.Number = None,
         g_ineq: Callable[[np.ndarray], np.ndarray] = None,
         Dg_ineq: Callable[[np.ndarray], np.ndarray] = None,
         fitness_lipschitz_constant: float = None,
@@ -54,9 +54,9 @@ class PopulationGame:
             fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.
             masses (list[float]): Population masses.
             A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.
-            b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.
+            b_eq (np.ndarray, numbers.Number): Vector b in equality constraints of the form Ax = b.
             A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax <= b.
-            b_ineq (np.ndarray): Vector b in inequality constraints of the form Ax <= b.
+            b_ineq (np.ndarray, numbers.Number): Vector b in inequality constraints of the form Ax <= b.
             g_ineq (Callable[[np.ndarray], np.ndarray]): Function g(x) in inequality constraints of the form g(x) <= 0.
             Dg_ineq (Callable[[np.ndarray], np.ndarray]): Jacobian matrix of g(x).
             fitness_lipschitz_constant (float): Lipschitz constant of the fitness function.
