@@ -34,7 +34,8 @@ def fbos(
     aux_matrix, aux_vector, _ = build_auxiliary_matrices(population_game)
 
     # Compute fixed step-size
-    if population_game._fitness_lipschitz_constant is None:
+    lipschitz_constant = population_game._fitness_lipschitz_constant
+    if lipschitz_constant is None:
         logger.warning(
             "No fitness_lipschitz_constant provided, using default L=100. FBOS might not converge."
         )
@@ -51,7 +52,9 @@ def fbos(
     if population_game.d_ineq > 0:
         constraints.append(population_game.A_ineq @ z <= population_game.b_ineq)
 
-    for iter in range(max_iter):
+    i = 0
+    inf_norm = np.inf
+    for i in range(max_iter):
         objective = cp.Minimize(
             0.5
             * cp.square(
@@ -73,9 +76,9 @@ def fbos(
 
         x = x_next
 
-    if iter >= max_iter - 1:
+    if i >= max_iter - 1:
         logger.warning(
-            f"Maximum number of iterations ({iter}) reached. Computed GNE may not be accurate (error = {inf_norm})."
+            f"Maximum number of iterations ({i}) reached. Computed GNE may not be accurate (error = {inf_norm})."
         )
 
     return x
