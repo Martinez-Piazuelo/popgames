@@ -1,0 +1,21 @@
+[run]
+branch = True
+source =
+    popgames
+omit =
+    */__init__.py
+    */tests/*
+    */_plot_config.py
+
+[report]
+# Lines to exclude from coverage reports
+exclude_lines =
+    pragma: no cover
+    if typing.TYPE_CHECKING:
+    if TYPE_CHECKING:
+    @abstractmethod
+    raise NotImplementedError
+    pass
+
+# Improve readability
+show_missing = True

@@ -26,6 +26,11 @@ class PopulationGame:
     Multi-Population game.
     """
 
+    A_eq: np.ndarray
+    b_eq: np.ndarray
+    A_ineq: np.ndarray
+    b_ineq: np.ndarray
+
     def __init__(
         self,
         num_populations: int,
@@ -33,9 +38,9 @@ class PopulationGame:
         fitness_function: Callable[[np.ndarray], np.ndarray],
         masses: list[float] = None,
         A_eq: np.ndarray = None,
-        b_eq: np.ndarray = None,
+        b_eq: np.ndarray | numbers.Number = None,
         A_ineq: np.ndarray = None,
-        b_ineq: np.ndarray = None,
+        b_ineq: np.ndarray | numbers.Number = None,
         g_ineq: Callable[[np.ndarray], np.ndarray] = None,
         Dg_ineq: Callable[[np.ndarray], np.ndarray] = None,
         fitness_lipschitz_constant: float = None,
@@ -49,9 +54,9 @@ class PopulationGame:
             fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.
             masses (list[float]): Population masses.
             A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.
-            b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.
+            b_eq (np.ndarray, numbers.Number): Vector b in equality constraints of the form Ax = b.
             A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax <= b.
-            b_ineq (np.ndarray): Vector b in inequality constraints of the form Ax <= b.
+            b_ineq (np.ndarray, numbers.Number): Vector b in inequality constraints of the form Ax <= b.
             g_ineq (Callable[[np.ndarray], np.ndarray]): Function g(x) in inequality constraints of the form g(x) <= 0.
             Dg_ineq (Callable[[np.ndarray], np.ndarray]): Jacobian matrix of g(x).
             fitness_lipschitz_constant (float): Lipschitz constant of the fitness function.
@@ -139,7 +144,7 @@ class PopulationGame:
             Dg_ineq,
         )  # TODO: These are place holders for now
         if self.g_ineq is not None:
-            pass  # TODO
+            pass  # pragma: no cover (TODO)
 
         if fitness_lipschitz_constant is not None:
             check_scalar_value_bounds(
@@ -204,10 +209,9 @@ class SinglePopulationGame(PopulationGame):
         Initialize the single-population game object.
 
         Args:
-            num_populations (int): Number of populations.
             num_strategies (list[int]): Number of strategies.
             fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.
-            masses (list[float]): Population masses.
+            mass (float): Population mass.
             A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.
             b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.
             A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax <= b.

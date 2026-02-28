@@ -6,10 +6,10 @@ from functools import partial
 
 import numpy as np
 
+from popgames.utilities.input_validators import check_scalar_value_bounds
+
 if typing.TYPE_CHECKING:
     from typing import Union
-
-from popgames.utilities.input_validators import check_scalar_value_bounds
 
 __all__ = ["AlarmClockABC", "Poisson"]
 
@@ -62,7 +62,7 @@ class Poisson(AlarmClockABC):
              Union[float, np.ndarray]: The revision times.
 
         Examples:
-            >>> from popgames import Poisson
+            >>> from popgames.alarm_clock import Poisson
             >>> clock = Poisson(rate=1.0)
             >>> clock(3)
             array([2.34438986, 0.53956626, 0.80216914])

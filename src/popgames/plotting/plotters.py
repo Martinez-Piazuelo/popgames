@@ -435,8 +435,8 @@ def plot_ternary_trajectories(
     """
     Make a ternary plot for the simulated scenario.
 
-    This method is only supported for single-population games with \(n=3\), and for multi-population games where
-    each population has \(n^k=3\) strategies.
+    This method is only supported for single-population games with ``n=3``, and for multi-population games where
+    each population has ``n^k=3`` strategies.
 
     Args:
         scale (int): Scaling factor for the ternary plot. Defaults to 30.
@@ -494,6 +494,7 @@ def make_ternary_plot_single_population(
     figsize: tuple[int, int] = (4, 3),
     plot_edm_trajectory: bool = False,
     filename: str = None,
+    show: bool = True,
 ) -> None:
     """
     Plot the trajectory of a single population in a ternary plot.
@@ -508,6 +509,7 @@ def make_ternary_plot_single_population(
         figsize (tuple[int, int], optional): Figure size. Defaults to (4,3).
         plot_edm_trajectory (bool, optional): Whether to plot edm trajectory. Defaults to False.
         filename (str, optional): Filename to save the figure. Defaults to None.
+        show (bool, optional): Whether to show the figure. Defaults to True.
     """
 
     # Check number of strategies
@@ -558,14 +560,23 @@ def make_ternary_plot_single_population(
 
     # Plot heatmap (if a potential function is provided)
     if potential_function is not None:
-        points_potential = {}
+        points_potential: dict[tuple[int, int], float] = {}
         for i, j, k in simplex_iterator(scale):
             x = np.array([j, k, i]).reshape(
                 n,
-            )  # Permutation for desired orientation: (e1 top, e2 left, e3 right)
+            )  # orientation permutation
             x = simulator.population_game.masses[0] * x / x.sum()
-            points_potential[(i, j)] = potential_function(x.reshape(n, 1)).reshape(-1)
-        vmin, vmax = min(points_potential.values()), max(points_potential.values())
+
+            val = potential_function(x.reshape(n, 1))
+
+            # Force to Python float (handles (1,1), (1,), scalar numpy, etc.)
+            val = float(np.asarray(val).squeeze())
+
+            points_potential[(i, j)] = val
+
+        vmin = float(min(points_potential.values()))
+        vmax = float(max(points_potential.values()))
+
         tax.heatmap(
             points_potential,
             style="hexagonal",
@@ -680,7 +691,9 @@ def make_ternary_plot_single_population(
     tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
     if filename is not None:
         figure.savefig(filename, format="pdf", bbox_inches="tight")
-    tax.show()
+
+    if show:
+        tax.show()
 
 
 def make_ternary_plot_multi_population(
@@ -690,11 +703,12 @@ def make_ternary_plot_multi_population(
     figsize=(4, 3),
     plot_edm_trajectory=False,
     filename=None,
+    show: bool = True,
 ) -> None:
     """
     Plot the trajectory of a multiple population in multiple ternary plots.
 
-    This method requires every population to have \(n^k=3\) strategies.
+    This method requires every population to have ``n^k=3`` strategies.
 
     Args:
         simulator (Simulator): Simulator instance holding the data for the plot.
@@ -703,6 +717,7 @@ def make_ternary_plot_multi_population(
         figsize (tuple[int, int], optional): Figure size. Defaults to (4,3).
         plot_edm_trajectory (bool, optional): Whether to plot edm trajectory. Defaults to False.
         filename (str, optional): Filename to save the figure. Defaults to None.
+        show (bool, optional): Whether to show the figure. Defaults to True.
     """
 
     # Slice trajectories
@@ -855,4 +870,5 @@ def make_ternary_plot_multi_population(
             filename_k = "_".join([name, f"pop_{k + 1}"])
             filename_k = ".".join([filename_k, ext])
             figure.savefig(filename_k, format="pdf", bbox_inches="tight")
-        tax.show()
+        if show:
+            tax.show()

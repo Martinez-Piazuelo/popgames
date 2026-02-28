@@ -125,18 +125,18 @@ class PayoffMechanism:
             )
 
             if output_trajectory:
-                T = sol.y.shape[1]
-                q = sol.y[: self.d, :]
+                T = sol.y.shape[1]  # type: ignore[attr-defined]
+                q = sol.y[: self.d, :]  # type: ignore[attr-defined]
                 p = np.zeros((self.n, T))
                 for t in range(T):
                     p[:, t] = self._h_map_wrapped(
-                        sol.y[:, t]
+                        sol.y[:, t]  # type: ignore[attr-defined]
                     )  # TODO: Can h_map be evaluated in batches to remove this loop?
             else:
-                q = sol.y[: self.d, -1].reshape(self.d, 1)
+                q = sol.y[: self.d, -1].reshape(self.d, 1)  # type: ignore[attr-defined]
                 p = self.h_map(q, x0)
 
-            return SimpleNamespace(t=sol.t, q=q, p=p)
+            return SimpleNamespace(t=sol.t, q=q, p=p)  # type: ignore[attr-defined]
 
     @staticmethod
     def _unsqueeze_h_map(
