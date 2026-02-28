@@ -266,6 +266,11 @@
 <span class="sd">    Multi-Population game.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">A_eq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">b_eq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">A_ineq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">b_ineq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">num_populations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -273,9 +278,9 @@
         <span class="n">fitness_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span>
         <span class="n">masses</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">A_eq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">b_eq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">b_eq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">A_ineq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">b_ineq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">b_ineq</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">g_ineq</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">Dg_ineq</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">fitness_lipschitz_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -289,9 +294,9 @@
 <span class="sd">            fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.</span>
 <span class="sd">            masses (list[float]): Population masses.</span>
 <span class="sd">            A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.</span>
-<span class="sd">            b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.</span>
+<span class="sd">            b_eq (np.ndarray, numbers.Number): Vector b in equality constraints of the form Ax = b.</span>
 <span class="sd">            A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax &lt;= b.</span>
-<span class="sd">            b_ineq (np.ndarray): Vector b in inequality constraints of the form Ax &lt;= b.</span>
+<span class="sd">            b_ineq (np.ndarray, numbers.Number): Vector b in inequality constraints of the form Ax &lt;= b.</span>
 <span class="sd">            g_ineq (Callable[[np.ndarray], np.ndarray]): Function g(x) in inequality constraints of the form g(x) &lt;= 0.</span>
 <span class="sd">            Dg_ineq (Callable[[np.ndarray], np.ndarray]): Jacobian matrix of g(x).</span>
 <span class="sd">            fitness_lipschitz_constant (float): Lipschitz constant of the fitness function.</span>
@@ -379,7 +384,7 @@
             <span class="n">Dg_ineq</span><span class="p">,</span>
         <span class="p">)</span>  <span class="c1"># TODO: These are place holders for now</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_ineq</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">pass</span>  <span class="c1"># TODO</span>
+            <span class="k">pass</span>  <span class="c1"># pragma: no cover (TODO)</span>
 
         <span class="k">if</span> <span class="n">fitness_lipschitz_constant</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">check_scalar_value_bounds</span><span class="p">(</span>
@@ -453,10 +458,9 @@
 <span class="sd">        Initialize the single-population game object.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            num_populations (int): Number of populations.</span>
 <span class="sd">            num_strategies (list[int]): Number of strategies.</span>
 <span class="sd">            fitness_function (Callable[[np.ndarray], np.ndarray]): Fitness function.</span>
-<span class="sd">            masses (list[float]): Population masses.</span>
+<span class="sd">            mass (float): Population mass.</span>
 <span class="sd">            A_eq (np.ndarray): Matrix A in equality constraints of the form Ax = b.</span>
 <span class="sd">            b_eq (np.ndarray): Vector b in equality constraints of the form Ax = b.</span>
 <span class="sd">            A_ineq (np.ndarray): Matrix A in inequality constraints of the form Ax &lt;= b.</span>

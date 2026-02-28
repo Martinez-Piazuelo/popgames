@@ -244,10 +244,10 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.utilities.input_validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_scalar_value_bounds</span>
+
 <span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.utilities.input_validators</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_scalar_value_bounds</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;AlarmClockABC&quot;</span><span class="p">,</span> <span class="s2">&quot;Poisson&quot;</span><span class="p">]</span>
 
@@ -310,7 +310,7 @@
 <span class="sd">             Union[float, np.ndarray]: The revision times.</span>
 
 <span class="sd">        Examples:</span>
-<span class="sd">            &gt;&gt;&gt; from popgames import Poisson</span>
+<span class="sd">            &gt;&gt;&gt; from popgames.alarm_clock import Poisson</span>
 <span class="sd">            &gt;&gt;&gt; clock = Poisson(rate=1.0)</span>
 <span class="sd">            &gt;&gt;&gt; clock(3)</span>
 <span class="sd">            array([2.34438986, 0.53956626, 0.80216914])</span>

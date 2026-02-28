@@ -453,7 +453,9 @@
 
         <span class="k">while</span> <span class="n">time_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulator&#39;s remaining time = </span><span class="si">{</span><span class="n">time_remaining</span><span class="si">:</span><span class="s2">.3F</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Simulator&#39;s remaining time = </span><span class="si">{</span><span class="n">time_remaining</span><span class="si">:</span><span class="s2">.3F</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>  <span class="c1"># pragma: no cover</span>
 
             <span class="n">time_step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span>
                 <span class="p">[</span>
@@ -523,11 +525,13 @@
             <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">q</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="p">:]</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># type: ignore[attr-defined]</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span> <span class="p">:,</span> <span class="p">:]</span>  <span class="c1"># type: ignore[attr-defined]</span>
 
         <span class="k">if</span> <span class="n">output_trajectory</span><span class="p">:</span>
-            <span class="n">T</span> <span class="o">=</span> <span class="n">sol</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">T</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">sol</span><span class="o">.</span><span class="n">y</span>  <span class="c1"># type: ignore[attr-defined]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">T</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">T</span><span class="p">):</span>
                 <span class="n">q_t</span> <span class="o">=</span> <span class="n">q</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -539,14 +543,22 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
                 <span class="p">)</span>
 
-            <span class="n">out</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
+                <span class="n">t</span><span class="o">=</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+                <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span>
+                <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">h_map</span><span class="p">(</span>
-                <span class="n">q</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">x0</span>
+                <span class="n">q</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
             <span class="p">)</span>
 
             <span class="n">out</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
-                <span class="n">t</span><span class="o">=</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">t</span><span class="o">=</span><span class="p">(</span>
+                    <span class="n">sol</span><span class="o">.</span><span class="n">t</span>  <span class="c1"># type: ignore[attr-defined]</span>
+                <span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
                 <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
