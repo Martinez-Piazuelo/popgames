@@ -1,15 +1,15 @@
 [build-system]
-requires = ["uv_build>=0.10.7,<0.11.0"]
-build-backend = "uv_build"
+requires = ["hatchling>=1.25", "hatch-vcs>=0.5"]
+build-backend = "hatchling.build"
 
 [project]
 name = "popgames"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A Python package to simulate population games and evolutionary dynamics"
 authors = [
-    {name = "Juan Martinez-Piazuelo",email = "juan@martinezpiazuelo.com"}
+    { name = "Juan Martinez-Piazuelo", email = "juan@martinezpiazuelo.com" }
 ]
-license = {text = "MIT"}
+license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -37,3 +37,22 @@ default-groups = ["dev", "docs"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/test_book_examples.py" = ["E731", "F841"]
+
+# --- Dynamic version from git tags (vX.Y.Z -> X.Y.Z) ---
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.vcs]
+tag-pattern = "^v(?P<version>.*)$"
+
+# --- Build config ---
+[tool.hatch.build.targets.wheel]
+packages = ["src/popgames"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/popgames",
+    "README.md",
+    "pyproject.toml",
+    "LICENSE*",
+]
