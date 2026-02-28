@@ -1,0 +1,49 @@
+name: Publish to PyPI
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-publish:
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'v')
+    environment: pypi
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tag commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Ensure tag commit is on main
+        shell: bash
+        run: |
+          git fetch origin main
+          if ! git branch --remote --contains "${{ github.event.workflow_run.head_sha }}" | grep -q "origin/main"; then
+            echo "Tag commit is not contained in origin/main. Aborting."
+            exit 1
+          fi
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.9.21"
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Build
+        run: uv build
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
