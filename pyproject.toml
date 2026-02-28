@@ -34,3 +34,6 @@ docs = [
 
 [tool.uv]
 default-groups = ["dev", "docs"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/test_book_examples.py" = ["E731", "F841"]
