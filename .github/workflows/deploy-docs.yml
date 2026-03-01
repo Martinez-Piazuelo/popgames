@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -26,6 +29,9 @@ jobs:
 
       - name: Install project (docs deps only)
         run: uv sync --frozen --group docs
+
+      - name: Show resolved popgames version
+        run: uv run python -c "from importlib.metadata import version; print(version('popgames'))"
 
       - name: Build Sphinx HTML docs
         working-directory: docs
