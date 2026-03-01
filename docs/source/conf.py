@@ -5,7 +5,9 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from importlib.metadata import version as _version
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -13,7 +15,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 project = 'popgames'
 copyright = '2025, Juan Martinez-Piazuelo'
 author = 'Juan Martinez-Piazuelo'
-release = '0.1.0'
+raw = _version("popgames")
+release = raw.split("+", 1)[0]          # e.g. 1.0.0.dev1
+version = release.split(".dev", 1)[0]   # e.g. 1.0.0
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

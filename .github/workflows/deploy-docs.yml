@@ -25,7 +25,7 @@ jobs:
           enable-cache: true
 
       - name: Install project (docs deps only)
-        run: uv sync --frozen --no-default-groups --group docs
+        run: uv sync --frozen --group docs
 
       - name: Build Sphinx HTML docs
         working-directory: docs
