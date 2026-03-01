@@ -15,8 +15,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 project = 'popgames'
 copyright = '2025, Juan Martinez-Piazuelo'
 author = 'Juan Martinez-Piazuelo'
-release = _version("popgames")
-version = release
+raw = _version("popgames")
+release = raw.split("+", 1)[0]          # e.g. 1.0.0.dev1
+version = release.split(".dev", 1)[0]   # e.g. 1.0.0
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
