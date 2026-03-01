@@ -12,6 +12,10 @@ authors = [
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+]
 dependencies = [
     "cvxpy>=1.7.5",
     "matplotlib>=3.10.8",
