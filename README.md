@@ -97,7 +97,7 @@ uv run task check
 
 ### 5. Submit a pull request
 
-Push your branch to your fork and open a Pull Request against the main repository.
+Push your branch to your fork and open a pull request against the main repository.
 
 Please include:
 
