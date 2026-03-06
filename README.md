@@ -1,4 +1,7 @@
-# PopGames
+<p align="center">
+  <img src="assets/logo.png" alt="PopGames logo" width="300">
+</p>
+
 
 A Python package to model and simulate population games.
 
