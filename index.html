@@ -199,11 +199,11 @@
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="key_concepts/index.html">Key Concepts</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="key_concepts/index.html">Key Concepts</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/population_game.html">Population Game</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/payoff_mechanism.html">Payoff Mechanism</a></li>
@@ -215,7 +215,7 @@
 <li class="toctree-l2"><a class="reference internal" href="api/simulator.html">Simulator</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing to PopGames</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing</a></li>
 </ul>
 
 </div>
@@ -295,6 +295,13 @@
 </section>
 <section id="quick-usage-example">
 <h2>Quick Usage Example<a class="headerlink" href="#quick-usage-example" title="Link to this heading">¶</a></h2>
+<p>PopGames follows an object-oriented programming approach based on four core objects:</p>
+<ul class="simple">
+<li><p><strong>Population game:</strong> defines the strategic environment of the game</p></li>
+<li><p><strong>Payoff mechanism:</strong> specifies the payoff perceived by the agents</p></li>
+<li><p><strong>Revision process:</strong> establishes how agents update their strategies</p></li>
+<li><p><strong>Simulator:</strong> orchestrates the simulation</p></li>
+</ul>
 <p>This example demonstrates how to simulate a simple <strong>population game</strong> using <code class="docutils literal notranslate"><span class="pre">popgames</span></code>.</p>
 <p>We model the classic <strong>Prisoner’s Dilemma</strong>, where agents repeatedly choose between two strategies:</p>
 <ul class="simple">
@@ -303,12 +310,12 @@
 </ul>
 <p>Even though mutual cooperation is socially optimal, evolutionary dynamics often drive the population toward defection.</p>
 <hr class="docutils" />
-<section id="define-the-game">
-<h3>Define the game<a class="headerlink" href="#define-the-game" title="Link to this heading">¶</a></h3>
-<p>We begin by defining the payoff matrix of the Prisoner’s Dilemma. The parameters satisfy</p>
-<p>[
-T &gt; R &gt; P &gt; S
-]</p>
+<section id="define-the-fitness-function">
+<h3>Define the fitness function<a class="headerlink" href="#define-the-fitness-function" title="Link to this heading">¶</a></h3>
+<p>We begin by defining the fitness function for the Prisoner’s Dilemma. The parameters satisfy</p>
+<p>$
+T &gt; R &gt; P &gt; S,
+$</p>
 <p>where:</p>
 <ul class="simple">
 <li><p><strong>T</strong> – temptation to defect</p></li>
@@ -316,16 +323,12 @@ T &gt; R &gt; P &gt; S
 <li><p><strong>P</strong> – punishment for mutual defection</p></li>
 <li><p><strong>S</strong> – sucker’s payoff</p></li>
 </ul>
+<p>The fitness function is then of the form:</p>
+<p>$
+\mathbf{f}(\mathbf{x}) = \begin{bmatrix}R &amp; S\ T &amp; P\end{bmatrix}\mathbf{x},
+$</p>
+<p>which is implemented as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SinglePopulationGame</span><span class="p">,</span>
-    <span class="n">PayoffMechanism</span><span class="p">,</span>
-    <span class="n">PoissonRevisionProcess</span><span class="p">,</span>
-    <span class="n">Simulator</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Softmax</span>
 
 <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
 
@@ -338,10 +341,16 @@ T &gt; R &gt; P &gt; S
 </div>
 </section>
 <hr class="docutils" />
-<section id="create-the-population-game">
-<h3>Create the population game<a class="headerlink" href="#create-the-population-game" title="Link to this heading">¶</a></h3>
-<p>Next we create the population game object and the associated payoff mechanism.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">population_game</span> <span class="o">=</span> <span class="n">SinglePopulationGame</span><span class="p">(</span>
+<section id="create-the-population-game-and-payoff-mechanism-objects">
+<h3>Create the population game and payoff mechanism objects<a class="headerlink" href="#create-the-population-game-and-payoff-mechanism-objects" title="Link to this heading">¶</a></h3>
+<p>Next we create the population game object and payoff mechanism objects by specifying the number of strategies
+and the fitness function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SinglePopulationGame</span><span class="p">,</span>
+    <span class="n">PayoffMechanism</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">population_game</span> <span class="o">=</span> <span class="n">SinglePopulationGame</span><span class="p">(</span>
     <span class="n">num_strategies</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">fitness_function</span><span class="o">=</span><span class="n">fitness_function</span><span class="p">,</span>
 <span class="p">)</span>
@@ -354,10 +363,14 @@ T &gt; R &gt; P &gt; S
 </div>
 </section>
 <hr class="docutils" />
-<section id="define-the-revision-process">
-<h3>Define the revision process<a class="headerlink" href="#define-the-revision-process" title="Link to this heading">¶</a></h3>
-<p>Agents revise their strategies according to a <strong>Poisson revision process</strong> combined with a <strong>softmax revision protocol</strong>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">revision_process</span> <span class="o">=</span> <span class="n">PoissonRevisionProcess</span><span class="p">(</span>
+<section id="define-the-revision-process-object">
+<h3>Define the revision process object<a class="headerlink" href="#define-the-revision-process-object" title="Link to this heading">¶</a></h3>
+<p>Agents revise their strategies according to a <strong>Poisson revision process</strong> combined with a <strong>softmax revision protocol</strong>.
+Thus, we define the corresponding revision process object as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="n">PoissonRevisionProcess</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Softmax</span>
+
+<span class="n">revision_process</span> <span class="o">=</span> <span class="n">PoissonRevisionProcess</span><span class="p">(</span>
     <span class="n">Poisson_clock_rate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">revision_protocol</span><span class="o">=</span><span class="n">Softmax</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
 <span class="p">)</span>
@@ -365,17 +378,19 @@ T &gt; R &gt; P &gt; S
 </div>
 </section>
 <hr class="docutils" />
-<section id="run-the-simulation">
-<h3>Run the simulation<a class="headerlink" href="#run-the-simulation" title="Link to this heading">¶</a></h3>
-<p>We simulate a population of 1000 agents starting from an equal split between the two strategies.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span>
+<section id="instantiate-the-simulator-and-run-the-simulation">
+<h3>Instantiate the simulator and run the simulation<a class="headerlink" href="#instantiate-the-simulator-and-run-the-simulation" title="Link to this heading">¶</a></h3>
+<p>We simulate a population of $1000$ agents starting from an equal split between the two strategies.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulator</span>
+
+<span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span>
     <span class="n">population_game</span><span class="o">=</span><span class="n">population_game</span><span class="p">,</span>
     <span class="n">payoff_mechanism</span><span class="o">=</span><span class="n">payoff_mechanism</span><span class="p">,</span>
     <span class="n">revision_processes</span><span class="o">=</span><span class="n">revision_process</span><span class="p">,</span>
     <span class="n">num_agents</span><span class="o">=</span><span class="mi">1000</span>
 <span class="p">)</span>
 
-<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># Initial state</span>
 
 <span class="n">sim</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">T_sim</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
@@ -385,8 +400,10 @@ T &gt; R &gt; P &gt; S
 <hr class="docutils" />
 <section id="visualize-the-results">
 <h3>Visualize the results<a class="headerlink" href="#visualize-the-results" title="Link to this heading">¶</a></h3>
-<p>Finally, we plot the fraction of agents playing each strategy over time.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<p>Finally, we can visualize the results using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Cooperators&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Defectors&quot;</span><span class="p">)</span>
@@ -400,7 +417,9 @@ T &gt; R &gt; P &gt; S
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>If everything works as expected, you should see a plot like:</p>
+<p>PopGames also provides ready-to-use visualization options supporting ternary plots, univariate projections, or custom
+key performance indicator. For more details please refer to the API reference documentation.</p>
+<p>For the considered example, if everything works as expected, you should see a plot like:</p>
 <a class="reference internal image-reference" href="_images/prisoners_dilemma.png"><img alt="Prisoner's Dilemma trajectory" class="align-center" src="_images/prisoners_dilemma.png" style="width: 50%;" />
 </a>
 </section>
@@ -500,10 +519,10 @@ illustrating the well-known outcome of the Prisoner’s Dilemma in evolutionary 
 </ul>
 </li>
 <li><a class="reference internal" href="#quick-usage-example">Quick Usage Example</a><ul>
-<li><a class="reference internal" href="#define-the-game">Define the game</a></li>
-<li><a class="reference internal" href="#create-the-population-game">Create the population game</a></li>
-<li><a class="reference internal" href="#define-the-revision-process">Define the revision process</a></li>
-<li><a class="reference internal" href="#run-the-simulation">Run the simulation</a></li>
+<li><a class="reference internal" href="#define-the-fitness-function">Define the fitness function</a></li>
+<li><a class="reference internal" href="#create-the-population-game-and-payoff-mechanism-objects">Create the population game and payoff mechanism objects</a></li>
+<li><a class="reference internal" href="#define-the-revision-process-object">Define the revision process object</a></li>
+<li><a class="reference internal" href="#instantiate-the-simulator-and-run-the-simulation">Instantiate the simulator and run the simulation</a></li>
 <li><a class="reference internal" href="#visualize-the-results">Visualize the results</a></li>
 <li><a class="reference internal" href="#what-happens">What happens?</a></li>
 </ul>

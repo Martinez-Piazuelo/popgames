@@ -1,4 +1,4 @@
-# Contributing to PopGames
+# Contributing
 
 Contributions are welcome. If you would like to improve `popgames`, please follow the workflow below.
 
