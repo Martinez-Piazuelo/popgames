@@ -6,8 +6,8 @@
 :hidden:
 
 getting_started/index
-usage_examples/index
 key_concepts/index
+usage_examples/index
 api/index
 contributing/index
 ```
