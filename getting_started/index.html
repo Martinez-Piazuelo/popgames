@@ -258,7 +258,7 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="getting-started">
+          <section class="tex2jax_ignore mathjax_ignore" id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
 <p><strong>PopGames</strong> is a Python library for modeling and simulating population games.</p>
 <section id="source-code">
@@ -313,9 +313,12 @@
 <section id="define-the-fitness-function">
 <h3>Define the fitness function<a class="headerlink" href="#define-the-fitness-function" title="Link to this heading">¶</a></h3>
 <p>We begin by defining the fitness function for the Prisoner’s Dilemma. The parameters satisfy</p>
-<p>$
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[
 T &gt; R &gt; P &gt; S,
-$</p>
+\]</div>
+</div>
 <p>where:</p>
 <ul class="simple">
 <li><p><strong>T</strong> – temptation to defect</p></li>
@@ -324,9 +327,12 @@ $</p>
 <li><p><strong>S</strong> – sucker’s payoff</p></li>
 </ul>
 <p>The fitness function is then of the form:</p>
-<p>$
-\mathbf{f}(\mathbf{x}) = \begin{bmatrix}R &amp; S\ T &amp; P\end{bmatrix}\mathbf{x},
-$</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathbf{f}(\mathbf{x}) = \begin{bmatrix}R &amp; S\\ T &amp; P\end{bmatrix}\mathbf{x},
+\end{split}\]</div>
+</div>
 <p>which is implemented as:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -554,5 +560,7 @@ illustrating the well-known outcome of the Prisoner’s Dilemma in evolutionary 
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
     </body>
 </html>
