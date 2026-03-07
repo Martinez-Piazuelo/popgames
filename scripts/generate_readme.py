@@ -26,33 +26,61 @@ def split_code_fences(text: str) -> list[tuple[str, str]]:
 
 
 def normalize_math_expr(expr: str) -> str:
-    """Make math a bit more GitHub-friendly."""
+    """Make math more GitHub-friendly."""
     expr = expr.strip()
+
     expr = expr.replace(r"\begin{bmatrix}", r"\begin{pmatrix}")
     expr = expr.replace(r"\end{bmatrix}", r"\end{pmatrix}")
+
     return expr
 
 
-def convert_inline_math_to_block(text: str) -> str:
+def convert_inline_math_to_math_block(text: str) -> str:
     """
-    Convert inline math $...$ into block math $$...$$.
-
-    This is intentionally conservative and only runs outside fenced code
-    blocks, so Python examples remain untouched.
+    Convert inline math $...$ into fenced ```math blocks.
+    This is more reliable on GitHub than trying to keep complex inline math.
     """
     pattern = re.compile(r"(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)", re.DOTALL)
 
     def repl(match: re.Match[str]) -> str:
         expr = normalize_math_expr(match.group(1))
-        return f"\n$$\n{expr}\n$$\n"
+        return f"\n```math\n{expr}\n```\n"
 
     return pattern.sub(repl, text)
+
+
+def convert_display_math_to_math_block(text: str) -> str:
+    """
+    Convert $$...$$ blocks into fenced ```math blocks.
+    """
+    pattern = re.compile(r"\$\$(.+?)\$\$", re.DOTALL)
+
+    def repl(match: re.Match[str]) -> str:
+        expr = normalize_math_expr(match.group(1))
+        return f"\n```math\n{expr.strip()}\n```\n"
+
+    return pattern.sub(repl, text)
+
+
+def simplify_problematic_math(text: str) -> str:
+    """
+    README-only simplifications for expressions that often render poorly on GitHub.
+    """
+    text = text.replace(
+        r"\mathbf{f}(\mathbf{x}) = \begin{pmatrix} R & S \\ T & P \end{pmatrix}\mathbf{x}",
+        r"\mathbf{f}(\mathbf{x}) = A\mathbf{x}, \quad A = \begin{pmatrix} R & S \\ T & P \end{pmatrix}",
+    )
+    text = text.replace(
+        r"\mathbf{f}(\mathbf{x})=\begin{pmatrix}R&S\\T&P\end{pmatrix}\mathbf{x}",
+        r"\mathbf{f}(\mathbf{x}) = A\mathbf{x}, \quad A = \begin{pmatrix} R & S \\ T & P \end{pmatrix}",
+    )
+    return text
 
 
 def convert_markdown_math_for_github(text: str) -> str:
     """
     Convert markdown math conservatively for GitHub README rendering.
-    Does not touch fenced code blocks.
+    Does not touch non-math fenced code blocks.
     """
     chunks = split_code_fences(text)
     out: list[str] = []
@@ -61,7 +89,9 @@ def convert_markdown_math_for_github(text: str) -> str:
         if kind == "code":
             out.append(chunk)
         else:
-            chunk = convert_inline_math_to_block(chunk)
+            chunk = simplify_problematic_math(chunk)
+            chunk = convert_display_math_to_math_block(chunk)
+            chunk = convert_inline_math_to_math_block(chunk)
             chunk = re.sub(r"\n{3,}", "\n\n", chunk)
             out.append(chunk)
 
