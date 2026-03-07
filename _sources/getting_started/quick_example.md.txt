@@ -98,7 +98,7 @@ revision_process = PoissonRevisionProcess(
 
 ### Instantiate the simulator and run the simulation
 
-We simulate a population of $1000$ agents starting from an equal split between the two strategies.
+We simulate a population of 1000 agents starting from an equal split between the two strategies.
 
 ```python
 from popgames import Simulator
