@@ -22,9 +22,9 @@ Even though mutual cooperation is socially optimal, evolutionary dynamics often 
 
 We begin by defining the fitness function for the Prisoner's Dilemma. The parameters satisfy
 
-$
+$$
 T > R > P > S,
-$
+$$
 
 where:
 
@@ -35,9 +35,9 @@ where:
 
 The fitness function is then of the form:
 
-$
+$$
 \mathbf{f}(\mathbf{x}) = \begin{bmatrix}R & S\\ T & P\end{bmatrix}\mathbf{x},
-$
+$$
 
 which is implemented as:
 

@@ -32,7 +32,7 @@ Full API reference and usage examples are available at:
 
 docs = [
     load_md("docs/source/getting_started/installation.md"),
-    load_md("docs/source/getting_started/quick_example.md").replace("$", "$$"),
+    load_md("docs/source/getting_started/quick_example.md"),
     load_md("docs/source/contributing/index.md").replace("#", "##"),
 ]
 

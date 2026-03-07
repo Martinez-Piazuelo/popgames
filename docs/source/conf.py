@@ -58,6 +58,7 @@ source_suffix = {
 myst_enable_extensions = [
     "colon_fence",
     "deflist",
+    "dollarmath",
 ]
 suppress_warnings = [
     "myst.header",
