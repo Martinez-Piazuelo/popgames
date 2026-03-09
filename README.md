@@ -51,12 +51,12 @@ If no errors occur, the installation was successful.
 
 ## Quick Usage Example
 
-PopGames follows an object-oriented programming approach based on four core objects:
+PopGames follows an object-oriented design built around four core components:
 
-* **Population game:** defines the strategic environment of the game
-* **Payoff mechanism:** specifies the payoff perceived by the agents
-* **Revision process:** establishes how agents update their strategies
-* **Simulator:** orchestrates the simulation
+* **Population game**: defines the strategic environment
+* **Payoff mechanism**: specifies the payoff perceived by agents
+* **Revision process**: determines how agents update their strategies
+* **Simulator**: orchestrates and runs the simulation
 
 This example demonstrates how to simulate a simple **population game** using `popgames`.
 
@@ -65,13 +65,13 @@ We model the classic **Prisoner’s Dilemma**, where agents repeatedly choose be
 * **Cooperate**
 * **Defect**
 
-Even though mutual cooperation is socially optimal, evolutionary dynamics often drive the population toward defection.
+Although mutual cooperation is socially optimal, evolutionary dynamics often drive the population toward defection.
 
 ---
 
 ### Define the fitness function
 
-We begin by defining the fitness function for the Prisoner's Dilemma. The parameters satisfy
+We begin by defining the fitness function for the Prisoner's Dilemma. The payoff parameters satisfy
 
 ```math
 T > R > P > S
@@ -90,7 +90,7 @@ The fitness function is then of the form:
 f(x) = [[R, S], [T, P]]x
 ```
 
-which is implemented as:
+which can be implemented in Python as follows:
 
 ```python
 import numpy as np
@@ -108,7 +108,7 @@ def fitness_function(x):
 
 ### Create the population game and payoff mechanism objects
 
-Next we create the population game object and payoff mechanism objects by specifying the number of strategies
+Next we instantiate the population game and payoff mechanism objects by specifying the number of strategies
 and the fitness function.
 
 ```python
@@ -132,8 +132,8 @@ payoff_mechanism = PayoffMechanism(
 
 ### Define the revision process object
 
-Agents revise their strategies according to a **Poisson revision process** combined with a **softmax revision protocol**.
-Thus, we define the corresponding revision process object as follows.
+Agents revise their strategies according to a Poisson revision process combined with a softmax revision protocol.
+We therefore define the corresponding revision process object as follows.
 
 ```python
 from popgames import PoissonRevisionProcess
@@ -149,7 +149,8 @@ revision_process = PoissonRevisionProcess(
 
 ### Instantiate the simulator and run the simulation
 
-We simulate a population of 1000 agents starting from an equal split between the two strategies.
+We now create the simulator and run the population dynamics.
+The simulation considers a population of 1000 agents starting from an equal split between the two strategies.
 
 ```python
 from popgames import Simulator
@@ -161,7 +162,7 @@ sim = Simulator(
     num_agents=1000
 )
 
-x0 = np.array([0.5, 0.5]).reshape(2, 1) # Initial state
+x0 = np.array([0.5, 0.5]).reshape(2, 1)  # Initial state
 
 sim.reset(x0=x0)
 out = sim.run(T_sim=30)
@@ -171,7 +172,7 @@ out = sim.run(T_sim=30)
 
 ### Visualize the results
 
-Finally, we can visualize the results using `matplotlib` as follows.
+Finally, we visualize the evolution of the population state using `matplotlib`.
 
 ```python
 import matplotlib.pyplot as plt
@@ -190,8 +191,10 @@ plt.tight_layout()
 plt.show()
 ```
 
-PopGames also provides ready-to-use visualization options supporting ternary plots, univariate projections, or custom
-key performance indicator. For more details please refer to the API reference documentation.
+PopGames also provides built-in visualization utilities supporting ternary plots, univariate projections, and custom 
+key performance indicators. For more details, see the API reference documentation.
+
+---
 
 ## Contributing
 
