@@ -26,6 +26,12 @@ $$
 T > R > P > S,
 $$
 
+<!-- README_REPLACE_START -->
+```math
+T > R > P > S
+```
+<!-- README_REPLACE_END -->
+
 where:
 
 * **T** – temptation to defect
@@ -38,6 +44,12 @@ The fitness function is then of the form:
 $$
 \mathbf{f}(\mathbf{x}) = \begin{bmatrix}R & S\\ T & P\end{bmatrix}\mathbf{x},
 $$
+
+<!-- README_REPLACE_START -->
+```math
+f(x) = [[R, S], [T, P]]x
+```
+<!-- README_REPLACE_END -->
 
 which is implemented as:
 
