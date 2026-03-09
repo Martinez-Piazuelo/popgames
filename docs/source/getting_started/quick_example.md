@@ -154,5 +154,3 @@ plt.show()
 
 PopGames also provides built-in visualization utilities supporting ternary plots, univariate projections, and custom 
 key performance indicators. For more details, see the API reference documentation.
-
----
