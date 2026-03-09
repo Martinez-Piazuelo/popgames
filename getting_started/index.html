@@ -295,12 +295,12 @@
 </section>
 <section id="quick-usage-example">
 <h2>Quick Usage Example<a class="headerlink" href="#quick-usage-example" title="Link to this heading">¶</a></h2>
-<p>PopGames follows an object-oriented programming approach based on four core objects:</p>
+<p>PopGames follows an object-oriented design built around four core components:</p>
 <ul class="simple">
-<li><p><strong>Population game:</strong> defines the strategic environment of the game</p></li>
-<li><p><strong>Payoff mechanism:</strong> specifies the payoff perceived by the agents</p></li>
-<li><p><strong>Revision process:</strong> establishes how agents update their strategies</p></li>
-<li><p><strong>Simulator:</strong> orchestrates the simulation</p></li>
+<li><p><strong>Population game</strong>: defines the strategic environment</p></li>
+<li><p><strong>Payoff mechanism</strong>: specifies the payoff perceived by agents</p></li>
+<li><p><strong>Revision process</strong>: determines how agents update their strategies</p></li>
+<li><p><strong>Simulator</strong>: orchestrates and runs the simulation</p></li>
 </ul>
 <p>This example demonstrates how to simulate a simple <strong>population game</strong> using <code class="docutils literal notranslate"><span class="pre">popgames</span></code>.</p>
 <p>We model the classic <strong>Prisoner’s Dilemma</strong>, where agents repeatedly choose between two strategies:</p>
@@ -308,17 +308,22 @@
 <li><p><strong>Cooperate</strong></p></li>
 <li><p><strong>Defect</strong></p></li>
 </ul>
-<p>Even though mutual cooperation is socially optimal, evolutionary dynamics often drive the population toward defection.</p>
+<p>Although mutual cooperation is socially optimal, evolutionary dynamics often drive the population toward defection.</p>
 <hr class="docutils" />
 <section id="define-the-fitness-function">
 <h3>Define the fitness function<a class="headerlink" href="#define-the-fitness-function" title="Link to this heading">¶</a></h3>
-<p>We begin by defining the fitness function for the Prisoner’s Dilemma. The parameters satisfy</p>
+<p>We begin by defining the fitness function for the Prisoner’s Dilemma. The payoff parameters satisfy</p>
 <div class="math-wrapper docutils container">
 <div class="math notranslate nohighlight">
 \[
 T &gt; R &gt; P &gt; S,
 \]</div>
 </div>
+<!-- README_REPLACE_START -->
+<div class="highlight-math notranslate"><div class="highlight"><pre><span></span>T &gt; R &gt; P &gt; S
+</pre></div>
+</div>
+<!-- README_REPLACE_END -->
 <p>where:</p>
 <ul class="simple">
 <li><p><strong>T</strong> – temptation to defect</p></li>
@@ -333,7 +338,12 @@ T &gt; R &gt; P &gt; S,
 \mathbf{f}(\mathbf{x}) = \begin{bmatrix}R &amp; S\\ T &amp; P\end{bmatrix}\mathbf{x},
 \end{split}\]</div>
 </div>
-<p>which is implemented as:</p>
+<!-- README_REPLACE_START -->
+<div class="highlight-math notranslate"><div class="highlight"><pre><span></span>f(x) = [[R, S], [T, P]]x
+</pre></div>
+</div>
+<!-- README_REPLACE_END -->
+<p>which can be implemented in Python as follows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">T</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">S</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
@@ -349,7 +359,7 @@ T &gt; R &gt; P &gt; S,
 <hr class="docutils" />
 <section id="create-the-population-game-and-payoff-mechanism-objects">
 <h3>Create the population game and payoff mechanism objects<a class="headerlink" href="#create-the-population-game-and-payoff-mechanism-objects" title="Link to this heading">¶</a></h3>
-<p>Next we create the population game object and payoff mechanism objects by specifying the number of strategies
+<p>Next we instantiate the population game and payoff mechanism objects by specifying the number of strategies
 and the fitness function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">SinglePopulationGame</span><span class="p">,</span>
@@ -371,8 +381,8 @@ and the fitness function.</p>
 <hr class="docutils" />
 <section id="define-the-revision-process-object">
 <h3>Define the revision process object<a class="headerlink" href="#define-the-revision-process-object" title="Link to this heading">¶</a></h3>
-<p>Agents revise their strategies according to a <strong>Poisson revision process</strong> combined with a <strong>softmax revision protocol</strong>.
-Thus, we define the corresponding revision process object as follows.</p>
+<p>Agents revise their strategies according to a Poisson revision process combined with a softmax revision protocol.
+We therefore define the corresponding revision process object as follows.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="n">PoissonRevisionProcess</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Softmax</span>
 
@@ -386,7 +396,8 @@ Thus, we define the corresponding revision process object as follows.</p>
 <hr class="docutils" />
 <section id="instantiate-the-simulator-and-run-the-simulation">
 <h3>Instantiate the simulator and run the simulation<a class="headerlink" href="#instantiate-the-simulator-and-run-the-simulation" title="Link to this heading">¶</a></h3>
-<p>We simulate a population of 1000 agents starting from an equal split between the two strategies.</p>
+<p>We now create the simulator and run the population dynamics.
+The simulation considers a population of 1000 agents starting from an equal split between the two strategies.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulator</span>
 
 <span class="n">sim</span> <span class="o">=</span> <span class="n">Simulator</span><span class="p">(</span>
@@ -396,7 +407,7 @@ Thus, we define the corresponding revision process object as follows.</p>
     <span class="n">num_agents</span><span class="o">=</span><span class="mi">1000</span>
 <span class="p">)</span>
 
-<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># Initial state</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># Initial state</span>
 
 <span class="n">sim</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">x0</span><span class="o">=</span><span class="n">x0</span><span class="p">)</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">T_sim</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
@@ -406,7 +417,7 @@ Thus, we define the corresponding revision process object as follows.</p>
 <hr class="docutils" />
 <section id="visualize-the-results">
 <h3>Visualize the results<a class="headerlink" href="#visualize-the-results" title="Link to this heading">¶</a></h3>
-<p>Finally, we can visualize the results using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> as follows.</p>
+<p>Finally, we visualize the evolution of the population state using <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -423,8 +434,8 @@ Thus, we define the corresponding revision process object as follows.</p>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>PopGames also provides ready-to-use visualization options supporting ternary plots, univariate projections, or custom
-key performance indicator. For more details please refer to the API reference documentation.</p>
+<p>PopGames also provides built-in visualization utilities supporting ternary plots, univariate projections, and custom
+key performance indicators. For more details, see the API reference documentation.</p>
 <p>For the considered example, if everything works as expected, you should see a plot like:</p>
 <a class="reference internal image-reference" href="../_images/prisoners_dilemma.png"><img alt="Prisoner's Dilemma trajectory" class="align-center" src="../_images/prisoners_dilemma.png" style="width: 50%;" />
 </a>

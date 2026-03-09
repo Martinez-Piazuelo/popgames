@@ -176,7 +176,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
       </label>
     </div>
@@ -253,14 +253,201 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
           </label>
         </div>
         <article role="main" id="furo-main-content">
           <section class="tex2jax_ignore mathjax_ignore" id="key-concepts">
 <h1>Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this heading">¶</a></h1>
-<p>TODO</p>
+<p>This section introduces the fundamental ideas behind <strong>population games</strong> and the modeling framework implemented in <strong>PopGames</strong>.<br />
+The goal is to understand how large populations of agents interact, learn, and adapt their behavior over time.</p>
+<p>PopGames is designed around a modeling framework composed of three core elements:</p>
+<ol class="arabic simple">
+<li><p><strong>Population game</strong></p></li>
+<li><p><strong>Payoff mechanism</strong></p></li>
+<li><p><strong>Revision process</strong></p></li>
+</ol>
+<p>Together, these elements describe how strategic environments are defined, how agents perceive performance, and how their behavior evolves over time.</p>
+<hr class="docutils" />
+<section id="the-three-fundamental-elements">
+<h2>The three fundamental elements<a class="headerlink" href="#the-three-fundamental-elements" title="Link to this heading">¶</a></h2>
+<section id="population-game">
+<h3>1. Population game<a class="headerlink" href="#population-game" title="Link to this heading">¶</a></h3>
+<p>A <strong>population game</strong> defines the underlying strategic environment in which agents interact.</p>
+<p>Specifically, it specifies:</p>
+<ul class="simple">
+<li><p>the populations of decision‑making agents</p></li>
+<li><p>the available strategic choices for each population</p></li>
+<li><p>any coupling constraints between the agents’ choices</p></li>
+<li><p>the <strong>fitness functions</strong>, which determine how desirable each strategy is as a function of the current distribution of strategies in the population</p></li>
+</ul>
+<p>In other words, the population game defines <strong>what the game is</strong>: the available strategies and how the quality
+of those strategies depends on the current state of the system.</p>
+</section>
+<hr class="docutils" />
+<section id="payoff-mechanism">
+<h3>2. Payoff mechanism<a class="headerlink" href="#payoff-mechanism" title="Link to this heading">¶</a></h3>
+<p>The <strong>payoff mechanism</strong> determines how agents perceive the performance of their chosen strategies.</p>
+<p>While the population game defines the theoretical desirability of strategies through fitness functions, the payoff
+mechanism specifies the <strong>payoffs or rewards that agents actually observe</strong>.</p>
+<p>It therefore acts as an interface between:</p>
+<ul class="simple">
+<li><p>the <strong>strategic environment</strong> (population game), and</p></li>
+<li><p>the <strong>learning behavior of agents</strong> (revision processes).</p></li>
+</ul>
+<p>Examples of payoffs include:</p>
+<ul class="simple">
+<li><p>economic rewards</p></li>
+<li><p>performance metrics</p></li>
+<li><p>utility functions</p></li>
+<li><p>system‑level incentives</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="revision-process">
+<h3>3. Revision process<a class="headerlink" href="#revision-process" title="Link to this heading">¶</a></h3>
+<p>The <strong>revision process</strong> describes <strong>how and when agents update their strategies</strong>.</p>
+<p>It can be interpreted as a learning rule governing the adaptation of agents over time.</p>
+<p>A revision process typically specifies:</p>
+<ul class="simple">
+<li><p>when an agent has the opportunity to revise its strategy</p></li>
+<li><p>how the agent selects a new strategy based on observed payoffs</p></li>
+</ul>
+<p>Examples include:</p>
+<ul class="simple">
+<li><p>imitation dynamics</p></li>
+<li><p>logit or softmax choice rules</p></li>
+<li><p>best‑response dynamics</p></li>
+<li><p>stochastic revision processes</p></li>
+</ul>
+<p>In PopGames, revision processes model how decentralized agents autonomously adapt their behavior according to their performance.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="decentralized-decision-making">
+<h2>Decentralized decision-making<a class="headerlink" href="#decentralized-decision-making" title="Link to this heading">¶</a></h2>
+<p>This modeling framework is particularly useful in systems where:</p>
+<ul class="simple">
+<li><p>decision-making is <strong>distributed</strong></p></li>
+<li><p>agents operate with <strong>limited information</strong></p></li>
+<li><p>coordination emerges from <strong>repeated interactions</strong> rather than centralized control</p></li>
+</ul>
+<p>Instead of prescribing individual actions, the framework studies how the <strong>distribution of strategies across a population evolves over time</strong>.</p>
+<p>Such decentralized systems appear in many domains, including:</p>
+<ul class="simple">
+<li><p>biological systems</p></li>
+<li><p>social and economic interactions</p></li>
+<li><p>traffic and transportation networks</p></li>
+<li><p>communication networks</p></li>
+<li><p>multi‑robot systems</p></li>
+<li><p>distributed control systems</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="when-is-the-framework-applicable">
+<h2>When is the framework applicable?<a class="headerlink" href="#when-is-the-framework-applicable" title="Link to this heading">¶</a></h2>
+<p>For the framework to be well‑posed, three fundamental properties typically hold.</p>
+<section id="large-populations">
+<h3>Large populations<a class="headerlink" href="#large-populations" title="Link to this heading">¶</a></h3>
+<p>Each population consists of a <strong>large number of agents</strong>.<br />
+This allows the system to be modeled using <strong>aggregate behavior</strong> instead of tracking individual agents.</p>
+</section>
+<hr class="docutils" />
+<section id="finite-roles">
+<h3>Finite roles<a class="headerlink" href="#finite-roles" title="Link to this heading">¶</a></h3>
+<p>Agents belong to one of a <strong>finite number of populations</strong> (or roles).<br />
+All agents in the same population:</p>
+<ul class="simple">
+<li><p>share the same set of strategies</p></li>
+<li><p>receive the same payoff when choosing the same strategy</p></li>
+</ul>
+<p>Individual identity therefore does not affect payoffs.</p>
+</section>
+<hr class="docutils" />
+<section id="negligible-individual-influence">
+<h3>Negligible individual influence<a class="headerlink" href="#negligible-individual-influence" title="Link to this heading">¶</a></h3>
+<p>A single agent has <strong>negligible influence</strong> on the overall system.</p>
+<p>Fitness functions, payoffs, and constraints depend on the <strong>aggregate distribution of strategies</strong>, not on the decision of any particular agent.</p>
+<p>This assumption allows the system to be modeled at the <strong>population level</strong>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="population-dynamics">
+<h2>Population dynamics<a class="headerlink" href="#population-dynamics" title="Link to this heading">¶</a></h2>
+<p>Unlike classical game theory, which focuses on the reasoning of individual players, the population game framework
+studies <strong>the evolution of strategy distributions</strong>.</p>
+<p>Rather than tracking individual agents, we analyze how the <strong>state of the population</strong> changes over time.</p>
+<p>This perspective enables the study of <strong>emergent collective behavior</strong> in large decentralized systems.</p>
+</section>
+<hr class="docutils" />
+<section id="fundamental-questions">
+<h2>Fundamental questions<a class="headerlink" href="#fundamental-questions" title="Link to this heading">¶</a></h2>
+<p>Within this framework, two fundamental questions naturally arise.</p>
+<section id="does-an-equilibrium-exist">
+<h3>1. Does an equilibrium exist?<a class="headerlink" href="#does-an-equilibrium-exist" title="Link to this heading">¶</a></h3>
+<p>An <strong>equilibrium state</strong> is a distribution of strategies where no agent can improve its payoff by unilaterally changing its strategy.</p>
+<p>If such a state exists, it represents a <strong>self‑enforcing agreement</strong> among the populations.</p>
+<p>In many applications, the relevant concept is the <strong>generalized Nash equilibrium</strong>.</p>
+</section>
+<hr class="docutils" />
+<section id="do-populations-converge-to-equilibrium">
+<h3>2. Do populations converge to equilibrium?<a class="headerlink" href="#do-populations-converge-to-equilibrium" title="Link to this heading">¶</a></h3>
+<p>Even if an equilibrium exists, an important question remains:</p>
+<blockquote>
+<div><p>Will the population dynamics converge to it?</p>
+</div></blockquote>
+<p>Given a population game, a payoff mechanism, and a revision process, we want to know whether the system will
+eventually settle into a stable state.</p>
+<p>If convergence occurs, the equilibrium can serve as a <strong>predictor of long‑term system behavior</strong>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="designing-multiagent-systems">
+<h2>Designing multi‑agent systems<a class="headerlink" href="#designing-multiagent-systems" title="Link to this heading">¶</a></h2>
+<p>Understanding these dynamics is important not only for analysis but also for <strong>system design</strong>.</p>
+<p>Two main approaches can be considered:</p>
+<section id="prescriptive-approaches">
+<h3>Prescriptive approaches<a class="headerlink" href="#prescriptive-approaches" title="Link to this heading">¶</a></h3>
+<p>The revision processes of agents are <strong>designed explicitly</strong> so that the population converges to a desired equilibrium.</p>
+<p>This corresponds to designing learning rules or adaptation mechanisms.</p>
+</section>
+<hr class="docutils" />
+<section id="incentive-design">
+<h3>Incentive design<a class="headerlink" href="#incentive-design" title="Link to this heading">¶</a></h3>
+<p>Agents may follow their own fixed revision processes.<br />
+Instead of controlling the learning rule, the system designer modifies the <strong>payoff mechanism</strong> to steer the
+system toward a desired outcome.</p>
+<p>This is common in economic and mechanism‑design settings.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="why-popgames">
+<h2>Why PopGames?<a class="headerlink" href="#why-popgames" title="Link to this heading">¶</a></h2>
+<p>PopGames provides tools to model and simulate these dynamics in a modular and extensible way.</p>
+<p>By separating:</p>
+<ul class="simple">
+<li><p>population games</p></li>
+<li><p>payoff mechanisms</p></li>
+<li><p>revision processes</p></li>
+</ul>
+<p>the library allows researchers and practitioners to experiment with different combinations of models and learning rules.</p>
+<p>This modular approach makes it easier to analyze complex multi‑agent systems and study how collective behavior emerges
+from decentralized decision-making.</p>
+</section>
+<section id="further-reading">
+<h2>Further reading<a class="headerlink" href="#further-reading" title="Link to this heading">¶</a></h2>
+<p>The theoretical foundations of the modeling framework presented here are developed in detail in the following book:</p>
+<a class="reference internal image-reference" href="../_images/book_cover.png"><img alt="Book cover" class="align-center" src="../_images/book_cover.png" style="width: 200px;" />
+</a>
+<blockquote>
+<div><p><strong><a class="reference external" href="https://link.springer.com/book/10.1007/978-3-032-06081-5">Generalized Nash Equilibrium Seeking in Population Games</a></strong><br />
+Juan Martinez-Piazuelo, Carlos Ocampo-Martinez, Nicanor Quijano<br />
+Springer, 2026<br />
+DOI: 10.1007/978-3-032-06081-5</p>
+</div></blockquote>
+<p>The book provides a rigorous treatment of the topic, together with hands-on examples implemented using <code class="docutils literal notranslate"><span class="pre">popgames</span></code>.</p>
+</section>
 </section>
 
         </article>
@@ -327,8 +514,52 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Key Concepts</a><ul>
+<li><a class="reference internal" href="#the-three-fundamental-elements">The three fundamental elements</a><ul>
+<li><a class="reference internal" href="#population-game">1. Population game</a></li>
+<li><a class="reference internal" href="#payoff-mechanism">2. Payoff mechanism</a></li>
+<li><a class="reference internal" href="#revision-process">3. Revision process</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#decentralized-decision-making">Decentralized decision-making</a></li>
+<li><a class="reference internal" href="#when-is-the-framework-applicable">When is the framework applicable?</a><ul>
+<li><a class="reference internal" href="#large-populations">Large populations</a></li>
+<li><a class="reference internal" href="#finite-roles">Finite roles</a></li>
+<li><a class="reference internal" href="#negligible-individual-influence">Negligible individual influence</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#population-dynamics">Population dynamics</a></li>
+<li><a class="reference internal" href="#fundamental-questions">Fundamental questions</a><ul>
+<li><a class="reference internal" href="#does-an-equilibrium-exist">1. Does an equilibrium exist?</a></li>
+<li><a class="reference internal" href="#do-populations-converge-to-equilibrium">2. Do populations converge to equilibrium?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#designing-multiagent-systems">Designing multi‑agent systems</a><ul>
+<li><a class="reference internal" href="#prescriptive-approaches">Prescriptive approaches</a></li>
+<li><a class="reference internal" href="#incentive-design">Incentive design</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#why-popgames">Why PopGames?</a></li>
+<li><a class="reference internal" href="#further-reading">Further reading</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
