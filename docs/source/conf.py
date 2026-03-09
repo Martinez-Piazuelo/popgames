@@ -62,6 +62,7 @@ myst_enable_extensions = [
 ]
 suppress_warnings = [
     "myst.header",
+    "misc.highlighting_failure",
 ]
 
 # -- Options for HTML output -------------------------------------------------
