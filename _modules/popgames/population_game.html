@@ -408,7 +408,9 @@
 
 <div class="viewcode-block" id="PopulationGame.compute_gne">
 <a class="viewcode-back" href="../../api/population_game.html#popgames.population_game.PopulationGame.compute_gne">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">compute_gne</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_gne</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.99</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute a generalized Nash equilibrium (GNE) for the population game, assuming one exists.</span>
 
@@ -417,6 +419,8 @@
 <span class="sd">        Args:</span>
 <span class="sd">            max_iter (int): Maximum number of iterations.</span>
 <span class="sd">            tolerance (float): Convergence tolerance.</span>
+<span class="sd">            gamma (float): Step-size safety factor in (0, 1); the step size used is</span>
+<span class="sd">                ``gamma / fitness_lipschitz_constant``.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            np.ndarray: The computed GNE (if any).</span>
@@ -429,7 +433,9 @@
         <span class="n">check_scalar_value_bounds</span><span class="p">(</span>
             <span class="n">arg</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">strictly_positive</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">fbos</span><span class="p">(</span><span class="n">population_game</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">fbos</span><span class="p">(</span>
+            <span class="n">population_game</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PopulationGame.compute_polyhedron_vertices">
