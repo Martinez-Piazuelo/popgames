@@ -13,9 +13,21 @@ if typing.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Safety factor for the forward-backward step size. The convergence of the
+# modified forward-backward operator splitting method (Tseng, 2000) requires a
+# step size strictly smaller than 1 / lipschitz_constant. Using exactly
+# 1 / lipschitz_constant sits on the non-convergent boundary and can cause the
+# iteration to stall on the first step (returning the initial point as a bogus
+# "converged" GNE). A factor in (0, 1) keeps the step strictly inside the
+# convergence region.
+STEPSIZE_SAFETY_FACTOR = 0.99
+
 
 def fbos(
-    population_game: PopulationGame, max_iter: int = 5000, tolerance: float = 1e-6
+    population_game: PopulationGame,
+    max_iter: int = 5000,
+    tolerance: float = 1e-6,
+    gamma: float = STEPSIZE_SAFETY_FACTOR,
 ) -> np.ndarray:
     """
     Compute a generalized Nash equilibrium (GNE) for the provided population game.
@@ -26,10 +38,16 @@ def fbos(
         population_game (PopulationGame): the population game
         max_iter (int): the maximum number of iterations
         tolerance (float): the tolerance parameter
+        gamma (float): safety factor in (0, 1) applied to the step size so that
+            ``stepsize = gamma / lipschitz_constant`` stays strictly inside the
+            convergence region.
 
     Returns:
         np.ndarray: the computed GNE (if any).
     """
+    if not 0 < gamma < 1:
+        raise ValueError(f"gamma must be in the open interval (0, 1), got {gamma}.")
+
     # Build auxiliary matrices
     aux_matrix, aux_vector, _ = build_auxiliary_matrices(population_game)
 
@@ -41,7 +59,9 @@ def fbos(
         )
         lipschitz_constant = 100
 
-    stepsize = 1 / lipschitz_constant
+    # The step size must be strictly smaller than 1 / lipschitz_constant for the
+    # method to converge; the safety factor gamma keeps it off the boundary.
+    stepsize = gamma / lipschitz_constant
 
     x = map2delta(population_game, np.ones((population_game.n, 1)))  # Initial condition
     z = cp.Variable((population_game.n, 1))
@@ -71,7 +91,11 @@ def fbos(
         x_next = map2delta(population_game, x_next)
 
         inf_norm = np.max(np.abs(x_next - x))
-        if inf_norm < tolerance:
+        # Require at least one update before honoring the convergence test so that
+        # an oversized step that stalls on the very first iteration cannot
+        # masquerade as convergence and silently return the initial point.
+        if inf_norm < tolerance and i > 0:
+            x = x_next
             break
 
         x = x_next

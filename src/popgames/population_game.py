@@ -154,7 +154,9 @@ class PopulationGame:
             )
         self._fitness_lipschitz_constant = fitness_lipschitz_constant
 
-    def compute_gne(self, max_iter: int = 5000, tolerance: float = 1e-6) -> np.ndarray:
+    def compute_gne(
+        self, max_iter: int = 5000, tolerance: float = 1e-6, gamma: float = 0.99
+    ) -> np.ndarray:
         """
         Compute a generalized Nash equilibrium (GNE) for the population game, assuming one exists.
 
@@ -163,6 +165,8 @@ class PopulationGame:
         Args:
             max_iter (int): Maximum number of iterations.
             tolerance (float): Convergence tolerance.
+            gamma (float): Step-size safety factor in (0, 1); the step size used is
+                ``gamma / fitness_lipschitz_constant``.
 
         Returns:
             np.ndarray: The computed GNE (if any).
@@ -175,7 +179,9 @@ class PopulationGame:
         check_scalar_value_bounds(
             arg=tolerance, arg_name="tolerance", strictly_positive=True
         )
-        return fbos(population_game=self, max_iter=max_iter, tolerance=tolerance)
+        return fbos(
+            population_game=self, max_iter=max_iter, tolerance=tolerance, gamma=gamma
+        )
 
     def compute_polyhedron_vertices(self) -> Optional[np.ndarray]:
         """
