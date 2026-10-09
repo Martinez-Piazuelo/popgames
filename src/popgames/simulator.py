@@ -11,7 +11,7 @@ import scipy as sp
 from popgames.payoff_mechanism import PayoffMechanism
 from popgames.plotting import VisualizationMixin
 from popgames.population_game import PopulationGame
-from popgames.revision_process import RevisionProcessABC
+from popgames.revision_process import PoissonRevisionProcess, RevisionProcessABC
 from popgames.utilities.input_validators import (
     check_array_in_simplex,
     check_array_shape,
@@ -44,6 +44,10 @@ class Simulator(VisualizationMixin):
         payoff_mechanism: PayoffMechanism,
         revision_processes: Union[RevisionProcessABC, list[RevisionProcessABC]],
         num_agents: Union[int, list[int]],
+        fast_path: bool = True,
+        pdm_method: str = "RK4",
+        pdm_max_step: float = 0.01,
+        seed: Union[int, np.random.Generator] = None,
     ) -> None:
         """
         Initialize the simulator object.
@@ -57,7 +61,17 @@ class Simulator(VisualizationMixin):
             num_agents (Union[int, list[int]]):
                 The number of agents as an integer for the single-population case, or a list of integers
                 specifying the number of agents in each population for the multi-population case.
-
+            fast_path (bool): Whether to use the fast simulation path. It is only used if all revision processes
+                are ``PoissonRevisionProcess`` instances; otherwise the per-agent simulation path is used.
+                Set to False to force the per-agent path (e.g., for comparison). Defaults to True.
+            pdm_method (str): Method used to integrate the PDM between revision events. Either 'RK4' or any
+                method supported by ``scipy.integrate.solve_ivp`` (e.g., 'Radau' for stiff PDMs).
+                Defaults to 'RK4'.
+            pdm_max_step (float): Maximum step size used to integrate the PDM between revision events.
+                Defaults to 0.01.
+            seed (Union[int, np.random.Generator], optional): Seed or random number generator for the simulation.
+                Defaults to None, in which case NumPy's global random state is used (see ``np.random.seed``).
+                Custom (non-Poisson) revision processes always draw from their own random sources.
         """
         # Numerical precision
         self._num_precision = 9  # Number of decimals in rounding operations
@@ -109,9 +123,6 @@ class Simulator(VisualizationMixin):
             self.revision_processes = [revision_processes]
             self.num_agents = [num_agents]
 
-        # Reset simulation state, revision_times, and logs
-        self.reset()
-
         # Auxiliary constant parameters
         self._slices = []
         pos = 0
@@ -120,6 +131,32 @@ class Simulator(VisualizationMixin):
                 slice(pos, pos + self.population_game.num_strategies[k])
             )
             pos += self.population_game.num_strategies[k]
+
+        # Simulation path
+        check_type(arg=fast_path, expected_type=bool, arg_name="fast_path")
+        all_poisson = all(
+            isinstance(rp, PoissonRevisionProcess) for rp in self.revision_processes
+        )
+        self.uses_fast_path = fast_path and all_poisson
+        if fast_path and not all_poisson:
+            logger.info(
+                "Fast path requires all revision processes to be PoissonRevisionProcess. "
+                "Using the per-agent simulation path instead."
+            )
+
+        # PDM integration between revision events
+        check_type(arg=pdm_method, expected_type=str, arg_name="pdm_method")
+        self.pdm_method = pdm_method
+        check_scalar_value_bounds(
+            arg=pdm_max_step, arg_name="pdm_max_step", strictly_positive=True
+        )
+        self.pdm_max_step = pdm_max_step
+
+        # Random number generator (NumPy's global random state if no seed is provided)
+        self._rng = np.random if seed is None else np.random.default_rng(seed)
+
+        # Reset simulation state, revision_times, and logs
+        self.reset()
 
     def reset(self, x0: np.ndarray = None, q0: np.ndarray = None) -> None:
         """
@@ -130,15 +167,16 @@ class Simulator(VisualizationMixin):
             q0 (np.ndarray, Optional): The initial state for the payoff mechanism's PDM. Defaults to None.
         """
 
-        # Initialize selected strategies based on x0 (if any)
-        self._selected_strategies = []
+        # Initialize the number of agents playing each strategy based on x0 (if any)
+        self._counts = []
 
         if x0 is None:
             for k in range(self.population_game.num_populations):
-                sel_strategies_pop_k = np.random.randint(
-                    0, self.population_game.num_strategies[k], self.num_agents[k]
-                )
-                self._selected_strategies.append(sel_strategies_pop_k)
+                n_k = self.population_game.num_strategies[k]
+                sel_strategies_pop_k = np.floor(
+                    n_k * self._rng.random(self.num_agents[k])
+                ).astype(int)
+                self._counts.append(np.bincount(sel_strategies_pop_k, minlength=n_k))
         else:
             for k, s in zip(range(self.population_game.num_populations), self._slices):
                 check_array_in_simplex(
@@ -149,7 +187,6 @@ class Simulator(VisualizationMixin):
                     m=self.population_game.masses[k],
                     arg_name=f"x0_{k}",
                 )
-                sel_strategies_pop_k = np.zeros((self.num_agents[k],)).astype(int)
                 Ni_k = np.floor(
                     self.num_agents[k] * x0[s] / self.population_game.masses[k]
                 ).astype(int)
@@ -157,24 +194,31 @@ class Simulator(VisualizationMixin):
                 for _ in range(self.num_agents[k] - Ni_k.sum()):
                     Ni_k[pos, 0] += 1
                     pos = (pos + 1) % self.population_game.num_strategies[k]
-                pos = 0
-                for i in range(self.population_game.num_strategies[k]):
-                    sel_strategies_pop_k[pos : pos + Ni_k[i, 0]] = i
-                    pos += Ni_k[i, 0]
+                self._counts.append(Ni_k.reshape(-1))
 
-                self._selected_strategies.append(sel_strategies_pop_k)
-
-        # Initialize revision times
+        # Initialize per-agent selected strategies and revision times (per-agent path only)
+        self._selected_strategies = []
         self._revision_times = []
-        for k in range(self.population_game.num_populations):
-            rev_times_pop_k = self.revision_processes[k].sample_next_revision_time(
-                self.num_agents[k]
-            )
-            self._revision_times.append(np.round(rev_times_pop_k, self._num_precision))
+        if not self.uses_fast_path:
+            for k in range(self.population_game.num_populations):
+                n_k = self.population_game.num_strategies[k]
+                self._selected_strategies.append(
+                    np.repeat(np.arange(n_k), self._counts[k])
+                )
+                rev_times_pop_k = self._sample_next_revision_time(k, self.num_agents[k])
+                self._revision_times.append(
+                    np.round(rev_times_pop_k, self._num_precision)
+                )
 
         # Initialize simulator state
         self.t = 0
-        self.x = self._get_strategic_distribution()
+        self.x = np.vstack(
+            [
+                (self._counts[k] / self.num_agents[k]).reshape(-1, 1)
+                * self.population_game.masses[k]
+                for k in range(self.population_game.num_populations)
+            ]
+        )
 
         if q0 is not None:
             check_array_shape(q0, (self.payoff_mechanism.d, 1), "q0")
@@ -182,28 +226,60 @@ class Simulator(VisualizationMixin):
         else:
             self.q = np.zeros((self.payoff_mechanism.d, 1))
 
+        self.p = self.payoff_mechanism.h_map(self.q, self.x)
+
         # Initialize log
         self.log = SimpleNamespace(
             t=[self.t],
             x=[self.x],
             q=[self.q],
-            p=[self.payoff_mechanism.h_map(self.q, self.x)],
+            p=[self.p],
         )
+        self._log_interval = None
 
-    def run(self, T_sim: int, verbose: bool = False) -> SimpleNamespace:
+    def run(
+        self, T_sim: int, verbose: bool = False, log_interval: float = None
+    ) -> SimpleNamespace:
         """
         Run the simulation.
 
         Args:
             T_sim (int): The total time to simulate (in units specified by the agents' alarm clocks).
             verbose (bool): Whether to print simulation information. Defaults to False.
+            log_interval (float, optional): Minimum time between consecutive log entries. Defaults to None, in
+                which case every revision event is logged. The final state is always logged.
 
         Returns:
             SimpleNamespace: The simulation results as a SimpleNamespace object.
         """
         check_type(arg=T_sim, expected_type=int, arg_name="T_sim")
         check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
+        if log_interval is not None:
+            check_scalar_value_bounds(
+                arg=log_interval, arg_name="log_interval", strictly_positive=True
+            )
+        self._log_interval = log_interval
 
+        if self.uses_fast_path:
+            self._run_fast_path(T_sim, verbose)
+        else:
+            self._run_per_agent_path(T_sim, verbose)
+
+        if self.log.t[-1] != self.t:  # Always log the final state
+            self._update_log(force=True)
+
+        return self._get_flattened_log()
+
+    def _run_per_agent_path(self, T_sim: int, verbose: bool) -> None:
+        """
+        Internal method to run the simulation by tracking the strategy and alarm clock of every agent.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            T_sim (int): The total time to simulate.
+            verbose (bool): Whether to print simulation information.
+        """
         time_remaining = T_sim
 
         while time_remaining > 0:
@@ -227,7 +303,154 @@ class Simulator(VisualizationMixin):
                 self._microscopic_step(time_remaining)
                 time_remaining = 0
 
-        return self._get_flattened_log()
+    def _run_fast_path(self, T_sim: int, verbose: bool) -> None:
+        """
+        Internal method to run the simulation by tracking only the number of agents playing each strategy.
+
+        Valid only when all agents revise at the ticks of independent Poisson alarm clocks. By the superposition
+        property, the time to the next revision event is exponentially distributed with rate
+        ``sum_k N^k * rate^k``, the revising population is chosen with probability proportional to
+        ``N^k * rate^k``, and the revising agent is chosen uniformly at random within that population.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            T_sim (int): The total time to simulate.
+            verbose (bool): Whether to print simulation information.
+        """
+        populations_rates = np.array(
+            [
+                self.num_agents[k] * self.revision_processes[k].Poisson_clock_rate
+                for k in range(self.population_game.num_populations)
+            ]
+        )
+        total_rate = populations_rates.sum()
+        cumulative_rates = np.cumsum(populations_rates)
+        t_end = self.t + T_sim
+
+        while True:
+            if verbose:
+                logger.info(
+                    f"Simulator's remaining time = {t_end - self.t:.3F}"
+                )  # pragma: no cover
+
+            time_step = self._rng.exponential(1 / total_rate)
+            if self.t + time_step >= t_end:  # No more revisions before t_end
+                self._advance_pdm(t_end - self.t)
+                self.t = t_end
+                break
+
+            self._advance_pdm(time_step)
+            self.t += time_step
+
+            # Sample the revising population k and the current strategy i of the revising agent
+            k = (
+                self._sample_index(cumulative_rates, total_rate)
+                if self.population_game.num_populations > 1
+                else 0
+            )
+            counts_k = self._counts[k]
+            i = self._sample_index(np.cumsum(counts_k), self.num_agents[k])
+
+            # Sample the next strategy j of the revising agent
+            s = self._slices[k]
+            j = self.revision_processes[k].sample_next_strategy(
+                self.p[s], self.x[s], i, rng=self._rng
+            )
+
+            if j != i:
+                counts_k[i] -= 1
+                counts_k[j] += 1
+                scale = self.population_game.masses[k] / self.num_agents[k]
+                self.x = self.x.copy()  # Logged states must not be modified in place
+                self.x[s.start + i, 0] = counts_k[i] * scale
+                self.x[s.start + j, 0] = counts_k[j] * scale
+                self.p = self.payoff_mechanism.h_map(self.q, self.x)
+
+            self._update_log()
+
+    def _sample_index(self, cumulative_weights: np.ndarray, total_weight: float) -> int:
+        """
+        Internal method to sample an index with probability proportional to its (non-cumulative) weight.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            cumulative_weights (np.ndarray): Cumulative sum of the non-negative weights.
+            total_weight (float): Sum of the weights.
+
+        Returns:
+            int: The sampled index.
+        """
+        index = int(
+            np.searchsorted(
+                cumulative_weights, self._rng.random() * total_weight, side="right"
+            )
+        )
+        return min(index, len(cumulative_weights) - 1)
+
+    def _advance_pdm(self, time_step: float) -> None:
+        """
+        Internal method to integrate the PDM over a time step with the strategic distribution held constant.
+
+        Updates the PDM state and the payoff vector. Should not be called directly from outside the class.
+
+        Args:
+            time_step (float): The time step for the integration.
+        """
+        if self.payoff_mechanism.d == 0:  # Memoryless PDM: payoffs depend only on x
+            return
+
+        out = self.payoff_mechanism.integrate(
+            q0=self.q,
+            x0=self.x,
+            t_span=(self.t, self.t + time_step),
+            method=self.pdm_method,
+            output_trajectory=False,
+            max_step=self.pdm_max_step,
+        )
+        self.q = out.q
+        self.p = out.p
+
+    def _sample_next_revision_time(self, k: int, size: int) -> np.ndarray:
+        """
+        Internal method to sample the next revision times of agents in population k.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            k (int): Population index.
+            size (int): Number of samples.
+
+        Returns:
+            np.ndarray: The sampled revision times with shape ``(size,)``.
+        """
+        rp = self.revision_processes[k]
+        if isinstance(rp, PoissonRevisionProcess):
+            return rp.sample_next_revision_time(size, rng=self._rng)
+        return rp.sample_next_revision_time(size)
+
+    def _sample_next_strategy(
+        self, k: int, p: np.ndarray, x: np.ndarray, i: int
+    ) -> int:
+        """
+        Internal method to sample the next strategy of an agent in population k.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            k (int): Population index.
+            p (np.ndarray): Payoff vector of population k.
+            x (np.ndarray): Strategic distribution of population k.
+            i (int): Current strategy of the agent.
+
+        Returns:
+            int: The newly selected strategy.
+        """
+        rp = self.revision_processes[k]
+        if isinstance(rp, PoissonRevisionProcess):
+            return rp.sample_next_strategy(p, x, i, rng=self._rng)
+        return rp.sample_next_strategy(p, x, i)
 
     def integrate_edm_pdm(
         self,
@@ -330,11 +553,10 @@ class Simulator(VisualizationMixin):
         x = []
         for k in range(self.population_game.num_populations):
             n_k = self.population_game.num_strategies[k]
-            X_k = np.zeros((n_k, 1))
-            for i in range(n_k):
-                X_ik = np.where(self._selected_strategies[k] == i)
-                X_k[i, 0] = len(X_ik[0]) / self.num_agents[k]
-            x.append(X_k * self.population_game.masses[k])
+            X_k = np.bincount(self._selected_strategies[k], minlength=n_k).reshape(
+                n_k, 1
+            )
+            x.append(X_k / self.num_agents[k] * self.population_game.masses[k])
         return np.vstack(x)
 
     def _microscopic_step(self, time_step: float) -> None:
@@ -346,14 +568,8 @@ class Simulator(VisualizationMixin):
         Args:
             time_step (float): The time step for the integration.
         """
-        out = self.payoff_mechanism.integrate(
-            q0=self.q,
-            x0=self.x,
-            t_span=(self.t, self.t + time_step),
-            method="Radau",
-            output_trajectory=False,
-        )
-        self.q = out.q
+        self._advance_pdm(time_step)
+        p = self.p  # Payoffs observed by all agents revising at this step
 
         for k, s in zip(
             range(self.population_game.num_populations), self._slices
@@ -366,11 +582,11 @@ class Simulator(VisualizationMixin):
 
             for agent in revising_agents_k[0]:
                 i = selected_strategies_t_k[agent]
-                self._selected_strategies[k][agent] = self.revision_processes[
-                    k
-                ].sample_next_strategy(out.p[s], self.x[s], i)
+                self._selected_strategies[k][agent] = self._sample_next_strategy(
+                    k, p[s], self.x[s], i
+                )
                 self._revision_times[k][agent] = np.round(
-                    self.revision_processes[k].sample_next_revision_time(1)[0],
+                    self._sample_next_revision_time(k, 1)[0],
                     self._num_precision,
                 )
 
@@ -378,6 +594,7 @@ class Simulator(VisualizationMixin):
                 self._selected_strategies[k], selected_strategies_t_k
             ):
                 self.x = self._get_strategic_distribution()
+                self.p = self.payoff_mechanism.h_map(self.q, self.x)
 
         self.t += time_step
         self._update_log()
@@ -410,16 +627,26 @@ class Simulator(VisualizationMixin):
             self.payoff_mechanism.d + self.payoff_mechanism.n,
         )
 
-    def _update_log(self) -> None:
+    def _update_log(self, force: bool = False) -> None:
         """
         Internal method to update the simulation log.
 
         Should not be called directly from outside the class.
+
+        Args:
+            force (bool): Whether to log regardless of the log interval. Defaults to False.
         """
+        if (
+            not force
+            and self._log_interval is not None
+            and self.t - self.log.t[-1] < self._log_interval
+        ):
+            return
+
         self.log.t.append(self.t)
         self.log.x.append(self.x)
         self.log.q.append(self.q)
-        self.log.p.append(self.payoff_mechanism.h_map(self.q, self.x))
+        self.log.p.append(self.p)
 
     def _get_flattened_log(self) -> SimpleNamespace:
         """

@@ -234,6 +234,77 @@ class TestPayoffMechanismIntegrateDynamic(unittest.TestCase):
         self.assertEqual(res.p.shape, (n, 1))
         np.testing.assert_allclose(res.p, pm.h_map(res.q, x0), atol=1e-9)
 
+    def test_integrate_rk4_matches_closed_form_solution(self) -> None:
+        # q' = -q  =>  q(t) = q0 * exp(-t)
+        n, d = 2, 1
+
+        def h_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return x + q[0, 0]
+
+        def w_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return -q
+
+        pm = PayoffMechanism(h_map=h_map, n=n, w_map=w_map, d=d)
+        q0 = np.array([[1.0]])
+        x0 = np.array([[2.0], [3.0]])
+
+        res = pm.integrate(
+            q0=q0,
+            x0=x0,
+            t_span=(0.0, 1.0),
+            method="RK4",
+            output_trajectory=False,
+            max_step=0.1,
+        )
+        np.testing.assert_allclose(res.q, [[np.exp(-1.0)]], rtol=1e-6)
+        np.testing.assert_allclose(res.p, pm.h_map(res.q, x0))
+
+    def test_integrate_rk4_trajectory_uses_steps_no_larger_than_max_step(
+        self,
+    ) -> None:
+        n, d = 2, 1
+
+        def h_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return x + q[0, 0]
+
+        def w_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return -q
+
+        pm = PayoffMechanism(h_map=h_map, n=n, w_map=w_map, d=d)
+        res = pm.integrate(
+            q0=np.array([[1.0]]),
+            x0=np.array([[2.0], [3.0]]),
+            t_span=(0.0, 1.0),
+            method="RK4",
+            output_trajectory=True,
+            max_step=0.3,
+        )
+
+        # ceil(1.0 / 0.3) = 4 steps => 5 time points
+        np.testing.assert_allclose(res.t, np.linspace(0.0, 1.0, 5))
+        self.assertEqual(res.q.shape, (d, 5))
+        self.assertEqual(res.p.shape, (n, 5))
+        np.testing.assert_allclose(res.q[0], np.exp(-res.t), rtol=1e-4)
+
+    def test_integrate_rk4_without_max_step_takes_a_single_step(self) -> None:
+        n, d = 2, 1
+
+        def h_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return x + q[0, 0]
+
+        def w_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return -q
+
+        pm = PayoffMechanism(h_map=h_map, n=n, w_map=w_map, d=d)
+        res = pm.integrate(
+            q0=np.array([[1.0]]),
+            x0=np.array([[2.0], [3.0]]),
+            t_span=(0.0, 0.01),
+            method="RK4",
+            output_trajectory=True,
+        )
+        self.assertEqual(len(res.t), 2)
+
 
 if __name__ == "__main__":
     unittest.main()  # pragma: no cover

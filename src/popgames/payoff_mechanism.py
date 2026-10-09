@@ -89,19 +89,25 @@ class PayoffMechanism:
         t_span: tuple,
         method: str = "Radau",
         output_trajectory: bool = True,
+        max_step: float = np.inf,
     ) -> SimpleNamespace:
         """
         Numerically integrate the PDM.
 
-        This method relies on ``scipy.integrate.solve_ivp``.
+        With ``method='RK4'``, the PDM is integrated with the classical fixed-step Runge-Kutta method, using the
+        fewest equally sized steps no larger than ``max_step``. Any other method is passed to
+        ``scipy.integrate.solve_ivp``.
 
         Args:
             q0 (np.ndarray): Initial PDM state vector of shape (d, 1).
             x0 (np.ndarray): Initial PDM input vector of shape (n, 1).
             t_span (tuple): Time span of integration.
-            method (str, optional): Integration method. Defaults to 'Radau'.
+            method (str, optional): Integration method. Either 'RK4' or any method supported by
+                ``scipy.integrate.solve_ivp``. Defaults to 'Radau'.
             output_trajectory (bool, optional): Whether to output the trajectory or just the final state-output pair.
                 Defaults to True.
+            max_step (float, optional): Maximum integration step size. Defaults to ``np.inf`` (a single step
+                for 'RK4').
 
         Returns:
             SimpleNamespace: Contains results of the integration as a SimpleNameSpace with keys ``t``, ``q``, and ``p``,
@@ -116,12 +122,15 @@ class PayoffMechanism:
 
             return SimpleNamespace(q=np.zeros((0, 1)), p=p)  # q is an empty placeholder
 
+        elif method == "RK4":  # Dynamic case, fixed-step integration
+            return self._integrate_rk4(q0, x0, t_span, output_trajectory, max_step)
+
         else:  # Dynamic case
             y_in = np.vstack([q0, x0]).reshape(
                 self.d + self.n,
             )
             sol = sp.integrate.solve_ivp(
-                self._w_map_wrapped, t_span, y_in, method=method
+                self._w_map_wrapped, t_span, y_in, method=method, max_step=max_step
             )
 
             if output_trajectory:
@@ -137,6 +146,51 @@ class PayoffMechanism:
                 p = self.h_map(q, x0)
 
             return SimpleNamespace(t=sol.t, q=q, p=p)  # type: ignore[attr-defined]
+
+    def _integrate_rk4(
+        self,
+        q0: np.ndarray,
+        x0: np.ndarray,
+        t_span: tuple,
+        output_trajectory: bool,
+        max_step: float,
+    ) -> SimpleNamespace:
+        """
+        Internal method to integrate the PDM with the classical fixed-step Runge-Kutta (RK4) method.
+
+        Should not be called from outside the class.
+
+        Args:
+            q0 (np.ndarray): Initial PDM state vector of shape (d, 1).
+            x0 (np.ndarray): Initial PDM input vector of shape (n, 1), held constant over ``t_span``.
+            t_span (tuple): Time span of integration.
+            output_trajectory (bool): Whether to output the trajectory or just the final state-output pair.
+            max_step (float): Maximum integration step size.
+
+        Returns:
+            SimpleNamespace: Same structure as the output of ``integrate``.
+        """
+        t0, tf = t_span
+        num_steps = max(1, int(np.ceil((tf - t0) / max_step)))
+        dt = (tf - t0) / num_steps
+
+        q = q0
+        qs = [q]
+        for _ in range(num_steps):
+            k1 = self.w_map(q, x0)
+            k2 = self.w_map(q + 0.5 * dt * k1, x0)
+            k3 = self.w_map(q + 0.5 * dt * k2, x0)
+            k4 = self.w_map(q + dt * k3, x0)
+            q = q + (dt / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
+            if output_trajectory:
+                qs.append(q)
+
+        if output_trajectory:
+            t = np.linspace(t0, tf, num_steps + 1)
+            p = np.hstack([self.h_map(q_t, x0) for q_t in qs])
+            return SimpleNamespace(t=t, q=np.hstack(qs), p=p)
+
+        return SimpleNamespace(t=np.array([t0, tf]), q=q, p=self.h_map(q, x0))
 
     @staticmethod
     def _unsqueeze_h_map(
