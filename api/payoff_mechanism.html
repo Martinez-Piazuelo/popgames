@@ -288,18 +288,23 @@ how payoffs evolve over time based on the current state of the system.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="popgames.payoff_mechanism.PayoffMechanism.integrate">
-<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Radau'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/payoff_mechanism.html#PayoffMechanism.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.payoff_mechanism.PayoffMechanism.integrate" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_span</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Radau'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">inf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/payoff_mechanism.html#PayoffMechanism.integrate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.payoff_mechanism.PayoffMechanism.integrate" title="Link to this definition">¶</a></dt>
 <dd><p>Numerically integrate the PDM.</p>
-<p>This method relies on <code class="docutils literal notranslate"><span class="pre">scipy.integrate.solve_ivp</span></code>.</p>
+<p>With <code class="docutils literal notranslate"><span class="pre">method='RK4'</span></code>, the PDM is integrated with the classical fixed-step Runge-Kutta method, using the
+fewest equally sized steps no larger than <code class="docutils literal notranslate"><span class="pre">max_step</span></code>. Any other method is passed to
+<code class="docutils literal notranslate"><span class="pre">scipy.integrate.solve_ivp</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>q0</strong> (<em>np.ndarray</em>) – Initial PDM state vector of shape (d, 1).</p></li>
 <li><p><strong>x0</strong> (<em>np.ndarray</em>) – Initial PDM input vector of shape (n, 1).</p></li>
 <li><p><strong>t_span</strong> (<em>tuple</em>) – Time span of integration.</p></li>
-<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Integration method. Defaults to ‘Radau’.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em>, </em><em>optional</em>) – Integration method. Either ‘RK4’ or any method supported by
+<code class="docutils literal notranslate"><span class="pre">scipy.integrate.solve_ivp</span></code>. Defaults to ‘Radau’.</p></li>
 <li><p><strong>output_trajectory</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to output the trajectory or just the final state-output pair.
 Defaults to True.</p></li>
+<li><p><strong>max_step</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximum integration step size. Defaults to <code class="docutils literal notranslate"><span class="pre">np.inf</span></code> (a single step
+for ‘RK4’).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

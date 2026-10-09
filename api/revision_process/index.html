@@ -394,11 +394,15 @@ sampled according to the alarm clock mechanism.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="popgames.revision_process.PoissonRevisionProcess.sample_next_revision_time">
-<span class="sig-name descname"><span class="pre">sample_next_revision_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_process.html#PoissonRevisionProcess.sample_next_revision_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_process.PoissonRevisionProcess.sample_next_revision_time" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sample_next_revision_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_process.html#PoissonRevisionProcess.sample_next_revision_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_process.PoissonRevisionProcess.sample_next_revision_time" title="Link to this definition">¶</a></dt>
 <dd><p>Sample the next revision times for a population of agents equipped with Poisson alarm clocks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>size</strong> (<em>int</em>) – Number of agents or samples to generate.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>size</strong> (<em>int</em>) – Number of agents or samples to generate.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em><em>, </em><em>optional</em>) – Random number generator. Defaults to None, in which case the
+alarm clock (NumPy’s global random state) is used.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A 1D array of shape <code class="docutils literal notranslate"><span class="pre">(size,)</span></code> containing the next revision times,
@@ -412,7 +416,7 @@ sampled according to the alarm clock mechanism.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="popgames.revision_process.PoissonRevisionProcess.sample_next_strategy">
-<span class="sig-name descname"><span class="pre">sample_next_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_process.html#PoissonRevisionProcess.sample_next_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_process.PoissonRevisionProcess.sample_next_strategy" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sample_next_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_process.html#PoissonRevisionProcess.sample_next_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_process.PoissonRevisionProcess.sample_next_strategy" title="Link to this definition">¶</a></dt>
 <dd><p>Sample the next strategy for an agent based on current payoffs and strategy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -420,6 +424,8 @@ sampled according to the alarm clock mechanism.</p>
 <li><p><strong>p</strong> (<em>np.ndarray</em>) – Payoff vector.</p></li>
 <li><p><strong>x</strong> (<em>np.ndarray</em>) – Population state (strategy distribution).</p></li>
 <li><p><strong>i</strong> (<em>int</em>) – Index of the agent’s current strategy.</p></li>
+<li><p><strong>rng</strong> (<em>np.random.Generator</em><em>, </em><em>optional</em>) – Random number generator. Defaults to None, in which case
+NumPy’s global random state is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

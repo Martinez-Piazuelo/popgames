@@ -344,19 +344,25 @@
         <span class="n">t_span</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
         <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Radau&quot;</span><span class="p">,</span>
         <span class="n">output_trajectory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">max_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Numerically integrate the PDM.</span>
 
-<span class="sd">        This method relies on ``scipy.integrate.solve_ivp``.</span>
+<span class="sd">        With ``method=&#39;RK4&#39;``, the PDM is integrated with the classical fixed-step Runge-Kutta method, using the</span>
+<span class="sd">        fewest equally sized steps no larger than ``max_step``. Any other method is passed to</span>
+<span class="sd">        ``scipy.integrate.solve_ivp``.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            q0 (np.ndarray): Initial PDM state vector of shape (d, 1).</span>
 <span class="sd">            x0 (np.ndarray): Initial PDM input vector of shape (n, 1).</span>
 <span class="sd">            t_span (tuple): Time span of integration.</span>
-<span class="sd">            method (str, optional): Integration method. Defaults to &#39;Radau&#39;.</span>
+<span class="sd">            method (str, optional): Integration method. Either &#39;RK4&#39; or any method supported by</span>
+<span class="sd">                ``scipy.integrate.solve_ivp``. Defaults to &#39;Radau&#39;.</span>
 <span class="sd">            output_trajectory (bool, optional): Whether to output the trajectory or just the final state-output pair.</span>
 <span class="sd">                Defaults to True.</span>
+<span class="sd">            max_step (float, optional): Maximum integration step size. Defaults to ``np.inf`` (a single step</span>
+<span class="sd">                for &#39;RK4&#39;).</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimpleNamespace: Contains results of the integration as a SimpleNameSpace with keys ``t``, ``q``, and ``p``,</span>
@@ -371,12 +377,15 @@
 
             <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>  <span class="c1"># q is an empty placeholder</span>
 
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;RK4&quot;</span><span class="p">:</span>  <span class="c1"># Dynamic case, fixed-step integration</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrate_rk4</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">t_span</span><span class="p">,</span> <span class="n">output_trajectory</span><span class="p">,</span> <span class="n">max_step</span><span class="p">)</span>
+
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># Dynamic case</span>
             <span class="n">y_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">q0</span><span class="p">,</span> <span class="n">x0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">sol</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">integrate</span><span class="o">.</span><span class="n">solve_ivp</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_w_map_wrapped</span><span class="p">,</span> <span class="n">t_span</span><span class="p">,</span> <span class="n">y_in</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_w_map_wrapped</span><span class="p">,</span> <span class="n">t_span</span><span class="p">,</span> <span class="n">y_in</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">max_step</span><span class="o">=</span><span class="n">max_step</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">output_trajectory</span><span class="p">:</span>
@@ -393,6 +402,51 @@
 
             <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">sol</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>  <span class="c1"># type: ignore[attr-defined]</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_integrate_rk4</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">q0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">t_span</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span>
+        <span class="n">output_trajectory</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">max_step</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal method to integrate the PDM with the classical fixed-step Runge-Kutta (RK4) method.</span>
+
+<span class="sd">        Should not be called from outside the class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            q0 (np.ndarray): Initial PDM state vector of shape (d, 1).</span>
+<span class="sd">            x0 (np.ndarray): Initial PDM input vector of shape (n, 1), held constant over ``t_span``.</span>
+<span class="sd">            t_span (tuple): Time span of integration.</span>
+<span class="sd">            output_trajectory (bool): Whether to output the trajectory or just the final state-output pair.</span>
+<span class="sd">            max_step (float): Maximum integration step size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleNamespace: Same structure as the output of ``integrate``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t0</span><span class="p">,</span> <span class="n">tf</span> <span class="o">=</span> <span class="n">t_span</span>
+        <span class="n">num_steps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">tf</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="n">max_step</span><span class="p">)))</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">tf</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">/</span> <span class="n">num_steps</span>
+
+        <span class="n">q</span> <span class="o">=</span> <span class="n">q0</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="p">[</span><span class="n">q</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_steps</span><span class="p">):</span>
+            <span class="n">k1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+            <span class="n">k2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span><span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">k1</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+            <span class="n">k3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span><span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">k2</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+            <span class="n">k4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span><span class="p">(</span><span class="n">q</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="n">k3</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">q</span> <span class="o">+</span> <span class="p">(</span><span class="n">dt</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">k1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">k3</span> <span class="o">+</span> <span class="n">k4</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">output_trajectory</span><span class="p">:</span>
+                <span class="n">qs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_trajectory</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">tf</span><span class="p">,</span> <span class="n">num_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">h_map</span><span class="p">(</span><span class="n">q_t</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span> <span class="k">for</span> <span class="n">q_t</span> <span class="ow">in</span> <span class="n">qs</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">qs</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">t0</span><span class="p">,</span> <span class="n">tf</span><span class="p">]),</span> <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">h_map</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">x0</span><span class="p">))</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_unsqueeze_h_map</span><span class="p">(</span>
