@@ -4,9 +4,11 @@ import unittest
 
 import numpy as np
 
+from popgames.revision_process import PoissonRevisionProcess
 from popgames.revision_protocol import (
     BNN,
     CCSmith,
+    Replicator,
     RevisionProtocolABC,
     Smith,
     Softmax,
@@ -150,6 +152,64 @@ class TestBNN(unittest.TestCase):
         x = np.array([0.2, 0.3, 0.5]).reshape(3, 1)
         out = bnn(p, x)
         np.testing.assert_allclose(out, 0.0)
+
+
+class TestReplicator(unittest.TestCase):
+    def test_init_sets_scale(self) -> None:
+        rep = Replicator(scale=0.2)
+        self.assertEqual(rep.scale, 0.2)
+
+    def test_init_rejects_non_positive_scale(self) -> None:
+        with self.assertRaises(ValueError):
+            Replicator(scale=0.0)
+        with self.assertRaises(ValueError):
+            Replicator(scale=-1.0)
+
+    def test_call_matches_reference_formula(self) -> None:
+        rep = Replicator(scale=0.1)
+        p = np.array([1.0, -1.0, 2.0]).reshape(3, 1)
+        x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
+
+        out = rep(p, x)
+
+        expected = (x / x.sum()) * np.maximum(p - p.T, 0.0) * rep.scale
+        np.testing.assert_allclose(out, expected)
+        self.assertEqual(out.shape, (3, 3))
+        self.assertTrue(np.all(out >= 0.0))
+
+    def test_diagonal_is_zero(self) -> None:
+        rep = Replicator(scale=0.5)
+        p = np.array([3.0, 2.0, 1.0]).reshape(3, 1)
+        x = np.array([0.2, 0.3, 0.5]).reshape(3, 1)
+        out = rep(p, x)
+        np.testing.assert_allclose(np.diag(out), 0.0)
+
+    def test_extinct_strategy_is_never_imitated(self) -> None:
+        rep = Replicator(scale=0.5)
+        p = np.array([0.0, 1.0, 2.0]).reshape(3, 1)  # strategy 2 is the best
+        x = np.array([0.5, 0.5, 0.0]).reshape(3, 1)  # but nobody plays it
+        out = rep(p, x)
+        np.testing.assert_allclose(out[2, :], 0.0)
+
+    def test_invariant_to_population_mass(self) -> None:
+        rep = Replicator(scale=0.3)
+        p = np.array([1.0, -1.0, 2.0]).reshape(3, 1)
+        x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
+        np.testing.assert_allclose(rep(p, x), rep(p, 5.0 * x))
+
+    def test_mean_dynamics_are_replicator_dynamics(self) -> None:
+        clock_rate, scale = 0.7, 0.2
+        process = PoissonRevisionProcess(
+            Poisson_clock_rate=clock_rate,
+            revision_protocol=Replicator(scale=scale),
+        )
+        p = np.array([0.3, -1.2, 0.8, 1.5]).reshape(4, 1)
+        x = np.array([0.4, 1.1, 0.2, 0.8]).reshape(4, 1)  # mass != 1
+
+        p_bar = (x.T @ p) / x.sum()
+        expected = clock_rate * scale * x * (p - p_bar)
+
+        np.testing.assert_allclose(process.rhs_edm(x=x, p=p), expected)
 
 
 class TestCCSmith(unittest.TestCase):

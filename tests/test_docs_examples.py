@@ -66,6 +66,47 @@ class TestDocsExamplesSmoke(unittest.TestCase):
         self.assertEqual(qT.shape, (0, 1))
         self.assertEqual(pT.shape, (2, 1))
 
+    def test_example_rock_paper_scissors(self):
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]])
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        def make_sim(revision_protocol):
+            return pg.Simulator(
+                population_game=pg.SinglePopulationGame(
+                    num_strategies=3,
+                    fitness_function=fitness_function,
+                ),
+                payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+                revision_processes=pg.PoissonRevisionProcess(
+                    Poisson_clock_rate=1,
+                    revision_protocol=revision_protocol,
+                ),
+                num_agents=1000,
+            )
+
+        x0 = np.array([0.5, 0.3, 0.2]).reshape(3, 1)
+        x_ne = np.ones((3, 1)) / 3
+        t_eval = np.linspace(0, 100, 201)
+
+        # Replicator: closed orbits, i.e., x1 * x2 * x3 is conserved along the EDM
+        replicator_sim = make_sim(pg.revision_protocol.Replicator(scale=0.5))
+        edm = replicator_sim.integrate_edm_pdm(t_span=(0, 100), x0=x0, t_eval=t_eval)
+        np.testing.assert_allclose(np.prod(edm.x, axis=0), np.prod(x0), rtol=1e-2)
+
+        # Smith: converges to the NE
+        smith_sim = make_sim(pg.revision_protocol.Smith(scale=0.25))
+        edm = smith_sim.integrate_edm_pdm(t_span=(0, 100), x0=x0, t_eval=t_eval)
+        np.testing.assert_allclose(edm.x[:, [-1]], x_ne, atol=2e-2)
+
+        # Smoke test: finite-agent simulation with the replicator protocol
+        replicator_sim.reset(x0=x0)
+        result = run_sim_and_capture(sim=replicator_sim, T_sim=2)
+        log = result.snapshots["log"]
+        self.assertEqual(log.x.shape[0], 3)
+        np.testing.assert_allclose(log.x.sum(axis=0), 1.0)
+
 
 if __name__ == "__main__":
     unittest.main()
