@@ -8,9 +8,9 @@ import numpy as np
 
 from popgames.alarm_clock import Poisson
 from popgames.payoff_mechanism import PayoffMechanism
-from popgames.population_game import PopulationGame
-from popgames.revision_process import RevisionProcessABC
-from popgames.revision_protocol import Softmax
+from popgames.population_game import PopulationGame, SinglePopulationGame
+from popgames.revision_process import PoissonRevisionProcess, RevisionProcessABC
+from popgames.revision_protocol import Smith, Softmax
 from popgames.simulator import Simulator
 
 
@@ -344,6 +344,250 @@ class TestSimulatorIntegrateEDMPDM(unittest.TestCase):
 
         np.testing.assert_allclose(out.x, x1, atol=1e-12)
         np.testing.assert_allclose(out.p, x1, atol=1e-12)
+
+
+_RPS = np.array([[0.0, -1.0, 1.0], [1.0, 0.0, -1.0], [-1.0, 1.0, 0.0]])
+
+
+def _rps_fitness(x: np.ndarray) -> np.ndarray:
+    return _RPS @ x
+
+
+def _make_rps_simulator(num_agents: int, **kwargs) -> Simulator:
+    return Simulator(
+        population_game=SinglePopulationGame(
+            num_strategies=3, fitness_function=_rps_fitness
+        ),
+        payoff_mechanism=PayoffMechanism(h_map=_rps_fitness, n=3),
+        revision_processes=PoissonRevisionProcess(
+            Poisson_clock_rate=1.0, revision_protocol=Smith(scale=0.25)
+        ),
+        num_agents=num_agents,
+        **kwargs,
+    )
+
+
+_RPS_X0 = np.array([[0.5], [0.3], [0.2]])
+
+
+class TestSimulatorPathSelection(unittest.TestCase):
+    def test_fast_path_is_used_by_default_with_poisson_processes(self) -> None:
+        sim = _make_rps_simulator(10)
+        self.assertTrue(sim.uses_fast_path)
+
+    def test_fast_path_can_be_disabled(self) -> None:
+        sim = _make_rps_simulator(10, fast_path=False)
+        self.assertFalse(sim.uses_fast_path)
+        self.assertEqual(sim._revision_times[0].shape, (10,))
+
+    def test_non_poisson_processes_fall_back_to_per_agent_path(self) -> None:
+        game = PopulationGame(
+            num_populations=1, num_strategies=[2], fitness_function=_fitness_ok
+        )
+        pm = PayoffMechanism(h_map=_h_map_memoryless, n=2, d=0)
+        rp = _DeterministicRevisionProcess(n=2, fixed_dt=0.1)
+
+        with self.assertLogs("popgames.simulator", level="INFO"):
+            sim = Simulator(
+                population_game=game,
+                payoff_mechanism=pm,
+                revision_processes=rp,
+                num_agents=4,
+            )
+        self.assertFalse(sim.uses_fast_path)
+
+    def test_init_rejects_invalid_options(self) -> None:
+        with self.assertRaises(TypeError):
+            _make_rps_simulator(10, fast_path=1)
+        with self.assertRaises(ValueError):
+            _make_rps_simulator(10, pdm_max_step=0.0)
+
+
+class TestSimulatorFastPath(unittest.TestCase):
+    def test_run_reaches_final_time_and_preserves_mass(self) -> None:
+        sim = _make_rps_simulator(100, seed=0)
+        sim.reset(x0=_RPS_X0)
+        out = sim.run(T_sim=3)
+
+        self.assertEqual(sim.t, 3)
+        self.assertEqual(out.t[-1], 3)
+        self.assertTrue(np.all(np.diff(out.t) > 0))
+        np.testing.assert_allclose(out.x.sum(axis=0), 1.0)
+        np.testing.assert_allclose(sim._counts[0].sum(), 100)
+        np.testing.assert_allclose(out.p, _RPS @ out.x)
+
+    def test_consecutive_runs_continue_from_last_state(self) -> None:
+        sim = _make_rps_simulator(100, seed=0)
+        sim.reset(x0=_RPS_X0)
+        sim.run(T_sim=1)
+        out = sim.run(T_sim=2)
+        self.assertEqual(sim.t, 3)
+        self.assertEqual(out.t[0], 0)
+        self.assertEqual(out.t[-1], 3)
+
+    def test_logged_states_are_not_modified_by_later_events(self) -> None:
+        sim = _make_rps_simulator(100, seed=0)
+        sim.reset(x0=_RPS_X0)
+        sim.run(T_sim=2)
+        np.testing.assert_allclose(sim.log.x[0], _RPS_X0)
+        # Consecutive log entries differ by at most one agent switching strategy
+        jumps = np.abs(np.diff(np.hstack(sim.log.x), axis=1)).sum(axis=0)
+        self.assertTrue(np.all(np.isclose(jumps, 0.0) | np.isclose(jumps, 2 / 100)))
+
+    def test_multi_population_run_preserves_masses(self) -> None:
+        def fitness(x: np.ndarray) -> np.ndarray:
+            return -x
+
+        game = PopulationGame(
+            num_populations=2,
+            num_strategies=[2, 3],
+            fitness_function=fitness,
+            masses=[1.0, 2.0],
+        )
+        sim = Simulator(
+            population_game=game,
+            payoff_mechanism=PayoffMechanism(h_map=fitness, n=5),
+            revision_processes=[
+                PoissonRevisionProcess(1.0, Smith(scale=0.5)),
+                PoissonRevisionProcess(3.0, Smith(scale=0.5)),
+            ],
+            num_agents=[50, 80],
+            seed=0,
+        )
+        self.assertTrue(sim.uses_fast_path)
+        sim.reset(x0=np.array([[1.0], [0.0], [2.0], [0.0], [0.0]]))
+        out = sim.run(T_sim=5)
+
+        np.testing.assert_allclose(out.x[:2].sum(axis=0), 1.0)
+        np.testing.assert_allclose(out.x[2:].sum(axis=0), 2.0)
+        # Both populations converge towards the uniform NE
+        np.testing.assert_allclose(
+            out.x[:, -1], [0.5, 0.5, 2 / 3, 2 / 3, 2 / 3], atol=0.1
+        )
+
+
+class TestSimulatorSeed(unittest.TestCase):
+    def _run(self, **kwargs) -> SimpleNamespace:
+        sim = _make_rps_simulator(50, **kwargs)
+        sim.reset(x0=_RPS_X0)
+        return sim.run(T_sim=2)
+
+    def test_same_seed_gives_identical_runs_on_both_paths(self) -> None:
+        for fast_path in [True, False]:
+            out1 = self._run(seed=7, fast_path=fast_path)
+            out2 = self._run(seed=7, fast_path=fast_path)
+            np.testing.assert_array_equal(out1.t, out2.t)
+            np.testing.assert_array_equal(out1.x, out2.x)
+
+    def test_different_seeds_give_different_runs(self) -> None:
+        out1 = self._run(seed=1)
+        out2 = self._run(seed=2)
+        self.assertFalse(np.array_equal(out1.t, out2.t))
+
+    def test_accepts_generator(self) -> None:
+        out1 = self._run(seed=np.random.default_rng(5))
+        out2 = self._run(seed=5)
+        np.testing.assert_array_equal(out1.x, out2.x)
+
+    def test_without_seed_uses_global_numpy_random_state(self) -> None:
+        np.random.seed(11)
+        out1 = self._run()
+        np.random.seed(11)
+        out2 = self._run()
+        np.testing.assert_array_equal(out1.x, out2.x)
+
+    def test_random_initial_state_is_seeded(self) -> None:
+        sim1 = _make_rps_simulator(50, seed=3)
+        sim2 = _make_rps_simulator(50, seed=3)
+        np.testing.assert_array_equal(sim1.x, sim2.x)
+        self.assertAlmostEqual(float(sim1.x.sum()), 1.0)
+
+
+class TestSimulatorLogInterval(unittest.TestCase):
+    def test_log_interval_limits_log_entries_on_both_paths(self) -> None:
+        for fast_path in [True, False]:
+            sim = _make_rps_simulator(200, seed=0, fast_path=fast_path)
+            sim.reset(x0=_RPS_X0)
+            out = sim.run(T_sim=5, log_interval=0.5)
+
+            self.assertAlmostEqual(out.t[-1], 5)
+            self.assertTrue(np.all(np.diff(out.t[:-1]) >= 0.5))
+            self.assertLessEqual(len(out.t), 12)
+
+    def test_log_interval_must_be_positive(self) -> None:
+        sim = _make_rps_simulator(10)
+        with self.assertRaises(ValueError):
+            sim.run(T_sim=1, log_interval=0.0)
+
+
+class TestSimulatorPDMIntegration(unittest.TestCase):
+    def _make_sim(self, pdm_method: str) -> Simulator:
+        A, b = np.array([[0.5, 0.5, 0.0]]), np.array([[0.2]])
+
+        def h_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return -x - A.T @ q
+
+        def w_map(q: np.ndarray, x: np.ndarray) -> np.ndarray:
+            return A @ x - b
+
+        return Simulator(
+            population_game=SinglePopulationGame(
+                num_strategies=3, fitness_function=lambda x: -x
+            ),
+            payoff_mechanism=PayoffMechanism(h_map=h_map, w_map=w_map, n=3, d=1),
+            revision_processes=PoissonRevisionProcess(1.0, Softmax(eta=0.1)),
+            num_agents=20,
+            pdm_method=pdm_method,
+            seed=0,
+        )
+
+    def test_rk4_and_radau_give_the_same_trajectory(self) -> None:
+        outs = []
+        for method in ["RK4", "Radau"]:
+            sim = self._make_sim(method)
+            sim.reset(x0=np.array([[1.0], [0.0], [0.0]]), q0=np.zeros((1, 1)))
+            outs.append(sim.run(T_sim=2))
+
+        # Same seed and (numerically) same payoffs => same revision events
+        np.testing.assert_array_equal(outs[0].x, outs[1].x)
+        np.testing.assert_allclose(outs[0].q, outs[1].q, atol=1e-6)
+
+    def test_pdm_state_matches_closed_form_while_x_is_constant(self) -> None:
+        sim = self._make_sim("RK4")
+        sim.reset(x0=np.array([[1.0], [0.0], [0.0]]), q0=np.zeros((1, 1)))
+        out = sim.run(T_sim=1)
+        # Before the first switch, x = e_1 so q' = 0.5 - 0.2 = 0.3
+        first_switch = np.argmax(np.any(out.x != out.x[:, [0]], axis=0))
+        t = out.t[:first_switch]
+        np.testing.assert_allclose(out.q[0, :first_switch], 0.3 * t, atol=1e-9)
+
+
+class TestSimulatorStatisticalEquivalence(unittest.TestCase):
+    """The fast path and the per-agent path simulate the same stochastic process."""
+
+    def test_mean_final_state_agrees_between_paths(self) -> None:
+        num_replicates, num_agents, T = 40, 100, 4
+        finals = {}
+        for fast_path in [True, False]:
+            sim = _make_rps_simulator(num_agents, fast_path=fast_path, seed=123)
+            xs = []
+            for _ in range(num_replicates):
+                sim.reset(x0=_RPS_X0)
+                xs.append(sim.run(T_sim=T, log_interval=T).x[:, -1])
+            finals[fast_path] = np.array(xs)
+
+        diff = finals[True].mean(axis=0) - finals[False].mean(axis=0)
+        std_err = np.sqrt(
+            (finals[True].var(axis=0) + finals[False].var(axis=0)) / num_replicates
+        )
+        self.assertTrue(np.all(np.abs(diff) < 4 * std_err + 1e-12), (diff, std_err))
+
+    def test_large_population_tracks_the_edm(self) -> None:
+        sim = _make_rps_simulator(5000, seed=0)
+        sim.reset(x0=_RPS_X0)
+        out = sim.run(T_sim=3, log_interval=0.1)
+        edm = sim.integrate_edm_pdm(t_span=(0, 3), x0=_RPS_X0, t_eval=out.t)
+        np.testing.assert_allclose(out.x, edm.x, atol=0.03)
 
 
 if __name__ == "__main__":

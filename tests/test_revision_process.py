@@ -6,7 +6,7 @@ import numpy as np
 
 from popgames.alarm_clock import AlarmClockABC, Poisson
 from popgames.revision_process import PoissonRevisionProcess, RevisionProcessABC
-from popgames.revision_protocol import RevisionProtocolABC, Softmax
+from popgames.revision_protocol import RevisionProtocolABC, Smith, Softmax
 
 
 class _DummyRevisionProcess(RevisionProcessABC):
@@ -135,6 +135,46 @@ class TestPoissonRevisionProcess(unittest.TestCase):
 
         self.assertTrue(any("Invalid probabilities" in msg for msg in cm.output))
         self.assertTrue(0 <= int(j) < 3)
+
+    def test_sample_next_revision_time_with_rng_is_reproducible(self) -> None:
+        rp = PoissonRevisionProcess(
+            Poisson_clock_rate=2.0, revision_protocol=Softmax(eta=0.1)
+        )
+        out1 = rp.sample_next_revision_time(5, rng=np.random.default_rng(3))
+        out2 = rp.sample_next_revision_time(5, rng=np.random.default_rng(3))
+        np.testing.assert_allclose(out1, out2)
+        self.assertEqual(out1.shape, (5,))
+
+    def test_sample_next_strategy_matches_switching_probabilities(self) -> None:
+        rp = PoissonRevisionProcess(
+            Poisson_clock_rate=1.0, revision_protocol=Smith(scale=0.2)
+        )
+        p = np.array([1.0, 0.0, 2.0]).reshape(3, 1)
+        x = np.array([0.3, 0.4, 0.3]).reshape(3, 1)
+        rng = np.random.default_rng(0)
+
+        num_samples = 20000
+        samples = [
+            rp.sample_next_strategy(p, x, 1, rng=rng) for _ in range(num_samples)
+        ]
+        freqs = np.bincount(samples, minlength=3) / num_samples
+
+        # From strategy 1: switch to 0 w.p. 0.2, to 2 w.p. 0.4, stay w.p. 0.4
+        np.testing.assert_allclose(freqs, [0.2, 0.4, 0.4], atol=0.015)
+
+    def test_sample_next_strategy_never_selects_zero_probability_strategy(
+        self,
+    ) -> None:
+        rp = PoissonRevisionProcess(
+            Poisson_clock_rate=1.0, revision_protocol=Smith(scale=0.2)
+        )
+        p = np.array([0.0, 1.0, 5.0]).reshape(3, 1)  # strategy 2 is best
+        x = np.array([0.3, 0.4, 0.3]).reshape(3, 1)
+        rng = np.random.default_rng(1)
+
+        # Strategy 2 never switches under Smith, since no strategy pays more
+        samples = {rp.sample_next_strategy(p, x, 2, rng=rng) for _ in range(1000)}
+        self.assertEqual(samples, {2})
 
     def test_rhs_edm_shape(self) -> None:
         rp = PoissonRevisionProcess(

@@ -72,16 +72,14 @@ def fbos(
     if population_game.d_ineq > 0:
         constraints.append(population_game.A_ineq @ z <= population_game.b_ineq)
 
+    # Projection onto the feasible set, built once and re-solved with a new target at each iteration
+    target = cp.Parameter((population_game.n, 1))
+    problem = cp.Problem(cp.Minimize(0.5 * cp.sum_squares(z - target)), constraints)
+
     i = 0
     inf_norm = np.inf
     for i in range(max_iter):
-        objective = cp.Minimize(
-            0.5
-            * cp.square(
-                cp.norm(z - (x + stepsize * population_game.fitness_function(x)), 2)
-            )
-        )
-        problem = cp.Problem(objective, constraints)
+        target.value = x + stepsize * population_game.fitness_function(x)
         problem.solve()
 
         x_next = z.value + stepsize * (

@@ -113,20 +113,28 @@ class PoissonRevisionProcess(RevisionProcessABC):
             alarm_clock=Poisson(Poisson_clock_rate), revision_protocol=revision_protocol
         )
 
-    def sample_next_revision_time(self, size: int) -> np.ndarray:
+    def sample_next_revision_time(
+        self, size: int, rng: np.random.Generator = None
+    ) -> np.ndarray:
         """
         Sample the next revision times for a population of agents equipped with Poisson alarm clocks.
 
         Args:
             size (int): Number of agents or samples to generate.
+            rng (np.random.Generator, optional): Random number generator. Defaults to None, in which case the
+                alarm clock (NumPy's global random state) is used.
 
         Returns:
             np.ndarray: A 1D array of shape ``(size,)`` containing the next revision times,
             sampled according to the alarm clock mechanism.
         """
-        return self.alarm_clock(size)
+        if rng is None:
+            return self.alarm_clock(size)
+        return rng.exponential(1 / self.Poisson_clock_rate, size)
 
-    def sample_next_strategy(self, p: np.ndarray, x: np.ndarray, i: int) -> int:
+    def sample_next_strategy(
+        self, p: np.ndarray, x: np.ndarray, i: int, rng: np.random.Generator = None
+    ) -> int:
         """
         Sample the next strategy for an agent based on current payoffs and strategy.
 
@@ -134,6 +142,8 @@ class PoissonRevisionProcess(RevisionProcessABC):
             p (np.ndarray): Payoff vector.
             x (np.ndarray): Population state (strategy distribution).
             i (int): Index of the agent's current strategy.
+            rng (np.random.Generator, optional): Random number generator. Defaults to None, in which case
+                NumPy's global random state is used.
 
         Returns:
             int: Index of the newly selected strategy.
@@ -141,14 +151,18 @@ class PoissonRevisionProcess(RevisionProcessABC):
         revs = self.revision_protocol(p, x)
         probabilities = revs[:, i].reshape(-1)
         probabilities[i] = 0.0
-        probabilities[i] = 1 - sum(probabilities)
+        probabilities[i] = 1 - probabilities.sum()
         if probabilities[i] < 0:
             logger.warning(
                 f"Invalid probabilities = {probabilities}. Cliping them by default."
             )
             probabilities = np.clip(probabilities, 0, 1)
             probabilities = probabilities / probabilities.sum()
-        return np.random.choice(np.arange(probabilities.shape[0]), p=probabilities)
+        u = (np.random if rng is None else rng).random()
+        j = int(np.searchsorted(np.cumsum(probabilities), u, side="right"))
+        if j >= probabilities.shape[0]:  # u beyond cumsum[-1] due to round-off
+            j = int(np.flatnonzero(probabilities > 0)[-1])
+        return j
 
     def rhs_edm(self, x: np.ndarray, p: np.ndarray) -> np.ndarray:
         """
