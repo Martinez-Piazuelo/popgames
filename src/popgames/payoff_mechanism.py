@@ -66,6 +66,7 @@ class PayoffMechanism:
             )
             self.h_map = self._unsqueeze_h_map(h_map)
             self.w_map = self._dummy_w_map()
+            self._w_map_user = None
         else:  # -> Case d>0
             check_function_signature(
                 arg=h_map,
@@ -81,6 +82,10 @@ class PayoffMechanism:
             )
             self.h_map = h_map
             self.w_map = w_map
+            self._w_map_user = w_map
+
+        # User-provided functions (as given), used by the numba backend
+        self._h_map_user = h_map
 
     def integrate(
         self,

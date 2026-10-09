@@ -8,9 +8,10 @@ from popgames import (
 )
 from popgames.revision_protocol import Softmax
 
-T, R, P, S = 3, 2, 1, 0 # Prisoner's dilemma parameters
-                        # s.t. T > R > P > S
-                        # https://en.wikipedia.org/wiki/Prisoner%27s_dilemma
+T, R, P, S = 3.0, 2.0, 1.0, 0.0 # Prisoner's dilemma parameters
+                                # s.t. T > R > P > S
+                                # https://en.wikipedia.org/wiki/Prisoner%27s_dilemma
+                                # (floats, so that the example also runs with the numba backend)
 def fitness_function(x):
     return np.dot(
         np.array([[R, S], [T, P]]),

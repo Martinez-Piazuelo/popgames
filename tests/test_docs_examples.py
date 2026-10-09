@@ -1,3 +1,4 @@
+import importlib.util
 import unittest
 
 import numpy as np
@@ -7,10 +8,12 @@ from tests.helpers import (
     run_sim_and_capture,
 )
 
+NUMBA_AVAILABLE = importlib.util.find_spec("numba") is not None
+
 
 class TestDocsExamplesSmoke(unittest.TestCase):
     def test_example_prisoner_dilemma(self):
-        T, R, P, S = 3, 2, 1, 0
+        T, R, P, S = 3.0, 2.0, 1.0, 0.0
 
         def fitness_function(x):
             return np.dot(np.array([[R, S], [T, P]]), x)
@@ -67,7 +70,7 @@ class TestDocsExamplesSmoke(unittest.TestCase):
         self.assertEqual(pT.shape, (2, 1))
 
     def test_example_rock_paper_scissors(self):
-        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]])
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
 
         def fitness_function(x):
             return np.dot(A, x)
@@ -106,6 +109,89 @@ class TestDocsExamplesSmoke(unittest.TestCase):
         log = result.snapshots["log"]
         self.assertEqual(log.x.shape[0], 3)
         np.testing.assert_allclose(log.x.sum(axis=0), 1.0)
+
+
+@unittest.skipUnless(NUMBA_AVAILABLE, "numba is not installed")
+class TestDocsExamplesNumbaBackend(unittest.TestCase):
+    def test_example_prisoner_dilemma_numba(self):
+        T, R, P, S = 3.0, 2.0, 1.0, 0.0
+
+        def fitness_function(x):
+            return np.dot(np.array([[R, S], [T, P]]), x)
+
+        sim = pg.Simulator(
+            population_game=pg.SinglePopulationGame(
+                num_strategies=2, fitness_function=fitness_function
+            ),
+            payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=2),
+            revision_processes=pg.PoissonRevisionProcess(
+                Poisson_clock_rate=1,
+                revision_protocol=pg.revision_protocol.Softmax(0.1),
+            ),
+            num_agents=1000,
+            backend="numba",
+            seed=0,
+        )
+        self.assertEqual(sim.backend, "numba")
+        sim.reset(x0=np.array([0.5, 0.5]).reshape(2, 1))
+        out = sim.run(T_sim=30)
+        # Defection takes over
+        self.assertGreater(out.x[1, -1], 0.9)
+
+    def test_example_rock_paper_scissors_numba(self):
+        import numba
+
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        @numba.njit
+        def fitness_function_jitted(x):
+            return np.dot(A, x)
+
+        x0 = np.array([0.5, 0.3, 0.2]).reshape(3, 1)
+        for fitness in [fitness_function, fitness_function_jitted]:
+            for protocol in [
+                pg.revision_protocol.Replicator(scale=0.5),
+                pg.revision_protocol.Smith(scale=0.25),
+            ]:
+                sim = pg.Simulator(
+                    population_game=pg.SinglePopulationGame(
+                        num_strategies=3, fitness_function=fitness
+                    ),
+                    payoff_mechanism=pg.PayoffMechanism(h_map=fitness, n=3),
+                    revision_processes=pg.PoissonRevisionProcess(
+                        Poisson_clock_rate=1, revision_protocol=protocol
+                    ),
+                    num_agents=1000,
+                    backend="numba",
+                    seed=0,
+                )
+                self.assertEqual(sim.backend, "numba")
+                sim.reset(x0=x0)
+                out = sim.run(T_sim=10)
+                np.testing.assert_allclose(out.x.sum(axis=0), 1.0)
+
+    def test_example_rock_paper_scissors_integer_matrix_falls_back(self):
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]])
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        with self.assertLogs("popgames.simulator", level="WARNING"):
+            sim = pg.Simulator(
+                population_game=pg.SinglePopulationGame(
+                    num_strategies=3, fitness_function=fitness_function
+                ),
+                payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+                revision_processes=pg.PoissonRevisionProcess(
+                    1, pg.revision_protocol.Smith(scale=0.25)
+                ),
+                num_agents=1000,
+                backend="numba",
+            )
+        self.assertEqual(sim.backend, "numpy")
 
 
 if __name__ == "__main__":

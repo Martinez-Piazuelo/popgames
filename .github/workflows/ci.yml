@@ -48,3 +48,8 @@ jobs:
       - name: Tests (coverage + unittest)
         run: |
           uv run task test
+
+      - name: Tests without the optional numba dependency
+        run: |
+          uv pip uninstall numba llvmlite
+          uv run --no-sync python -m unittest discover -s tests -p "test_*.py"

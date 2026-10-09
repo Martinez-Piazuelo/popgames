@@ -11,7 +11,8 @@ from popgames.revision_protocol import Replicator, Smith
 
 A = np.array([[0, -1, 1],    # Rock
               [1, 0, -1],    # Paper
-              [-1, 1, 0]])   # Scissors
+              [-1, 1, 0]],   # Scissors
+             dtype=float)    # floats, so that the example also runs with the numba backend
 
 def fitness_function(x):
     return np.dot(A, x)

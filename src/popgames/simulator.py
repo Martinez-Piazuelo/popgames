@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import importlib
 import logging
 import typing
 from types import SimpleNamespace
@@ -38,6 +39,10 @@ class Simulator(VisualizationMixin):
     list of revision processes (one per population).
     """
 
+    _numba_log_capacity = (
+        1_000_000  # Maximum log entries per call to the compiled (numba) event loop
+    )
+
     def __init__(
         self,
         population_game: PopulationGame,
@@ -48,6 +53,7 @@ class Simulator(VisualizationMixin):
         pdm_method: str = "RK4",
         pdm_max_step: float = 0.01,
         seed: Union[int, np.random.Generator] = None,
+        backend: str = "numpy",
     ) -> None:
         """
         Initialize the simulator object.
@@ -72,6 +78,11 @@ class Simulator(VisualizationMixin):
             seed (Union[int, np.random.Generator], optional): Seed or random number generator for the simulation.
                 Defaults to None, in which case NumPy's global random state is used (see ``np.random.seed``).
                 Custom (non-Poisson) revision processes always draw from their own random sources.
+            backend (str): Either 'numpy' or 'numba'. The 'numba' backend compiles the fast simulation path with
+                Numba (requires ``pip install popgames[numba]``). It requires the fast path, built-in revision
+                protocols, ``pdm_method='RK4'``, and payoff mechanism functions that can be compiled with
+                ``numba.njit``; otherwise, a warning is logged and the 'numpy' backend is used. Compilation takes a
+                few seconds on the first run of each session. Defaults to 'numpy'.
         """
         # Numerical precision
         self._num_precision = 9  # Number of decimals in rounding operations
@@ -155,6 +166,9 @@ class Simulator(VisualizationMixin):
         # Random number generator (NumPy's global random state if no seed is provided)
         self._rng = np.random if seed is None else np.random.default_rng(seed)
 
+        # Simulation backend
+        self._setup_backend(backend)
+
         # Reset simulation state, revision_times, and logs
         self.reset()
 
@@ -236,6 +250,7 @@ class Simulator(VisualizationMixin):
             p=[self.p],
         )
         self._log_interval = None
+        self._last_log_t = self.t
 
     def run(
         self, T_sim: int, verbose: bool = False, log_interval: float = None
@@ -260,12 +275,14 @@ class Simulator(VisualizationMixin):
             )
         self._log_interval = log_interval
 
-        if self.uses_fast_path:
+        if self.backend == "numba":
+            self._run_numba_path(T_sim)
+        elif self.uses_fast_path:
             self._run_fast_path(T_sim, verbose)
         else:
             self._run_per_agent_path(T_sim, verbose)
 
-        if self.log.t[-1] != self.t:  # Always log the final state
+        if self._last_log_t != self.t:  # Always log the final state
             self._update_log(force=True)
 
         return self._get_flattened_log()
@@ -368,6 +385,168 @@ class Simulator(VisualizationMixin):
                 self.p = self.payoff_mechanism.h_map(self.q, self.x)
 
             self._update_log()
+
+    def _setup_backend(self, backend: str) -> None:
+        """
+        Internal method to set up the simulation backend.
+
+        Falls back to the 'numpy' backend (with a warning) if the 'numba' backend cannot be used.
+        Should not be called directly from outside the class.
+
+        Args:
+            backend (str): Either 'numpy' or 'numba'.
+        """
+        check_type(arg=backend, expected_type=str, arg_name="backend")
+        if backend not in ("numpy", "numba"):
+            raise ValueError(
+                f"backend must be either 'numpy' or 'numba', got '{backend}'."
+            )
+
+        self.backend = "numpy"
+        if backend == "numpy":
+            return
+
+        try:
+            _numba_backend = importlib.import_module("popgames._numba_backend")
+        except ImportError as e:
+            raise ImportError(
+                "The numba backend requires numba. Install it with `pip install popgames[numba]`."
+            ) from e
+
+        reason = None
+        specs = [
+            _numba_backend.protocol_spec(rp.revision_protocol)
+            for rp in self.revision_processes
+        ]
+        if not self.uses_fast_path:
+            reason = "it requires the fast path (fast_path=True and PoissonRevisionProcess revision processes)"
+        elif any(spec is None for spec in specs):
+            k = next(k for k, spec in enumerate(specs) if spec is None)
+            reason = (
+                f"the revision protocol of population {k} "
+                f"({type(self.revision_processes[k].revision_protocol).__name__}) is not a built-in protocol"
+            )
+        elif self.payoff_mechanism.d > 0 and self.pdm_method != "RK4":
+            reason = f"it only supports pdm_method='RK4' (got '{self.pdm_method}')"
+        else:
+            try:
+                h_map, w_map = _numba_backend.compile_payoff_mechanism(
+                    self.payoff_mechanism
+                )
+            except Exception as e:
+                logger.debug("Numba compilation error", exc_info=True)
+                reason = (
+                    "the payoff mechanism functions could not be compiled with numba.njit "
+                    f"({type(e).__name__}: {str(e).strip().splitlines()[0]})"
+                )
+
+        if reason is not None:
+            logger.warning(
+                f"The numba backend cannot be used: {reason}. Using the numpy backend instead."
+            )
+            return
+
+        params = np.zeros((len(specs), max(len(spec[1]) for spec in specs)))
+        for k, (_, params_k) in enumerate(specs):
+            params[k, : len(params_k)] = params_k
+
+        self.backend = "numba"
+        self._numba = SimpleNamespace(
+            module=_numba_backend,
+            h_map=h_map,
+            w_map=w_map,
+            kinds=np.array([spec[0] for spec in specs], dtype=np.int64),
+            params=params,
+        )
+
+    def _run_numba_path(self, T_sim: int) -> None:
+        """
+        Internal method to run the fast simulation path with the compiled (numba) event loop.
+
+        Should not be called directly from outside the class.
+
+        Args:
+            T_sim (int): The total time to simulate.
+        """
+        nb = self._numba
+        n, d = self.payoff_mechanism.n, self.payoff_mechanism.d
+
+        # Numba draws from its own generator: derive it from NumPy's global state if no seed was provided
+        if isinstance(self._rng, np.random.Generator):
+            rng = self._rng
+        else:
+            rng = np.random.default_rng(np.random.randint(0, 2**63 - 1, dtype=np.int64))
+
+        counts = np.concatenate(self._counts).astype(np.int64)
+        starts = np.array([s.start for s in self._slices] + [n], dtype=np.int64)
+        num_agents = np.array(self.num_agents, dtype=np.float64)
+        masses = np.array(self.population_game.masses, dtype=np.float64)
+        clock_rates = np.array(
+            [rp.Poisson_clock_rate for rp in self.revision_processes], dtype=np.float64
+        )
+        x = np.array(self.x, dtype=np.float64)
+        q = np.array(self.q, dtype=np.float64)
+        p = np.array(self.p, dtype=np.float64)
+
+        # Log buffers (the compiled loop returns whenever they are full)
+        log_interval = 0.0 if self._log_interval is None else self._log_interval
+        if log_interval > 0:
+            expected_entries = T_sim / log_interval
+        else:
+            expected_entries = (num_agents * clock_rates).sum() * T_sim
+        capacity = int(min(1.2 * expected_entries + 16, self._numba_log_capacity))
+
+        t, t_end = float(self.t), float(self.t + T_sim)
+        last_log_t = float(self._last_log_t)
+        num_invalid = 0
+        done = False
+        while not done:
+            log_t = np.empty(capacity)
+            log_x, log_p = np.empty((n, capacity)), np.empty((n, capacity))
+            log_q = np.empty((d, capacity))
+
+            t, num_logged, done, last_log_t, num_invalid_chunk = nb.module.run_events(
+                nb.h_map,
+                nb.w_map,
+                rng,
+                t,
+                t_end,
+                counts,
+                x,
+                q,
+                p,
+                starts,
+                num_agents,
+                masses,
+                clock_rates,
+                nb.kinds,
+                nb.params,
+                self.pdm_max_step,
+                log_interval,
+                last_log_t,
+                log_t,
+                log_x,
+                log_q,
+                log_p,
+            )
+            num_invalid += num_invalid_chunk
+
+            # Store the log entries as blocks (one column per entry)
+            if num_logged > 0:
+                self.log.t.append(log_t[:num_logged].copy())
+                self.log.x.append(log_x[:, :num_logged].copy())
+                self.log.q.append(log_q[:, :num_logged].copy())
+                self.log.p.append(log_p[:, :num_logged].copy())
+
+        if num_invalid > 0:
+            logger.warning(
+                f"Invalid switching probabilities in {num_invalid} revision events. Clipping them by default."
+            )
+
+        self.t = t
+        self._last_log_t = last_log_t
+        self.x, self.q, self.p = x, q, p
+        self._counts = [counts[s].copy() for s in self._slices]
 
     def _sample_index(self, cumulative_weights: np.ndarray, total_weight: float) -> int:
         """
@@ -639,10 +818,11 @@ class Simulator(VisualizationMixin):
         if (
             not force
             and self._log_interval is not None
-            and self.t - self.log.t[-1] < self._log_interval
+            and self.t - self._last_log_t < self._log_interval
         ):
             return
 
+        self._last_log_t = self.t
         self.log.t.append(self.t)
         self.log.x.append(self.x)
         self.log.q.append(self.q)
