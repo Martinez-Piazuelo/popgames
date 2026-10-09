@@ -9,7 +9,7 @@ from popgames.utilities.input_validators import (
     check_scalar_value_bounds,
 )
 
-__all__ = ["RevisionProtocolABC", "Softmax", "Smith", "BNN", "CCSmith"]
+__all__ = ["RevisionProtocolABC", "Softmax", "Smith", "BNN", "Replicator", "CCSmith"]
 
 
 class RevisionProtocolABC(ABC):
@@ -158,6 +158,56 @@ class BNN(RevisionProtocolABC):
         p_hat = np.dot(x.T, p) / (x.sum())
         delta_p = p - p_hat[0]
         return np.maximum(np.dot(delta_p, np.ones_like(delta_p).T), 0) * self.scale
+
+
+class Replicator(RevisionProtocolABC):
+    """
+    Replicator revision protocol. Also known as Pairwise Proportional Imitation revision protocol.
+
+    A revising agent observes a randomly chosen opponent and imitates its strategy with probability
+    proportional to the payoff excess of the opponent's strategy over its own. The resulting mean
+    dynamics are the replicator dynamics.
+
+    Strategies that are absent from the population (i.e., ``x_j = 0``) are never imitated. Hence,
+    unused strategies remain unused.
+    """
+
+    def __init__(self, scale: float) -> None:
+        """
+        Initialize the Replicator revision protocol object.
+
+        Args:
+            scale (float): The scale parameter to ensure well-posed probabilities. A sufficient condition is
+                ``scale <= 1 / (max(p) - min(p))``.
+        """
+
+        check_scalar_value_bounds(arg=scale, arg_name="scale", strictly_positive=True)
+        self.scale = scale
+
+    def __call__(self, p: np.ndarray, x: np.ndarray) -> np.ndarray:
+        """
+        Evaluate the Replicator revision protocol.
+
+        Args:
+            p (np.ndarray): The payoff vector with shape (n, 1).
+            x (np.ndarray): The population state vector with shape (n, 1).
+
+        Returns:
+            np.ndarray: The switching probabilities as a matrix with shape (n, n).
+
+        Examples:
+            >>> import numpy as np
+            >>> from popgames.revision_protocol import Replicator
+            >>> replicator = Replicator(scale=0.1)
+            >>> p = np.array([1, -1, 2]).reshape(3, 1)
+            >>> x = np.array([0.1, 0.7, 0.2]).reshape(3, 1)
+            >>> replicator(p, x)
+            array([[0.  , 0.02, 0.  ],
+                   [0.  , 0.  , 0.  ],
+                   [0.02, 0.06, 0.  ]])
+        """
+
+        return (x / x.sum()) * np.maximum(p - p.T, 0) * self.scale
 
 
 class CCSmith(RevisionProtocolABC):

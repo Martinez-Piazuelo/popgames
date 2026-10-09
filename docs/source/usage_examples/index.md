@@ -7,4 +7,5 @@ population games using the ``popgames`` package.
 :maxdepth: 2
 
 prisoners_dilemma_example
+rock_paper_scissors_example
 ```
