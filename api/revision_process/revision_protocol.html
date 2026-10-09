@@ -7,7 +7,7 @@
         <link rel="prefetch" href="../../_static/logo.png" as="image">
 
     <link rel="shortcut icon" href="../../_static/favicon.png"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
-        <title>Revision Protocol - PopGames v1.0.2</title>
+        <title>Revision Protocol - PopGames v1.0.3</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -165,7 +165,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../index.html"><div class="brand">PopGames v1.0.2</div></a>
+      <a href="../../index.html"><div class="brand">PopGames v1.0.3</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -189,7 +189,7 @@
     <img class="sidebar-logo" src="../../_static/logo.png" alt="Logo"/>
   </div>
   
-  <span class="sidebar-brand-text">PopGames v1.0.2</span>
+  <span class="sidebar-brand-text">PopGames v1.0.3</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -202,6 +202,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../key_concepts/index.html">Key Concepts</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="../index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
@@ -384,7 +385,7 @@
 
 </dd></dl>
 
-<p>–</p>
+<p>—</p>
 <p><strong>Smith Revision Protocol</strong></p>
 <dl class="py class">
 <dt class="sig sig-object py" id="popgames.revision_protocol.Smith">
@@ -425,6 +426,59 @@
 <span class="go">array([[0. , 0.2, 0. ],</span>
 <span class="go">       [0. , 0. , 0. ],</span>
 <span class="go">       [0.1, 0.3, 0. ]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<p>—</p>
+<p><strong>Replicator Revision Protocol</strong></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Replicator">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">popgames.revision_protocol.</span></span><span class="sig-name descname"><span class="pre">Replicator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_protocol.html#Replicator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_protocol.Replicator" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#popgames.revision_protocol.RevisionProtocolABC" title="popgames.revision_protocol.RevisionProtocolABC"><code class="xref py py-class docutils literal notranslate"><span class="pre">RevisionProtocolABC</span></code></a></p>
+<p>Replicator revision protocol. Also known as Pairwise Proportional Imitation revision protocol.</p>
+<p>A revising agent observes a randomly chosen opponent and imitates its strategy with probability
+proportional to the payoff excess of the opponent’s strategy over its own. The resulting mean
+dynamics are the replicator dynamics.</p>
+<p>Strategies that are absent from the population (i.e., <code class="docutils literal notranslate"><span class="pre">x_j</span> <span class="pre">=</span> <span class="pre">0</span></code>) are never imitated. Hence,
+unused strategies remain unused.</p>
+<p>Initialize the Replicator revision protocol object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale</strong> (<em>float</em>) – The scale parameter to ensure well-posed probabilities. A sufficient condition is
+<code class="docutils literal notranslate"><span class="pre">scale</span> <span class="pre">&lt;=</span> <span class="pre">1</span> <span class="pre">/</span> <span class="pre">(max(p)</span> <span class="pre">-</span> <span class="pre">min(p))</span></code>.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.revision_protocol.Replicator.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/popgames/revision_protocol.html#Replicator.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.revision_protocol.Replicator.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate the Replicator revision protocol.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>p</strong> (<em>np.ndarray</em>) – The payoff vector with shape (n, 1).</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>) – The population state vector with shape (n, 1).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The switching probabilities as a matrix with shape (n, n).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">popgames.revision_protocol</span><span class="w"> </span><span class="kn">import</span> <span class="n">Replicator</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span> <span class="o">=</span> <span class="n">Replicator</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">replicator</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="go">array([[0.  , 0.02, 0.  ],</span>
+<span class="go">       [0.  , 0.  , 0.  ],</span>
+<span class="go">       [0.02, 0.06, 0.  ]])</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -524,6 +578,10 @@
 </li>
 <li><a class="reference internal" href="#popgames.revision_protocol.Smith"><code class="docutils literal notranslate"><span class="pre">Smith</span></code></a><ul>
 <li><a class="reference internal" href="#popgames.revision_protocol.Smith.__call__"><code class="docutils literal notranslate"><span class="pre">Smith.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.revision_protocol.Replicator"><code class="docutils literal notranslate"><span class="pre">Replicator</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.revision_protocol.Replicator.__call__"><code class="docutils literal notranslate"><span class="pre">Replicator.__call__()</span></code></a></li>
 </ul>
 </li>
 </ul>

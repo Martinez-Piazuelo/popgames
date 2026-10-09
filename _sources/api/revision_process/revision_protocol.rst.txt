@@ -33,11 +33,21 @@ The abstract base class for all revision protocols is defined below.
     :show-inheritance:
     :special-members: __call__
 
---
+---
 
 **Smith Revision Protocol**
 
 .. autoclass:: popgames.revision_protocol.Smith
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :special-members: __call__
+
+---
+
+**Replicator Revision Protocol**
+
+.. autoclass:: popgames.revision_protocol.Replicator
     :members:
     :undoc-members:
     :show-inheritance:
