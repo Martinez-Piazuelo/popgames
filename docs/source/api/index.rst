@@ -15,4 +15,7 @@ Core modules
 Additional modules
 ------------------
 
-TODO
+.. toctree::
+   :maxdepth: 1
+
+   utilities

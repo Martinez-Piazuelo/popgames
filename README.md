@@ -205,6 +205,31 @@ plt.show()
 PopGames also provides built-in visualization utilities supporting ternary plots, univariate projections, and custom 
 key performance indicators. For more details, see the API reference documentation.
 
+---
+
+### Run an ensemble of simulations
+
+Finite-agent simulations are stochastic, so a single run shows only one possible outcome.
+`run_ensemble` runs many simulations and samples them at common times, either from the same initial state with
+different seeds, or from different initial states:
+
+```python
+# Same initial state, 20 different seeds
+ens = sim.run_ensemble(T_sim=10, num_runs=20, x0=x0, seed=0)
+ens.plot(plot_type="bands", variables=["x"], plot_deterministic_approximation=True)
+
+# 10 random initial states, same seed
+from popgames.utilities import sample_initial_states
+
+x0s = sample_initial_states(population_game, num=10, seed=1)
+ens = sim.run_ensemble(T_sim=10, x0=x0s, seed=[0] * len(x0s))
+ens.plot(plot_type="kpi", plot_deterministic_approximation=True)
+```
+
+The result holds the runs in arrays of shape `(runs, strategies, times)` (e.g., `ens.x`), with helpers such as
+`ens.mean()` and `ens.quantile(...)`, and plots of quantile bands, KPIs, ternary trajectories, and final states.
+See the usage examples in the documentation for more details.
+
 ## Contributing
 
 Contributions are welcome. If you would like to improve `popgames`, please follow the workflow below.

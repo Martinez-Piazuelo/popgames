@@ -66,7 +66,9 @@ only. Below the break-even point, e.g., for the [usage examples](../usage_exampl
 just as fast or faster.
 
 Compiled functions are cached per function object: simulators that share the same functions (e.g., in a parameter
-sweep over the revision protocol or the number of agents) only compile them once per session.
+sweep over the revision protocol or the number of agents) only compile them once per session. Likewise, all the runs
+of an ensemble (``sim.run_ensemble``) use the functions compiled for the simulator, so the break-even point applies to
+the total number of revision events of the ensemble.
 
 ### Requirements and fallback
 
@@ -150,8 +152,12 @@ compilation errors where the function is defined: call it once with a test input
 
 Pass ``seed`` (an integer or a ``np.random.Generator``) to the simulator for reproducible simulations. Without a
 seed, the simulator draws from NumPy's global random state, so ``np.random.seed`` also makes simulations
-reproducible. The numpy and numba backends use different random streams: the same seed produces different (but
-statistically equivalent) trajectories with each backend.
+reproducible. ``reset(seed=...)`` reseeds an existing simulator, and ``run_ensemble(seed=...)`` makes a whole ensemble
+reproducible (see [Ensembles of simulations](../usage_examples/rock_paper_scissors_ensemble_example.md)).
+
+Reproducibility is guaranteed for a given backend. Across backends, the same seed often produces the same trajectory,
+but this is not guaranteed: without a seed the backends draw from different random streams, and small floating-point
+differences between compiled and NumPy code can change individual revisions.
 
 ## Other options
 

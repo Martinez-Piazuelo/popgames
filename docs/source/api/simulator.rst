@@ -20,6 +20,18 @@ The simulator is equipped with a ``VisualizationMixin`` implementing useful visu
 
 ---
 
+**Ensemble Result**
+
+Returned by ``Simulator.run_ensemble``: finite-agent simulations sampled at common times, from the same initial state
+or from different ones.
+
+.. autoclass:: popgames.ensemble.EnsembleResult
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+---
+
 **Visualization Mixin**
 
 .. autoclass:: popgames.plotting.visualization_mixin.VisualizationMixin
@@ -35,3 +47,18 @@ The simulator is equipped with a ``VisualizationMixin`` implementing useful visu
    :members:
    :undoc-members:
    :show-inheritance:
+
+---
+
+**Ensemble Visualization Mixin**
+
+.. autoclass:: popgames.plotting.visualization_mixin.EnsembleVisualizationMixin
+   :members:
+   :show-inheritance:
+
+---
+
+**Supported Ensemble Plots**
+
+.. automodule:: popgames.plotting.ensemble_plotters
+   :members:

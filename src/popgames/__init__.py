@@ -5,6 +5,7 @@ import logging.config
 
 import popgames.alarm_clock as clock
 import popgames.revision_protocol as protocol
+from popgames.ensemble import EnsembleResult
 from popgames.payoff_mechanism import PayoffMechanism
 from popgames.population_game import PopulationGame, SinglePopulationGame
 from popgames.revision_process import PoissonRevisionProcess
@@ -16,6 +17,7 @@ __all__ = [
     "SinglePopulationGame",
     "PayoffMechanism",
     "Simulator",
+    "EnsembleResult",
     "clock",
     "protocol",
     "configure_logging",
