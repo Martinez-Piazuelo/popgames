@@ -65,7 +65,7 @@ def plot_kpi_over_time(
             )
             return _kpi / max(_kpi[0], 1e-8)
 
-    sim_log = simulator._get_flattened_log()
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
         x0 = sim_log.x[:, [0]]
@@ -73,9 +73,7 @@ def plot_kpi_over_time(
         out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
         kpi_det = kpi_function(out_det)
 
-    out = (
-        simulator._get_flattened_log()
-    )  # TODO: enable a non-protected method in Simulator for this
+    out = simulator.log
     kpi = kpi_function(out)
 
     plt.figure(figsize=figsize)
@@ -150,14 +148,14 @@ def plot_univariate_trajectories_joint(
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
 
-    sim_log = simulator._get_flattened_log()
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
         x0 = sim_log.x[:, [0]]
         q0 = sim_log.q[:, [0]]
         out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
 
-    out = simulator._get_flattened_log()
+    out = simulator.log
 
     for var in ["x", "p"]:
         val = getattr(out, var)
@@ -299,14 +297,14 @@ def plot_univariate_trajectories_split(
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
 
-    sim_log = simulator._get_flattened_log()
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
         x0 = sim_log.x[:, [0]]
         q0 = sim_log.q[:, [0]]
         out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
 
-    out = simulator._get_flattened_log()
+    out = simulator.log
 
     for var in ["x", "p"]:
         val = getattr(out, var)
@@ -522,7 +520,7 @@ def make_ternary_plot_single_population(
         return None
 
     # Compute edm trajectory (if enabled)
-    sim_log = simulator._get_flattened_log()
+    sim_log = simulator.log
     if plot_edm_trajectory:
         t_sim = (0, simulator.t)
         x0 = sim_log.x[:, [0]]
@@ -734,7 +732,7 @@ def make_ternary_plot_multi_population(
             return None
 
     # Compute edm trajectory (if enabled)
-    sim_log = simulator._get_flattened_log()
+    sim_log = simulator.log
     if plot_edm_trajectory:
         t_sim = (0, simulator.t)
         x0 = sim_log.x[:, [0]]

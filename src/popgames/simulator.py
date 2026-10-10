@@ -243,7 +243,7 @@ class Simulator(VisualizationMixin):
         self.p = self.payoff_mechanism.h_map(self.q, self.x)
 
         # Initialize log
-        self.log = SimpleNamespace(
+        self._log = SimpleNamespace(
             t=[self.t],
             x=[self.x],
             q=[self.q],
@@ -251,6 +251,7 @@ class Simulator(VisualizationMixin):
         )
         self._log_interval = None
         self._last_log_t = self.t
+        self._flattened_log = None
 
     def run(
         self, T_sim: int, verbose: bool = False, log_interval: float = None
@@ -533,10 +534,11 @@ class Simulator(VisualizationMixin):
 
             # Store the log entries as blocks (one column per entry)
             if num_logged > 0:
-                self.log.t.append(log_t[:num_logged].copy())
-                self.log.x.append(log_x[:, :num_logged].copy())
-                self.log.q.append(log_q[:, :num_logged].copy())
-                self.log.p.append(log_p[:, :num_logged].copy())
+                self._flattened_log = None
+                self._log.t.append(log_t[:num_logged].copy())
+                self._log.x.append(log_x[:, :num_logged].copy())
+                self._log.q.append(log_q[:, :num_logged].copy())
+                self._log.p.append(log_p[:, :num_logged].copy())
 
         if num_invalid > 0:
             logger.warning(
@@ -823,24 +825,41 @@ class Simulator(VisualizationMixin):
             return
 
         self._last_log_t = self.t
-        self.log.t.append(self.t)
-        self.log.x.append(self.x)
-        self.log.q.append(self.q)
-        self.log.p.append(self.p)
+        self._flattened_log = None
+        self._log.t.append(self.t)
+        self._log.x.append(self.x)
+        self._log.q.append(self.q)
+        self._log.p.append(self.p)
+
+    @property
+    def log(self) -> SimpleNamespace:
+        """
+        The simulation log since the last reset, with one column per log entry.
+
+        Returns:
+            SimpleNamespace: The log with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape
+            ``(d, K)``), and ``p`` (shape ``(n, K)``), where ``K`` is the number of log entries. For example,
+            ``log.x[:, [k]]`` is the strategic distribution at time ``log.t[k]``.
+        """
+        return self._get_flattened_log()
 
     def _get_flattened_log(self) -> SimpleNamespace:
         """
         Internal method to get the flattened log of the simulation.
+
+        The log entries are stored as individual columns (one per event, numpy backend) or as blocks of columns (numba
+        backend). The flattened log is cached until new entries are logged.
 
         Should not be called directly from outside the class.
 
         Returns:
             SimpleNamespace: The flattened log of the simulation as a SimpleNamespace object.
         """
-        flattened_log = SimpleNamespace(
-            t=np.hstack(self.log.t),
-            x=np.hstack(self.log.x),
-            q=np.hstack(self.log.q),
-            p=np.hstack(self.log.p),
-        )
-        return flattened_log
+        if self._flattened_log is None:
+            self._flattened_log = SimpleNamespace(
+                t=np.hstack(self._log.t),
+                x=np.hstack(self._log.x),
+                q=np.hstack(self._log.q),
+                p=np.hstack(self._log.p),
+            )
+        return self._flattened_log

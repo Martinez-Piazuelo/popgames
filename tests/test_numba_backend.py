@@ -372,6 +372,23 @@ class TestNumbaBackendRun(unittest.TestCase):
         np.testing.assert_allclose(out.q[0, :first_switch], 0.3 * t, atol=1e-9)
         np.testing.assert_allclose(out.p, _pdm_h_map(out.q, out.x))
 
+    def test_log_has_the_same_structure_as_with_the_numpy_backend(self) -> None:
+        logs = {}
+        for backend in ["numpy", "numba"]:
+            sim = _make_rps_simulator(100, backend=backend, seed=0)
+            sim.run(T_sim=1)
+            sim.run(T_sim=1)  # several runs (several blocks with numba)
+            logs[backend] = sim.log
+
+        for log in logs.values():
+            K = log.t.shape[0]
+            self.assertEqual(log.x.shape, (3, K))
+            self.assertEqual(log.q.shape, (0, K))
+            self.assertEqual(log.p.shape, (3, K))
+            np.testing.assert_allclose(log.x[:, [0]], _RPS_X0)
+            self.assertEqual(log.t[-1], 2)
+            self.assertTrue(np.all(np.diff(log.t) > 0))
+
     def test_plots_work_with_numba_logs(self) -> None:
         sim = _make_rps_simulator(100, backend="numba", seed=0)
         sim.run(T_sim=2)
