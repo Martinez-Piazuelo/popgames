@@ -204,6 +204,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance/index.html">Performance</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/population_game.html">Population Game</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/payoff_mechanism.html">Payoff Mechanism</a></li>
@@ -252,6 +253,7 @@
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
@@ -291,6 +293,10 @@
 <span class="sd">    list of revision processes (one per population).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">_numba_log_capacity</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">1_000_000</span>  <span class="c1"># Maximum log entries per call to the compiled (numba) event loop</span>
+    <span class="p">)</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">population_game</span><span class="p">:</span> <span class="n">PopulationGame</span><span class="p">,</span>
@@ -301,6 +307,7 @@
         <span class="n">pdm_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RK4&quot;</span><span class="p">,</span>
         <span class="n">pdm_max_step</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;numpy&quot;</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the simulator object.</span>
@@ -325,6 +332,11 @@
 <span class="sd">            seed (Union[int, np.random.Generator], optional): Seed or random number generator for the simulation.</span>
 <span class="sd">                Defaults to None, in which case NumPy&#39;s global random state is used (see ``np.random.seed``).</span>
 <span class="sd">                Custom (non-Poisson) revision processes always draw from their own random sources.</span>
+<span class="sd">            backend (str): Either &#39;numpy&#39; or &#39;numba&#39;. The &#39;numba&#39; backend compiles the fast simulation path with</span>
+<span class="sd">                Numba (requires ``pip install popgames[numba]``). It requires the fast path, built-in revision</span>
+<span class="sd">                protocols, ``pdm_method=&#39;RK4&#39;``, and payoff mechanism functions that can be compiled with</span>
+<span class="sd">                ``numba.njit``; otherwise, a warning is logged and the &#39;numpy&#39; backend is used. Compilation takes a</span>
+<span class="sd">                few seconds on the first run of each session. Defaults to &#39;numpy&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Numerical precision</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_num_precision</span> <span class="o">=</span> <span class="mi">9</span>  <span class="c1"># Number of decimals in rounding operations</span>
@@ -408,6 +420,9 @@
         <span class="c1"># Random number generator (NumPy&#39;s global random state if no seed is provided)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
+        <span class="c1"># Simulation backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
         <span class="c1"># Reset simulation state, revision_times, and logs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
@@ -484,13 +499,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">h_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 
         <span class="c1"># Initialize log</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
             <span class="n">t</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">],</span>
             <span class="n">x</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">],</span>
             <span class="n">q</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">],</span>
             <span class="n">p</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span> <span class="o">=</span> <span class="kc">None</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="Simulator.run">
@@ -518,12 +535,14 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span> <span class="o">=</span> <span class="n">log_interval</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_fast_path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;numba&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_run_numba_path</span><span class="p">(</span><span class="n">T_sim</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_fast_path</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_fast_path</span><span class="p">(</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_per_agent_path</span><span class="p">(</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">:</span>  <span class="c1"># Always log the final state</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">:</span>  <span class="c1"># Always log the final state</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_log</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flattened_log</span><span class="p">()</span></div>
@@ -627,6 +646,169 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">h_map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_log</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_backend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal method to set up the simulation backend.</span>
+
+<span class="sd">        Falls back to the &#39;numpy&#39; backend (with a warning) if the &#39;numba&#39; backend cannot be used.</span>
+<span class="sd">        Should not be called directly from outside the class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            backend (str): Either &#39;numpy&#39; or &#39;numba&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_type</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">expected_type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;backend&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;numpy&quot;</span><span class="p">,</span> <span class="s2">&quot;numba&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;backend must be either &#39;numpy&#39; or &#39;numba&#39;, got &#39;</span><span class="si">{</span><span class="n">backend</span><span class="si">}</span><span class="s2">&#39;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="s2">&quot;numpy&quot;</span>
+        <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;numpy&quot;</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_numba_backend</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;popgames._numba_backend&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;The numba backend requires numba. Install it with `pip install popgames[numba]`.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
+        <span class="n">reason</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">specs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">_numba_backend</span><span class="o">.</span><span class="n">protocol_spec</span><span class="p">(</span><span class="n">rp</span><span class="o">.</span><span class="n">revision_protocol</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">rp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">revision_processes</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_fast_path</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="s2">&quot;it requires the fast path (fast_path=True and PoissonRevisionProcess revision processes)&quot;</span>
+        <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">specs</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">specs</span><span class="p">)</span> <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;the revision protocol of population </span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">revision_processes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">revision_protocol</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">) is not a built-in protocol&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdm_method</span> <span class="o">!=</span> <span class="s2">&quot;RK4&quot;</span><span class="p">:</span>
+            <span class="n">reason</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;it only supports pdm_method=&#39;RK4&#39; (got &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pdm_method</span><span class="si">}</span><span class="s2">&#39;)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">h_map</span><span class="p">,</span> <span class="n">w_map</span> <span class="o">=</span> <span class="n">_numba_backend</span><span class="o">.</span><span class="n">compile_payoff_mechanism</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Numba compilation error&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;the payoff mechanism functions could not be compiled with numba.njit &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reason</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The numba backend cannot be used: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">. Using the numpy backend instead.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">specs</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">specs</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">params_k</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">specs</span><span class="p">):</span>
+            <span class="n">params</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">params_k</span><span class="p">)]</span> <span class="o">=</span> <span class="n">params_k</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="s2">&quot;numba&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_numba</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
+            <span class="n">module</span><span class="o">=</span><span class="n">_numba_backend</span><span class="p">,</span>
+            <span class="n">h_map</span><span class="o">=</span><span class="n">h_map</span><span class="p">,</span>
+            <span class="n">w_map</span><span class="o">=</span><span class="n">w_map</span><span class="p">,</span>
+            <span class="n">kinds</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">spec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">specs</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+            <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_run_numba_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Internal method to run the fast simulation path with the compiled (numba) event loop.</span>
+
+<span class="sd">        Should not be called directly from outside the class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            T_sim (int): The total time to simulate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numba</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
+
+        <span class="c1"># Numba draws from its own generator: derive it from NumPy&#39;s global state if no seed was provided</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rng</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">):</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rng</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">63</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+
+        <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_counts</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">start</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="n">num_agents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_agents</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">masses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">masses</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">clock_rates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">rp</span><span class="o">.</span><span class="n">Poisson_clock_rate</span> <span class="k">for</span> <span class="n">rp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">revision_processes</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="c1"># Log buffers (the compiled loop returns whenever they are full)</span>
+        <span class="n">log_interval</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span>
+        <span class="k">if</span> <span class="n">log_interval</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">expected_entries</span> <span class="o">=</span> <span class="n">T_sim</span> <span class="o">/</span> <span class="n">log_interval</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">expected_entries</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_agents</span> <span class="o">*</span> <span class="n">clock_rates</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">T_sim</span>
+        <span class="n">capacity</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">*</span> <span class="n">expected_entries</span> <span class="o">+</span> <span class="mi">16</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numba_log_capacity</span><span class="p">))</span>
+
+        <span class="n">t</span><span class="p">,</span> <span class="n">t_end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">+</span> <span class="n">T_sim</span><span class="p">)</span>
+        <span class="n">last_log_t</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span><span class="p">)</span>
+        <span class="n">num_invalid</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">log_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">capacity</span><span class="p">)</span>
+            <span class="n">log_x</span><span class="p">,</span> <span class="n">log_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">capacity</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">capacity</span><span class="p">))</span>
+            <span class="n">log_q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">d</span><span class="p">,</span> <span class="n">capacity</span><span class="p">))</span>
+
+            <span class="n">t</span><span class="p">,</span> <span class="n">num_logged</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">last_log_t</span><span class="p">,</span> <span class="n">num_invalid_chunk</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">run_events</span><span class="p">(</span>
+                <span class="n">nb</span><span class="o">.</span><span class="n">h_map</span><span class="p">,</span>
+                <span class="n">nb</span><span class="o">.</span><span class="n">w_map</span><span class="p">,</span>
+                <span class="n">rng</span><span class="p">,</span>
+                <span class="n">t</span><span class="p">,</span>
+                <span class="n">t_end</span><span class="p">,</span>
+                <span class="n">counts</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">q</span><span class="p">,</span>
+                <span class="n">p</span><span class="p">,</span>
+                <span class="n">starts</span><span class="p">,</span>
+                <span class="n">num_agents</span><span class="p">,</span>
+                <span class="n">masses</span><span class="p">,</span>
+                <span class="n">clock_rates</span><span class="p">,</span>
+                <span class="n">nb</span><span class="o">.</span><span class="n">kinds</span><span class="p">,</span>
+                <span class="n">nb</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pdm_max_step</span><span class="p">,</span>
+                <span class="n">log_interval</span><span class="p">,</span>
+                <span class="n">last_log_t</span><span class="p">,</span>
+                <span class="n">log_t</span><span class="p">,</span>
+                <span class="n">log_x</span><span class="p">,</span>
+                <span class="n">log_q</span><span class="p">,</span>
+                <span class="n">log_p</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">num_invalid</span> <span class="o">+=</span> <span class="n">num_invalid_chunk</span>
+
+            <span class="c1"># Store the log entries as blocks (one column per entry)</span>
+            <span class="k">if</span> <span class="n">num_logged</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_t</span><span class="p">[:</span><span class="n">num_logged</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_x</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num_logged</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_q</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num_logged</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_p</span><span class="p">[:,</span> <span class="p">:</span><span class="n">num_logged</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">num_invalid</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Invalid switching probabilities in </span><span class="si">{</span><span class="n">num_invalid</span><span class="si">}</span><span class="s2"> revision events. Clipping them by default.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span> <span class="o">=</span> <span class="n">last_log_t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_counts</span> <span class="o">=</span> <span class="p">[</span><span class="n">counts</span><span class="p">[</span><span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_slices</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_sample_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cumulative_weights</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">total_weight</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -901,31 +1083,57 @@
         <span class="k">if</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="n">force</span>
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_interval</span>
         <span class="p">):</span>
             <span class="k">return</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_log_t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The simulation log since the last reset, with one row per variable and one column per log entry.</span>
+
+<span class="sd">        The layout is the same as the output of ``run`` and ``integrate_edm_pdm`` (and of</span>
+<span class="sd">        ``scipy.integrate.solve_ivp``), so finite-agent and deterministic trajectories can be compared directly.</span>
+<span class="sd">        Standard NumPy indexing applies:</span>
+
+<span class="sd">        * ``log.x[i]`` (shape ``(K,)``) is the trajectory of strategy ``i`` over time.</span>
+<span class="sd">        * ``log.x[:, k]`` (shape ``(n,)``) is the strategic distribution at time ``log.t[k]``.</span>
+<span class="sd">        * ``log.x[:, [k]]`` (shape ``(n, 1)``) is the same distribution as a column vector, as expected by ``reset``,</span>
+<span class="sd">          ``integrate_edm_pdm``, and the payoff functions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            SimpleNamespace: The log with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape</span>
+<span class="sd">            ``(d, K)``), and ``p`` (shape ``(n, K)``), where ``K`` is the number of log entries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flattened_log</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_flattened_log</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Internal method to get the flattened log of the simulation.</span>
+
+<span class="sd">        The log entries are stored as individual columns (one per event, numpy backend) or as blocks of columns (numba</span>
+<span class="sd">        backend). The flattened log is cached until new entries are logged.</span>
 
 <span class="sd">        Should not be called directly from outside the class.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            SimpleNamespace: The flattened log of the simulation as a SimpleNamespace object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">flattened_log</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
-            <span class="n">t</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
-            <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">x</span><span class="p">),</span>
-            <span class="n">q</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">q</span><span class="p">),</span>
-            <span class="n">p</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">p</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">flattened_log</span></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span>
+                <span class="n">t</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">t</span><span class="p">),</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">x</span><span class="p">),</span>
+                <span class="n">q</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">q</span><span class="p">),</span>
+                <span class="n">p</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_log</span><span class="o">.</span><span class="n">p</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span></div>
 
 </pre></div>
         </article>

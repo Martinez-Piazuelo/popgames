@@ -205,6 +205,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../performance/index.html">Performance</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../api/population_game.html">Population Game</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/payoff_mechanism.html">Payoff Mechanism</a></li>
@@ -283,6 +284,15 @@
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/Martinez-Piazuelo/popgames.git
 </pre></div>
 </div>
+</section>
+<section id="optional-numba-backend">
+<h3>Optional: Numba backend<a class="headerlink" href="#optional-numba-backend" title="Link to this heading">¶</a></h3>
+<p>To speed up large simulations with the optional <a class="reference external" href="https://numba.pydata.org/">Numba</a> backend, install the
+<code class="docutils literal notranslate"><span class="pre">numba</span></code> extra:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;popgames[numba]&quot;</span>
+</pre></div>
+</div>
+<p>Numba is only needed when a simulator is created with <code class="docutils literal notranslate"><span class="pre">backend=&quot;numba&quot;</span></code>.</p>
 </section>
 <section id="verify-the-installation">
 <h3>Verify the installation<a class="headerlink" href="#verify-the-installation" title="Link to this heading">¶</a></h3>
@@ -453,6 +463,7 @@ illustrating the well-known outcome of the Prisoner’s Dilemma in evolutionary 
 <h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><strong>Usage Examples</strong> – hands-on full usage examples</p></li>
+<li><p><strong>Performance</strong> – faster simulations and the optional Numba backend</p></li>
 <li><p><strong>Key Concepts</strong> – connections with theoretical background</p></li>
 <li><p><strong>API Reference</strong> – full codebase documentation</p></li>
 <li><p><strong>Contributing to PopGames</strong> - how to contribute to the PopGames package</p></li>
@@ -541,6 +552,7 @@ illustrating the well-known outcome of the Prisoner’s Dilemma in evolutionary 
 <li><a class="reference internal" href="#installation">Installation</a><ul>
 <li><a class="reference internal" href="#install-from-pypi">Install from PyPI</a></li>
 <li><a class="reference internal" href="#install-the-development-version">Install the development version</a></li>
+<li><a class="reference internal" href="#optional-numba-backend">Optional: Numba backend</a></li>
 <li><a class="reference internal" href="#verify-the-installation">Verify the installation</a></li>
 </ul>
 </li>

@@ -204,6 +204,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance/index.html">Performance</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../api/population_game.html">Population Game</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/payoff_mechanism.html">Payoff Mechanism</a></li>
@@ -319,6 +320,7 @@
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">h_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unsqueeze_h_map</span><span class="p">(</span><span class="n">h_map</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dummy_w_map</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_w_map_user</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># -&gt; Case d&gt;0</span>
             <span class="n">check_function_signature</span><span class="p">(</span>
                 <span class="n">arg</span><span class="o">=</span><span class="n">h_map</span><span class="p">,</span>
@@ -334,6 +336,10 @@
             <span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">h_map</span> <span class="o">=</span> <span class="n">h_map</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">w_map</span> <span class="o">=</span> <span class="n">w_map</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_w_map_user</span> <span class="o">=</span> <span class="n">w_map</span>
+
+        <span class="c1"># User-provided functions (as given), used by the numba backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h_map_user</span> <span class="o">=</span> <span class="n">h_map</span>
 
 <div class="viewcode-block" id="PayoffMechanism.integrate">
 <a class="viewcode-back" href="../../api/payoff_mechanism.html#popgames.payoff_mechanism.PayoffMechanism.integrate">[docs]</a>
