@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import numpy as np
 import scipy as sp
 
+from popgames.ensemble import EnsembleResult
 from popgames.payoff_mechanism import PayoffMechanism
 from popgames.plotting import VisualizationMixin
 from popgames.population_game import PopulationGame
@@ -172,14 +173,24 @@ class Simulator(VisualizationMixin):
         # Reset simulation state, revision_times, and logs
         self.reset()
 
-    def reset(self, x0: np.ndarray = None, q0: np.ndarray = None) -> None:
+    def reset(
+        self,
+        x0: np.ndarray = None,
+        q0: np.ndarray = None,
+        seed: Union[int, np.random.Generator] = None,
+    ) -> None:
         """
         Resets the simulator.
 
         Args:
             x0 (np.ndarray, Optional): The initial state for the strategic distribution of the society. Defaults to None.
             q0 (np.ndarray, Optional): The initial state for the payoff mechanism's PDM. Defaults to None.
+            seed (Union[int, np.random.Generator], optional): If provided, the simulator draws from a new random
+                number generator seeded with ``seed`` from now on (as if ``seed`` had been passed to the constructor).
+                Defaults to None, in which case the current random number generator is kept.
         """
+        if seed is not None:
+            self._rng = np.random.default_rng(seed)
 
         # Initialize the number of agents playing each strategy based on x0 (if any)
         self._counts = []
@@ -202,7 +213,10 @@ class Simulator(VisualizationMixin):
                     arg_name=f"x0_{k}",
                 )
                 Ni_k = np.floor(
-                    self.num_agents[k] * x0[s] / self.population_game.masses[k]
+                    np.round(
+                        self.num_agents[k] * x0[s] / self.population_game.masses[k],
+                        self._num_precision,
+                    )
                 ).astype(int)
                 pos = 0
                 for _ in range(self.num_agents[k] - Ni_k.sum()):
@@ -287,6 +301,118 @@ class Simulator(VisualizationMixin):
             self._update_log(force=True)
 
         return self._get_flattened_log()
+
+    def run_ensemble(
+        self,
+        T_sim: int,
+        num_runs: int,
+        t_eval: np.ndarray = None,
+        seed: Union[int, np.random.Generator] = None,
+        x0: np.ndarray = None,
+        q0: np.ndarray = None,
+        log_interval: float = None,
+    ) -> EnsembleResult:
+        """
+        Run several independent simulations from the same initial state.
+
+        Each run ``i`` resets the simulator with ``reset(x0, q0, seed=result.seeds[i])`` and runs it for ``T_sim``
+        time units. Its state is then sampled at the times ``t_eval``: the value at time ``t`` is the state after the
+        last revision event at or before ``t`` (the state of a finite population is constant between events).
+
+        After the call, the simulator holds the last run (e.g., in ``log``), and its random number generator is the
+        one it had before the call.
+
+        Args:
+            T_sim (int): The total time to simulate in each run.
+            num_runs (int): The number of runs.
+            t_eval (np.ndarray, optional): Non-decreasing times in ``[0, T_sim]`` at which the runs are sampled.
+                Defaults to None, in which case 201 evenly spaced times are used.
+            seed (Union[int, np.random.Generator], optional): Seed or random number generator from which the seeds of
+                the runs are derived. Defaults to None, in which case they are derived from the simulator's random
+                number generator (NumPy's global random state if the simulator has no seed, see ``np.random.seed``).
+            x0 (np.ndarray, optional): The initial strategic distribution of every run. Defaults to None, in which
+                case the initial state of the last reset (``log.x[:, [0]]``) is used.
+            q0 (np.ndarray, optional): The initial state of the PDM of every run. Defaults to None, in which case the
+                initial state of the last reset (``log.q[:, [0]]``) is used.
+            log_interval (float, optional): Minimum time between consecutive log entries within each run (see
+                ``run``). Defaults to None, in which case every revision event is logged and the sampled states are
+                exact. Setting it reduces memory usage in very large runs, but then the state sampled at time ``t``
+                may lag behind by up to ``log_interval``.
+
+        Returns:
+            EnsembleResult: The sampled runs, with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q``
+            (shape ``(M, d, K)``), ``p`` (shape ``(M, n, K)``), and ``seeds`` (shape ``(M,)``), where ``M`` is the
+            number of runs and ``K`` the number of sampling times.
+        """
+        check_type(arg=T_sim, expected_type=int, arg_name="T_sim")
+        check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
+        check_type(arg=num_runs, expected_type=int, arg_name="num_runs")
+        check_scalar_value_bounds(
+            arg=num_runs, arg_name="num_runs", strictly_positive=True
+        )
+
+        if t_eval is None:
+            t_eval = np.linspace(0, T_sim, 201)
+        t_eval = np.asarray(t_eval, dtype=float)
+        if (
+            t_eval.ndim != 1
+            or t_eval.size == 0
+            or np.any(np.diff(t_eval) < 0)
+            or t_eval[0] < 0
+            or t_eval[-1] > T_sim
+        ):
+            raise ValueError(
+                "t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim]."
+            )
+
+        initial_state = self._get_flattened_log()
+        x0 = initial_state.x[:, [0]] if x0 is None else x0
+        q0 = initial_state.q[:, [0]] if q0 is None else q0
+
+        # Seeds of the runs (derived from the simulator's random number generator if no seed is provided)
+        if seed is None:
+            if isinstance(self._rng, np.random.Generator):
+                seed = int(self._rng.integers(0, 2**63 - 1))
+            else:
+                seed = int(np.random.randint(0, 2**63 - 1, dtype=np.int64))
+        elif isinstance(seed, np.random.Generator):
+            seed = int(seed.integers(0, 2**63 - 1))
+        seeds = np.random.SeedSequence(seed).generate_state(num_runs, dtype=np.uint64)
+
+        n, d = self.population_game.n, self.payoff_mechanism.d
+        x = np.empty((num_runs, n, t_eval.size))
+        q = np.empty((num_runs, d, t_eval.size))
+        p = np.empty((num_runs, n, t_eval.size))
+
+        rng = self._rng
+        try:
+            for i, run_seed in enumerate(seeds):
+                self.reset(x0=x0, q0=q0, seed=int(run_seed))
+                log = self.run(T_sim=T_sim, log_interval=log_interval)
+
+                # State after the last log entry at or before each sampling time
+                idx = (
+                    np.searchsorted(
+                        np.round(log.t, self._num_precision),
+                        np.round(t_eval, self._num_precision),
+                        side="right",
+                    )
+                    - 1
+                )
+                x[i], q[i], p[i] = log.x[:, idx], log.q[:, idx], log.p[:, idx]
+        finally:
+            self._rng = rng
+
+        return EnsembleResult(
+            simulator=self,
+            t=t_eval,
+            x=x,
+            q=q,
+            p=p,
+            seeds=seeds,
+            x0=np.array(x0, dtype=float),
+            q0=np.array(q0, dtype=float),
+        )
 
     def _run_per_agent_path(self, T_sim: int, verbose: bool) -> None:
         """

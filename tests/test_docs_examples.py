@@ -110,6 +110,33 @@ class TestDocsExamplesSmoke(unittest.TestCase):
         self.assertEqual(log.x.shape[0], 3)
         np.testing.assert_allclose(log.x.sum(axis=0), 1.0)
 
+    def test_example_rock_paper_scissors_ensemble(self):
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        x0 = np.array([0.5, 0.3, 0.2]).reshape(3, 1)
+        for protocol in [
+            pg.revision_protocol.Replicator(scale=0.5),
+            pg.revision_protocol.Smith(scale=0.25),
+        ]:
+            sim = pg.Simulator(
+                population_game=pg.SinglePopulationGame(
+                    num_strategies=3, fitness_function=fitness_function
+                ),
+                payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+                revision_processes=pg.PoissonRevisionProcess(
+                    Poisson_clock_rate=1, revision_protocol=protocol
+                ),
+                num_agents=200,
+            )
+            sim.reset(x0=x0)
+            ens = sim.run_ensemble(T_sim=5, num_runs=5, seed=0)
+            self.assertEqual(ens.x.shape, (5, 3, 201))
+            self.assertEqual(ens.final().x.shape, (5, 3))
+            self.assertEqual(np.prod(ens.final().x, axis=1).shape, (5,))
+
 
 @unittest.skipUnless(NUMBA_AVAILABLE, "numba is not installed")
 class TestDocsExamplesNumbaBackend(unittest.TestCase):

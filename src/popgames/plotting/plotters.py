@@ -25,6 +25,43 @@ if typing.TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+def make_default_kpi_function(
+    simulator: Simulator,
+) -> Callable[[SimpleNamespace], np.ndarray] | None:
+    """
+    Make the default KPI function: the Euclidean distance to the GNE over time, normalized by its initial value.
+
+    Args:
+        simulator (Simulator): The simulator whose population game defines the GNE.
+
+    Returns:
+        Callable[[SimpleNamespace], np.ndarray] | None: The KPI function, mapping a log (with ``x`` of shape
+        ``(n, K)``) to an array of shape ``(K,)``, or None (with a warning) if no GNE was found.
+    """
+    gne = simulator.population_game.compute_gne()
+
+    if gne is None:
+        logger.warning(
+            "No GNE was found. Consider setting the kpi_function argument explicitly."
+        )
+        return None
+
+    def kpi_function(flattened_sim_log: SimpleNamespace) -> np.ndarray:
+        """
+        Default kpi_function (normalized Euclidean distance to GNE over time).
+
+        Args:
+            flattened_sim_log (SimpleNamespace): Simulation log.
+
+        Returns:
+            np.ndarray: KPI evaluation results (normalized Euclidean distance to GNE over time).
+        """
+        _kpi = np.linalg.norm(gne.reshape(-1, 1) - flattened_sim_log.x, ord=2, axis=0)
+        return _kpi / max(_kpi[0], 1e-8)
+
+    return kpi_function
+
+
 def plot_kpi_over_time(
     simulator: Simulator,
     plot_deterministic_approximation: bool = False,
@@ -42,28 +79,9 @@ def plot_kpi_over_time(
 
     kpi_function = kwargs.get("kpi_function", None)
     if kpi_function is None:
-        gne = simulator.population_game.compute_gne()
-
-        if gne is None:
-            logger.warning(
-                "No GNE was found. Consider setting the kpi_function argument explicitly."
-            )
+        kpi_function = make_default_kpi_function(simulator)
+        if kpi_function is None:
             return None
-
-        def kpi_function(flattened_sim_log: SimpleNamespace) -> np.ndarray:
-            """
-            Default kpi_function (normalized Euclidean distance to GNE over time).
-
-            Args:
-                flattened_sim_log (SimpleNamespace): Simulation log.
-
-            Returns:
-                np.ndarray: KPI evaluation results (normalized Euclidean distance to GNE over time).
-            """
-            _kpi = np.linalg.norm(
-                gne.reshape(-1, 1) - flattened_sim_log.x, ord=2, axis=0
-            )
-            return _kpi / max(_kpi[0], 1e-8)
 
     sim_log = simulator.log
     if plot_deterministic_approximation:
