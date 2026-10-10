@@ -23,7 +23,7 @@ from popgames.utilities.input_validators import (
 )
 
 if typing.TYPE_CHECKING:
-    from typing import Union
+    from typing import Sequence, Union
 
 
 __all__ = [
@@ -305,35 +305,49 @@ class Simulator(VisualizationMixin):
     def run_ensemble(
         self,
         T_sim: int,
-        num_runs: int,
+        num_runs: int = None,
         t_eval: np.ndarray = None,
-        seed: Union[int, np.random.Generator] = None,
+        seed: Union[int, np.random.Generator, Sequence[int]] = None,
         x0: np.ndarray = None,
         q0: np.ndarray = None,
         log_interval: float = None,
     ) -> EnsembleResult:
         """
-        Run several independent simulations from the same initial state.
+        Run several finite-agent simulations, e.g., from the same initial state with different seeds, or from
+        different initial states.
 
-        Each run ``i`` resets the simulator with ``reset(x0, q0, seed=result.seeds[i])`` and runs it for ``T_sim``
-        time units. Its state is then sampled at the times ``t_eval``: the value at time ``t`` is the state after the
-        last revision event at or before ``t`` (the state of a finite population is constant between events).
+        Each run ``r`` resets the simulator with ``reset(x0_r, q0_r, seed=seed_r)`` and runs it for ``T_sim`` time
+        units. Its state is then sampled at the times ``t_eval``: the value at time ``t`` is the state after the last
+        revision event at or before ``t`` (the state of a finite population is constant between events).
+
+        The seeds and the initial states can be shared by all runs or given per run:
+
+        * ``seed``: an integer, a ``np.random.Generator``, or None to derive independent seeds for the runs, or a
+          sequence with one seed per run (e.g., ``[7] * M`` to use the same seed in all runs).
+        * ``x0``: an array of shape ``(n, 1)`` (or None) shared by all runs, or an array of shape ``(M, n, 1)`` with one
+          initial state per run (see ``popgames.utilities.sample_initial_states``). Similarly for ``q0``.
+
+        The number of runs ``M`` is ``num_runs`` or the length of the per-run arguments (which must agree).
 
         After the call, the simulator holds the last run (e.g., in ``log``), and its random number generator is the
         one it had before the call.
 
         Args:
             T_sim (int): The total time to simulate in each run.
-            num_runs (int): The number of runs.
+            num_runs (int, optional): The number of runs. Defaults to None, in which case it is the length of the
+                per-run arguments (required if there are none).
             t_eval (np.ndarray, optional): Non-decreasing times in ``[0, T_sim]`` at which the runs are sampled.
                 Defaults to None, in which case 201 evenly spaced times are used.
-            seed (Union[int, np.random.Generator], optional): Seed or random number generator from which the seeds of
-                the runs are derived. Defaults to None, in which case they are derived from the simulator's random
-                number generator (NumPy's global random state if the simulator has no seed, see ``np.random.seed``).
-            x0 (np.ndarray, optional): The initial strategic distribution of every run. Defaults to None, in which
-                case the initial state of the last reset (``log.x[:, [0]]``) is used.
-            q0 (np.ndarray, optional): The initial state of the PDM of every run. Defaults to None, in which case the
-                initial state of the last reset (``log.q[:, [0]]``) is used.
+            seed (Union[int, np.random.Generator, Sequence[int]], optional): Seed or random number generator from
+                which independent seeds for the runs are derived, or a sequence of non-negative integers with the seed
+                of each run. Defaults to None, in which case the seeds are derived from the simulator's random number
+                generator (NumPy's global random state if the simulator has no seed, see ``np.random.seed``).
+            x0 (np.ndarray, optional): The initial strategic distribution, of shape ``(n, 1)`` for all runs or
+                ``(M, n, 1)`` per run. Defaults to None, in which case the initial state of the last reset
+                (``log.x[:, [0]]``) is used for all runs.
+            q0 (np.ndarray, optional): The initial state of the PDM, of shape ``(d, 1)`` for all runs or
+                ``(M, d, 1)`` per run. Defaults to None, in which case the initial state of the last reset
+                (``log.q[:, [0]]``) is used for all runs.
             log_interval (float, optional): Minimum time between consecutive log entries within each run (see
                 ``run``). Defaults to None, in which case every revision event is logged and the sampled states are
                 exact. Setting it reduces memory usage in very large runs, but then the state sampled at time ``t``
@@ -341,15 +355,11 @@ class Simulator(VisualizationMixin):
 
         Returns:
             EnsembleResult: The sampled runs, with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q``
-            (shape ``(M, d, K)``), ``p`` (shape ``(M, n, K)``), and ``seeds`` (shape ``(M,)``), where ``M`` is the
-            number of runs and ``K`` the number of sampling times.
+            (shape ``(M, d, K)``), ``p`` (shape ``(M, n, K)``), ``seeds`` (shape ``(M,)``), ``x0`` (shape
+            ``(M, n, 1)``), and ``q0`` (shape ``(M, d, 1)``), where ``K`` is the number of sampling times.
         """
         check_type(arg=T_sim, expected_type=int, arg_name="T_sim")
         check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
-        check_type(arg=num_runs, expected_type=int, arg_name="num_runs")
-        check_scalar_value_bounds(
-            arg=num_runs, arg_name="num_runs", strictly_positive=True
-        )
 
         if t_eval is None:
             t_eval = np.linspace(0, T_sim, 201)
@@ -365,29 +375,79 @@ class Simulator(VisualizationMixin):
                 "t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim]."
             )
 
+        n, d = self.population_game.n, self.payoff_mechanism.d
         initial_state = self._get_flattened_log()
         x0 = initial_state.x[:, [0]] if x0 is None else x0
         q0 = initial_state.q[:, [0]] if q0 is None else q0
+        x0, num_runs_x0 = _shared_or_per_run(x0, (n, 1), "x0")
+        q0, num_runs_q0 = _shared_or_per_run(q0, (d, 1), "q0")
+
+        per_run_seeds = seed is not None and not isinstance(
+            seed, (int, np.integer, np.random.Generator)
+        )
+        if per_run_seeds:
+            seeds = np.asarray(seed)
+            if (
+                seeds.ndim != 1
+                or seeds.size == 0
+                or not np.issubdtype(seeds.dtype, np.integer)
+                or np.any(seeds < 0)
+            ):
+                raise ValueError(
+                    "seed must be an integer, a np.random.Generator, or a non-empty sequence of non-negative integers."
+                )
+
+        # Number of runs (given, or the length of the per-run arguments)
+        lengths = {
+            name: length
+            for name, length in [
+                ("num_runs", num_runs),
+                ("seed", seeds.size if per_run_seeds else None),
+                ("x0", num_runs_x0),
+                ("q0", num_runs_q0),
+            ]
+            if length is not None
+        }
+        if num_runs is not None:
+            check_type(arg=num_runs, expected_type=int, arg_name="num_runs")
+            check_scalar_value_bounds(
+                arg=num_runs, arg_name="num_runs", strictly_positive=True
+            )
+        if not lengths:
+            raise ValueError(
+                "num_runs is required unless seed, x0, or q0 are given per run."
+            )
+        if len(set(lengths.values())) > 1:
+            raise ValueError(f"Inconsistent numbers of runs: {lengths}.")
+        num_runs = next(iter(lengths.values()))
 
         # Seeds of the runs (derived from the simulator's random number generator if no seed is provided)
-        if seed is None:
-            if isinstance(self._rng, np.random.Generator):
-                seed = int(self._rng.integers(0, 2**63 - 1))
-            else:
-                seed = int(np.random.randint(0, 2**63 - 1, dtype=np.int64))
-        elif isinstance(seed, np.random.Generator):
-            seed = int(seed.integers(0, 2**63 - 1))
-        seeds = np.random.SeedSequence(seed).generate_state(num_runs, dtype=np.uint64)
+        if not per_run_seeds:
+            if seed is None:
+                if isinstance(self._rng, np.random.Generator):
+                    seed = int(self._rng.integers(0, 2**63 - 1))
+                else:
+                    seed = int(np.random.randint(0, 2**63 - 1, dtype=np.int64))
+            elif isinstance(seed, np.random.Generator):
+                seed = int(seed.integers(0, 2**63 - 1))
+            seeds = np.random.SeedSequence(int(seed)).generate_state(
+                num_runs, dtype=np.uint64
+            )
 
-        n, d = self.population_game.n, self.payoff_mechanism.d
         x = np.empty((num_runs, n, t_eval.size))
         q = np.empty((num_runs, d, t_eval.size))
         p = np.empty((num_runs, n, t_eval.size))
+        x0_runs = np.empty((num_runs, n, 1))
+        q0_runs = np.empty((num_runs, d, 1))
 
         rng = self._rng
         try:
-            for i, run_seed in enumerate(seeds):
-                self.reset(x0=x0, q0=q0, seed=int(run_seed))
+            for r in range(num_runs):
+                self.reset(
+                    x0=x0[r] if num_runs_x0 else x0,
+                    q0=q0[r] if num_runs_q0 else q0,
+                    seed=int(seeds[r]),
+                )
                 log = self.run(T_sim=T_sim, log_interval=log_interval)
 
                 # State after the last log entry at or before each sampling time
@@ -399,7 +459,8 @@ class Simulator(VisualizationMixin):
                     )
                     - 1
                 )
-                x[i], q[i], p[i] = log.x[:, idx], log.q[:, idx], log.p[:, idx]
+                x[r], q[r], p[r] = log.x[:, idx], log.q[:, idx], log.p[:, idx]
+                x0_runs[r], q0_runs[r] = log.x[:, [0]], log.q[:, [0]]
         finally:
             self._rng = rng
 
@@ -410,8 +471,8 @@ class Simulator(VisualizationMixin):
             q=q,
             p=p,
             seeds=seeds,
-            x0=np.array(x0, dtype=float),
-            q0=np.array(q0, dtype=float),
+            x0=x0_runs,
+            q0=q0_runs,
         )
 
     def _run_per_agent_path(self, T_sim: int, verbose: bool) -> None:
@@ -997,3 +1058,22 @@ class Simulator(VisualizationMixin):
                 p=np.hstack(self._log.p),
             )
         return self._flattened_log
+
+
+def _shared_or_per_run(
+    arg: np.ndarray, shape: tuple[int, int], name: str
+) -> tuple[np.ndarray, Union[int, None]]:
+    """
+    Validate an argument given either for all runs (shape ``shape``) or per run (shape ``(M, *shape)``).
+
+    Returns:
+        tuple[np.ndarray, Union[int, None]]: The argument as a float array, and ``M`` (None if shared by all runs).
+    """
+    arr = np.asarray(arg, dtype=float)
+    if arr.shape == shape:
+        return arr, None
+    if arr.ndim == 3 and arr.shape[1:] == shape and arr.shape[0] > 0:
+        return arr, arr.shape[0]
+    raise ValueError(
+        f"{name} must have shape {shape} (for all runs) or (M, {shape[0]}, {shape[1]}) (per run), got {arr.shape}."
+    )

@@ -22,8 +22,8 @@ The simulator is equipped with a ``VisualizationMixin`` implementing useful visu
 
 **Ensemble Result**
 
-Returned by ``Simulator.run_ensemble``: independent finite-agent simulations from the same initial state, sampled at
-common times.
+Returned by ``Simulator.run_ensemble``: finite-agent simulations sampled at common times, from the same initial state
+or from different ones.
 
 .. autoclass:: popgames.ensemble.EnsembleResult
    :members:

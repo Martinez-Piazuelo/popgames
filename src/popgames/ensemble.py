@@ -20,7 +20,8 @@ __all__ = [
 
 class EnsembleResult(EnsembleVisualizationMixin):
     """
-    Independent finite-agent simulations from the same initial state, sampled at common times.
+    Finite-agent simulations sampled at common times, e.g., from the same initial state with different seeds, or from
+    different initial states.
 
     Ensembles are created by ``Simulator.run_ensemble``. The arrays have one leading axis for the runs, followed by the
     layout of ``Simulator.log``:
@@ -29,15 +30,24 @@ class EnsembleResult(EnsembleVisualizationMixin):
     * ``ens.x[:, i]`` (shape ``(M, K)``) holds the trajectories of strategy ``i`` in all runs.
     * ``ens.x[:, :, k]`` (shape ``(M, n)``) holds the strategic distributions of all runs at time ``ens.t[k]``.
 
+    Runs with the same initial state ``(x0, q0)`` form a **group** (``groups`` and ``group_index``). Statistics such as
+    ``mean`` and ``quantile`` pool all runs; use ``subset`` for statistics per group, e.g.,
+    ``ens.subset(ens.groups[g]).mean()``. The plots show one group per initial state.
+
     Attributes:
         t (np.ndarray): The sampling times, of shape ``(K,)``.
         x (np.ndarray): The strategic distributions, of shape ``(M, n, K)``.
         q (np.ndarray): The states of the PDM, of shape ``(M, d, K)``.
         p (np.ndarray): The payoffs, of shape ``(M, n, K)``.
         seeds (np.ndarray): The seeds of the runs, of shape ``(M,)``. Run ``r`` can be reproduced with
-            ``sim.reset(ens.x0, ens.q0, seed=int(ens.seeds[r]))`` followed by ``sim.run(T_sim)``.
-        x0 (np.ndarray): The initial strategic distribution of the runs, of shape ``(n, 1)``.
-        q0 (np.ndarray): The initial state of the PDM of the runs, of shape ``(d, 1)``.
+            ``sim.reset(ens.x0[r], ens.q0[r], seed=int(ens.seeds[r]))`` followed by ``sim.run(T_sim)``.
+        x0 (np.ndarray): The initial strategic distribution of each run, of shape ``(M, n, 1)``. This is the state
+            the run actually started from: ``reset`` rounds the requested state to a whole number of agents per
+            strategy.
+        q0 (np.ndarray): The initial state of the PDM of each run, of shape ``(M, d, 1)``.
+        groups (list[np.ndarray]): The indices of the runs of each group (runs with the same initial state), in order
+            of first appearance.
+        group_index (np.ndarray): The group of each run, of shape ``(M,)``.
         simulator (Simulator): The simulator that produced the runs.
     """
 
@@ -61,6 +71,16 @@ class EnsembleResult(EnsembleVisualizationMixin):
         self.x0 = x0
         self.q0 = q0
         self._deterministic = {}
+
+        # Groups of runs with the same initial state, numbered in order of first appearance
+        initial_states = np.hstack([x0.reshape(len(x0), -1), q0.reshape(len(q0), -1)])
+        _, first, inverse = np.unique(
+            initial_states, axis=0, return_index=True, return_inverse=True
+        )
+        rank = np.empty(first.size, dtype=int)
+        rank[np.argsort(first)] = np.arange(first.size)
+        self.group_index = rank[inverse.reshape(-1)]
+        self.groups = [np.flatnonzero(self.group_index == g) for g in range(first.size)]
 
     @property
     def num_runs(self) -> int:
@@ -88,7 +108,7 @@ class EnsembleResult(EnsembleVisualizationMixin):
 
     def mean(self) -> SimpleNamespace:
         """
-        The mean over the runs at each sampling time.
+        The mean over all runs at each sampling time (see ``subset`` for the mean per initial state).
 
         Returns:
             SimpleNamespace: Fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape ``(d, K)``), and
@@ -103,7 +123,7 @@ class EnsembleResult(EnsembleVisualizationMixin):
 
     def quantile(self, quantiles: Union[float, Sequence[float]]) -> SimpleNamespace:
         """
-        The quantiles over the runs at each sampling time.
+        The quantiles over all runs at each sampling time (see ``subset`` for the quantiles per initial state).
 
         Args:
             quantiles (Union[float, Sequence[float]]): One or several quantiles in ``[0, 1]``.
@@ -148,25 +168,62 @@ class EnsembleResult(EnsembleVisualizationMixin):
         """
         return self.at(self.t[-1])
 
+    def subset(self, runs: Union[Sequence[int], np.ndarray]) -> EnsembleResult:
+        """
+        The ensemble restricted to some runs, e.g., ``ens.subset(ens.groups[g])`` for the runs of group ``g``.
+
+        Args:
+            runs (Union[Sequence[int], np.ndarray]): The indices of the runs (or a boolean mask).
+
+        Returns:
+            EnsembleResult: A new ensemble with the selected runs.
+        """
+        runs = np.arange(self.num_runs)[runs]
+        if runs.ndim != 1 or runs.size == 0:
+            raise ValueError("subset requires a non-empty selection of runs.")
+        return EnsembleResult(
+            simulator=self.simulator,
+            t=self.t,
+            x=self.x[runs],
+            q=self.q[runs],
+            p=self.p[runs],
+            seeds=self.seeds[runs],
+            x0=self.x0[runs],
+            q0=self.q0[runs],
+        )
+
+    @property
+    def num_groups(self) -> int:
+        """The number of groups (distinct initial states)."""
+        return len(self.groups)
+
     def deterministic(self, method: str = "Radau") -> SimpleNamespace:
         """
-        The deterministic approximation (EDM-PDM) from the initial state of the runs, sampled at the same times.
+        The deterministic approximation (EDM-PDM) from the initial state of each run, sampled at the same times.
 
-        The result is computed with ``Simulator.integrate_edm_pdm`` and cached.
+        The approximation is computed with ``Simulator.integrate_edm_pdm`` once per group (distinct initial state),
+        and cached.
 
         Args:
             method (str): The integration method. Defaults to 'Radau'.
 
         Returns:
-            SimpleNamespace: Fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape ``(d, K)``), and
-            ``p`` (shape ``(n, K)``).
+            SimpleNamespace: Fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q`` (shape ``(M, d, K)``),
+            and ``p`` (shape ``(M, n, K)``), with the same layout as the ensemble.
         """
         if method not in self._deterministic:
-            self._deterministic[method] = self.simulator.integrate_edm_pdm(
-                t_span=(0.0, self.t[-1]),
-                x0=self.x0,
-                q0=self.q0,
-                t_eval=self.t,
-                method=method,
-            )
+            x = np.empty_like(self.x)
+            q = np.empty_like(self.q)
+            p = np.empty_like(self.p)
+            for runs in self.groups:
+                r = runs[0]
+                out = self.simulator.integrate_edm_pdm(
+                    t_span=(0.0, self.t[-1]),
+                    x0=self.x0[r],
+                    q0=self.q0[r],
+                    t_eval=self.t,
+                    method=method,
+                )
+                x[runs], q[runs], p[runs] = out.x, out.q, out.p
+            self._deterministic[method] = SimpleNamespace(t=self.t, x=x, q=q, p=p)
         return self._deterministic[method]
