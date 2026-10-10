@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import typing
+from types import SimpleNamespace
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,8 +16,6 @@ from popgames.plotting._plot_config import (
     FONTSIZE,
 )
 from popgames.plotting.plotters import make_default_kpi_function
-
-from types import SimpleNamespace
 
 if typing.TYPE_CHECKING:
     from typing import Callable, Sequence
