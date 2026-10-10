@@ -839,7 +839,8 @@ class Simulator(VisualizationMixin):
         Returns:
             SimpleNamespace: The log with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape
             ``(d, K)``), and ``p`` (shape ``(n, K)``), where ``K`` is the number of log entries. For example,
-            ``log.x[:, [k]]`` is the strategic distribution at time ``log.t[k]``.
+            ``log.x[:, k]`` is the strategic distribution at time ``log.t[k]`` (use ``log.x[:, [k]]`` for a column
+            vector of shape ``(n, 1)``, as expected by ``reset``, ``integrate_edm_pdm``, and the payoff functions).
         """
         return self._get_flattened_log()
 
