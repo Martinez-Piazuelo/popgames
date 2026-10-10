@@ -55,10 +55,15 @@ payoff dynamics model with $d=1$), as measured by ``benchmarks/bench_simulator.p
 
 Compilation has a cost. The compiled event loop is cached on disk, so it is compiled only once (the very first time,
 which takes a few seconds). Your payoff mechanism functions, however, are compiled in **every session**, which
-typically takes around one second. At roughly 25 µs saved per revision event, the numba backend pays off for
-simulations with more than about $10^5$ revision events, e.g., $N = 10^4$ agents over $T = 10$ time units. For
-small simulations, such as the [usage examples](../usage_examples/index.md), the numpy backend is just as fast or
-faster.
+typically takes around one second. Dividing this cost by the time saved per revision event gives the break-even point:
+
+* memoryless payoffs ($d=0$, about 25 µs saved per event): about $4 \cdot 10^4$ revision events, e.g.,
+  $N = 4000$ agents over $T = 10$ time units;
+* payoff dynamics models ($d>0$, about 70 µs saved per event in the benchmark): about $1.5 \cdot 10^4$ revision events.
+
+The very first run on a machine also compiles the event loop (a few seconds), which raises these numbers for that run
+only. Below the break-even point, e.g., for the [usage examples](../usage_examples/index.md), the numpy backend is
+just as fast or faster.
 
 Compiled functions are cached per function object: simulators that share the same functions (e.g., in a parameter
 sweep over the revision protocol or the number of agents) only compile them once per session.
