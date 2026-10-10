@@ -220,7 +220,7 @@ def plot_ensemble_kpi(
         ax.set_ylim(ylim)
     ax.set_yscale(yscale)
     _format_time_axes(ax, r"$\operatorname{KPI}(t)$", fontsize)
-    ax.legend(fontsize=fontsize)
+    _legend(ax, fontsize, outside=G > 1)
     _finish(fig, filename, None, show)
 
 
@@ -494,7 +494,7 @@ def plot_ensemble_final(
                 ax.axvline(gne[i], color="tab:red", linestyle="dashed", linewidth=1)
             _format_histogram(ax, _strategy_label("x", i, k, P), snapshot.t, fontsize)
             if G <= MAX_GROUP_COLORS:
-                ax.legend(fontsize=fontsize)
+                _legend(ax, fontsize, outside=True)
             strategy_suffix = f"x_{i + 1}"
             _finish(
                 fig,
@@ -535,6 +535,15 @@ def _group_color(g: int, G: int) -> str:
 def _run(ns: SimpleNamespace, r: int) -> SimpleNamespace:
     """Run ``r`` of an ensemble-shaped namespace, in the layout of ``Simulator.log``."""
     return SimpleNamespace(t=ns.t, x=ns.x[r], q=ns.q[r], p=ns.p[r])
+
+
+def _legend(ax: Axes, fontsize: int, outside: bool = False) -> None:
+    """Add a legend, inside the axes or to their right (e.g., one entry per initial state)."""
+    if outside:
+        ax.legend(fontsize=fontsize, loc="upper left", bbox_to_anchor=(1.02, 1.0))
+    else:
+        ax.legend(fontsize=fontsize)
+    ax.figure.tight_layout()
 
 
 def _format_histogram(ax: Axes, xlabel: str, t: float, fontsize: int) -> None:
