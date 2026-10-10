@@ -65,24 +65,23 @@ def plot_kpi_over_time(
             )
             return _kpi / max(_kpi[0], 1e-8)
 
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
-        x0 = simulator.log.x[0]
-        q0 = simulator.log.q[0]
-        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        x0 = sim_log.x[:, [0]]
+        q0 = sim_log.q[:, [0]]
+        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
         kpi_det = kpi_function(out_det)
 
-    out = (
-        simulator._get_flattened_log()
-    )  # TODO: enable a non-protected method in Simulator for this
+    out = simulator.log
     kpi = kpi_function(out)
 
     plt.figure(figsize=figsize)
-    plt.plot(simulator.log.t, kpi, label="Finite agents", color="black", linewidth=1)
+    plt.plot(sim_log.t, kpi, label="Finite agents", color="black", linewidth=1)
 
     if plot_deterministic_approximation:
         plt.plot(
-            simulator.log.t,
+            sim_log.t,
             kpi_det,
             label="EDM-PDM",
             linestyle="dotted",
@@ -149,13 +148,14 @@ def plot_univariate_trajectories_joint(
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
 
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
-        x0 = simulator.log.x[0]
-        q0 = simulator.log.q[0]
-        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        x0 = sim_log.x[:, [0]]
+        q0 = sim_log.q[:, [0]]
+        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
 
-    out = simulator._get_flattened_log()
+    out = simulator.log
 
     for var in ["x", "p"]:
         val = getattr(out, var)
@@ -168,7 +168,7 @@ def plot_univariate_trajectories_joint(
             nk = simulator.population_game.num_strategies[k]
             for _ in range(nk):
                 plt.plot(
-                    simulator.log.t,
+                    sim_log.t,
                     val[idx],
                     label=rf"${{{var}}}_{{{idx + 1}}}$"
                     if P == 1
@@ -182,7 +182,7 @@ def plot_univariate_trajectories_joint(
                 for _ in range(nk):
                     val_det = getattr(out_det, var)
                     plt.plot(
-                        simulator.log.t,
+                        sim_log.t,
                         val_det[idx_det, :],
                         linestyle="dotted",
                         linewidth=1.5,
@@ -232,16 +232,12 @@ def plot_univariate_trajectories_joint(
     if d > 0:
         plt.figure(figsize=figsize)
         for i in range(d):
-            plt.plot(
-                simulator.log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1
-            )
+            plt.plot(sim_log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1)
 
         if plot_deterministic_approximation:
             plt.gca().set_prop_cycle(None)
             for i in range(d):
-                plt.plot(
-                    simulator.log.t, out_det.q[i, :], linestyle="dotted", linewidth=1.5
-                )
+                plt.plot(sim_log.t, out_det.q[i, :], linestyle="dotted", linewidth=1.5)
 
         if isinstance(xlim, dict) and "q" in xlim:
             plt.xlim(xlim["q"])
@@ -301,13 +297,14 @@ def plot_univariate_trajectories_split(
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
 
+    sim_log = simulator.log
     if plot_deterministic_approximation:
         t_sim = (0, simulator.t)
-        x0 = simulator.log.x[0]
-        q0 = simulator.log.q[0]
-        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        x0 = sim_log.x[:, [0]]
+        q0 = sim_log.q[:, [0]]
+        out_det = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
 
-    out = simulator._get_flattened_log()
+    out = simulator.log
 
     for var in ["x", "p"]:
         val = getattr(out, var)
@@ -317,7 +314,7 @@ def plot_univariate_trajectories_split(
             for _ in range(simulator.population_game.num_strategies[k]):
                 plt.figure(figsize=figsize)
                 plt.plot(
-                    simulator.log.t,
+                    sim_log.t,
                     val[idx],
                     label="Finite agents",
                     color="black",
@@ -327,7 +324,7 @@ def plot_univariate_trajectories_split(
                 if plot_deterministic_approximation:
                     val_det = getattr(out_det, var)
                     plt.plot(
-                        simulator.log.t,
+                        sim_log.t,
                         val_det[idx, :],
                         label="EDM-PDM",
                         linestyle="dotted",
@@ -378,7 +375,7 @@ def plot_univariate_trajectories_split(
         for i in range(simulator.payoff_mechanism.d):
             plt.figure(figsize=figsize)
             plt.plot(
-                simulator.log.t,
+                sim_log.t,
                 out.q[i, :],
                 label="Finite agents",
                 color="black",
@@ -387,7 +384,7 @@ def plot_univariate_trajectories_split(
 
             if plot_deterministic_approximation:
                 plt.plot(
-                    simulator.log.t,
+                    sim_log.t,
                     out_det.q[i, :],
                     label="EDM-PDM",
                     linestyle="dotted",
@@ -523,15 +520,16 @@ def make_ternary_plot_single_population(
         return None
 
     # Compute edm trajectory (if enabled)
+    sim_log = simulator.log
     if plot_edm_trajectory:
         t_sim = (0, simulator.t)
-        x0 = simulator.log.x[0]
-        q0 = simulator.log.q[0]
-        out = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        x0 = sim_log.x[:, [0]]
+        q0 = sim_log.q[:, [0]]
+        out = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
         x_edm = out.x
 
     # Slice trajectories
-    for t, point in enumerate(simulator.log.x):
+    for t, point in enumerate(sim_log.x.T):
         point_k = point.reshape(
             n,
         )
@@ -734,15 +732,16 @@ def make_ternary_plot_multi_population(
             return None
 
     # Compute edm trajectory (if enabled)
+    sim_log = simulator.log
     if plot_edm_trajectory:
         t_sim = (0, simulator.t)
-        x0 = simulator.log.x[0]
-        q0 = simulator.log.q[0]
-        out = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=simulator.log.t)
+        x0 = sim_log.x[:, [0]]
+        q0 = sim_log.q[:, [0]]
+        out = simulator.integrate_edm_pdm(t_sim, x0, q0, t_eval=sim_log.t)
         x_edm = out.x
 
     # Slice trajectories
-    for t, point in enumerate(simulator.log.x):
+    for t, point in enumerate(sim_log.x.T):
         pos = 0
         for k in range(simulator.population_game.num_populations):
             nk = simulator.population_game.num_strategies[k]

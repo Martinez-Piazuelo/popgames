@@ -1,14 +1,16 @@
 """
 Benchmark the main components of popgames.
 
-Times the finite-agent simulation (fast and per-agent paths), the deterministic approximation (EDM-PDM integration),
-and the GNE solver on two scenarios:
+Times the finite-agent simulation (per-agent path, and fast path with the numpy and numba backends), the deterministic
+approximation (EDM-PDM integration), and the GNE solver on two scenarios:
 
 * Rock-Paper-Scissors with a memoryless payoff mechanism (d=0).
 * The introductory book example with a dynamic payoff mechanism (d=1) and an equality constraint.
 
 Usage:
-    python benchmarks/bench_simulator.py [--num-agents 1000 10000] [--T-sim 10]
+    python benchmarks/bench_simulator.py [--num-agents 1000 10000] [--T-sim 10] [--backends numpy numba]
+
+For the numba backend, the compilation time (first run of a session) is reported separately.
 """
 
 from __future__ import annotations
@@ -59,7 +61,7 @@ def make_intro(num_agents: int, **kwargs) -> pg.Simulator:
             fitness_lipschitz_constant=0.8,
         ),
         payoff_mechanism=pg.PayoffMechanism(
-            h_map=lambda q, x: f(x) - A.T @ q,
+            h_map=lambda q, x: Q @ x + r - A.T @ q,  # no calls to f (numba compatible)
             w_map=lambda q, x: A @ x - b,
             n=3,
             d=1,
@@ -80,8 +82,24 @@ def report(label: str, seconds: float, num_events: int = None) -> None:
 
 def time_run(label: str, sim: pg.Simulator, T_sim: int) -> None:
     start = time.perf_counter()
-    sim.run(T_sim=T_sim)
-    report(label, time.perf_counter() - start, len(sim.log.t) - 1)
+    out = sim.run(T_sim=T_sim)
+    report(label, time.perf_counter() - start, len(out.t) - 1)
+
+
+def configurations(backends: list[str]) -> list[tuple[str, dict]]:
+    configs = [("per-agent", dict(fast_path=False))]
+    for backend in backends:
+        configs.append((f"fast/{backend}", dict(backend=backend)))
+    return configs
+
+
+def warm_up(make_sim, backends: list[str]) -> None:
+    if "numba" in backends:
+        start = time.perf_counter()
+        make_sim(10, backend="numba").run(T_sim=1)
+        report(
+            "  numba compilation (first run of a session)", time.perf_counter() - start
+        )
 
 
 def time_call(label: str, fn) -> None:
@@ -94,24 +112,27 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[1])
     parser.add_argument("--num-agents", type=int, nargs="+", default=[1000, 10000])
     parser.add_argument("--T-sim", type=int, default=10)
+    parser.add_argument(
+        "--backends", nargs="+", default=["numpy"], choices=["numpy", "numba"]
+    )
     args = parser.parse_args()
     logging.disable(logging.WARNING)
 
     print("== Finite agents ==")
+    warm_up(make_rps, args.backends)
     for N in args.num_agents:
-        for fast_path in [True, False]:
-            path = "fast" if fast_path else "per-agent"
+        for name, kwargs in configurations(args.backends):
             time_run(
-                f"RPS (d=0)    N={N:<6} T={args.T_sim}  {path}",
-                make_rps(N, fast_path=fast_path),
+                f"RPS (d=0)    N={N:<6} T={args.T_sim}  {name}",
+                make_rps(N, **kwargs),
                 args.T_sim,
             )
+    warm_up(make_intro, args.backends)
     N, T_intro = args.num_agents[0], max(1, args.T_sim // 5)
-    for fast_path, pdm_method in [(True, "RK4"), (False, "RK4"), (False, "Radau")]:
-        path = "fast" if fast_path else "per-agent"
+    for name, kwargs in configurations(args.backends):
         time_run(
-            f"Intro (d=1)  N={N:<6} T={T_intro}  {path} + {pdm_method}",
-            make_intro(N, fast_path=fast_path, pdm_method=pdm_method),
+            f"Intro (d=1)  N={N:<6} T={T_intro}  {name}",
+            make_intro(N, **kwargs),
             T_intro,
         )
 

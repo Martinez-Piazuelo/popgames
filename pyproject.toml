@@ -24,10 +24,16 @@ dependencies = [
     "scipy>=1.16.3",
 ]
 
+[project.optional-dependencies]
+numba = [
+    "numba>=0.59",
+]
+
 [dependency-groups]
 dev = [
     "coverage>=7.13.1",
     "go-task-bin>=3.46.4",
+    "numba>=0.59",
     "ruff>=0.14.10",
 ]
 docs = [

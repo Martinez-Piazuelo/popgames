@@ -429,9 +429,9 @@ class TestSimulatorFastPath(unittest.TestCase):
         sim = _make_rps_simulator(100, seed=0)
         sim.reset(x0=_RPS_X0)
         sim.run(T_sim=2)
-        np.testing.assert_allclose(sim.log.x[0], _RPS_X0)
+        np.testing.assert_allclose(sim.log.x[:, [0]], _RPS_X0)
         # Consecutive log entries differ by at most one agent switching strategy
-        jumps = np.abs(np.diff(np.hstack(sim.log.x), axis=1)).sum(axis=0)
+        jumps = np.abs(np.diff(sim.log.x, axis=1)).sum(axis=0)
         self.assertTrue(np.all(np.isclose(jumps, 0.0) | np.isclose(jumps, 2 / 100)))
 
     def test_multi_population_run_preserves_masses(self) -> None:
@@ -464,6 +464,38 @@ class TestSimulatorFastPath(unittest.TestCase):
         np.testing.assert_allclose(
             out.x[:, -1], [0.5, 0.5, 2 / 3, 2 / 3, 2 / 3], atol=0.1
         )
+
+
+class TestSimulatorLogProperty(unittest.TestCase):
+    def test_log_has_one_column_per_entry_and_matches_run_output(self) -> None:
+        for fast_path in [True, False]:
+            sim = _make_rps_simulator(50, seed=0, fast_path=fast_path)
+            sim.reset(x0=_RPS_X0)
+            out = sim.run(T_sim=2)
+            log = sim.log
+
+            K = log.t.shape[0]
+            self.assertEqual(log.x.shape, (3, K))
+            self.assertEqual(log.q.shape, (0, K))
+            self.assertEqual(log.p.shape, (3, K))
+            np.testing.assert_array_equal(log.t, out.t)
+            np.testing.assert_array_equal(log.x, out.x)
+            np.testing.assert_allclose(log.x[:, [0]], _RPS_X0)
+
+    def test_log_is_refreshed_after_new_entries_and_reset(self) -> None:
+        sim = _make_rps_simulator(50, seed=0)
+        sim.reset(x0=_RPS_X0)
+        self.assertEqual(sim.log.t.shape, (1,))
+
+        sim.run(T_sim=1)
+        K1 = sim.log.t.shape[0]
+        self.assertIs(sim.log, sim.log)  # cached while nothing new is logged
+        sim.run(T_sim=1)
+        self.assertGreater(sim.log.t.shape[0], K1)
+        self.assertEqual(sim.log.t[-1], 2)
+
+        sim.reset(x0=_RPS_X0)
+        self.assertEqual(sim.log.t.shape, (1,))
 
 
 class TestSimulatorSeed(unittest.TestCase):

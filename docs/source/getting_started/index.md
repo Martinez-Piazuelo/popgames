@@ -34,6 +34,7 @@ illustrating the well-known outcome of the Prisoner's Dilemma in evolutionary se
 ## Documentation
 
 * **Usage Examples** – hands-on full usage examples
+* **Performance** – faster simulations and the optional Numba backend
 * **Key Concepts** – connections with theoretical background
 * **API Reference** – full codebase documentation
 * **Contributing to PopGames** - how to contribute to the PopGames package

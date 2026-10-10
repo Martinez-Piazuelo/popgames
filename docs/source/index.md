@@ -8,6 +8,7 @@
 getting_started/index
 key_concepts/index
 usage_examples/index
+performance/index
 api/index
 contributing/index
 ```
