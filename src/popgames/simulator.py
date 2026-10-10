@@ -834,13 +834,20 @@ class Simulator(VisualizationMixin):
     @property
     def log(self) -> SimpleNamespace:
         """
-        The simulation log since the last reset, with one column per log entry.
+        The simulation log since the last reset, with one row per variable and one column per log entry.
+
+        The layout is the same as the output of ``run`` and ``integrate_edm_pdm`` (and of
+        ``scipy.integrate.solve_ivp``), so finite-agent and deterministic trajectories can be compared directly.
+        Standard NumPy indexing applies:
+
+        * ``log.x[i]`` (shape ``(K,)``) is the trajectory of strategy ``i`` over time.
+        * ``log.x[:, k]`` (shape ``(n,)``) is the strategic distribution at time ``log.t[k]``.
+        * ``log.x[:, [k]]`` (shape ``(n, 1)``) is the same distribution as a column vector, as expected by ``reset``,
+          ``integrate_edm_pdm``, and the payoff functions.
 
         Returns:
             SimpleNamespace: The log with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(n, K)``), ``q`` (shape
-            ``(d, K)``), and ``p`` (shape ``(n, K)``), where ``K`` is the number of log entries. For example,
-            ``log.x[:, k]`` is the strategic distribution at time ``log.t[k]`` (use ``log.x[:, [k]]`` for a column
-            vector of shape ``(n, 1)``, as expected by ``reset``, ``integrate_edm_pdm``, and the payoff functions).
+            ``(d, K)``), and ``p`` (shape ``(n, K)``), where ``K`` is the number of log entries.
         """
         return self._get_flattened_log()
 
