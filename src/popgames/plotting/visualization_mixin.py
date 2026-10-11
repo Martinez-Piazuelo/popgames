@@ -8,6 +8,12 @@ from popgames.plotting._plot_config import (
     FIGSIZE_TERNARY,
     FONTSIZE,
 )
+from popgames.plotting.ensemble_plotters import (
+    plot_ensemble_bands,
+    plot_ensemble_final,
+    plot_ensemble_kpi,
+    plot_ensemble_ternary,
+)
 from popgames.plotting.plotters import (
     plot_kpi_over_time,
     plot_ternary_trajectories,
@@ -19,9 +25,11 @@ if typing.TYPE_CHECKING:
     from typing import Any, Callable
 
     from popgames import Simulator
+    from popgames.ensemble import EnsembleResult
 
 __all__ = [
     "VisualizationMixin",
+    "EnsembleVisualizationMixin",
 ]
 
 SUPPORTED_PLOT_TYPES_LITERAL = typing.Literal[
@@ -91,3 +99,57 @@ class VisualizationMixin:
                 "show": show,
             }
             plot_method(self, **kwargs)
+
+
+SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL = typing.Literal[
+    "bands",
+    "kpi",
+    "ternary",
+    "final",
+]
+
+ENSEMBLE_PLOT_DISPATCH: dict[
+    SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL, Callable[..., None]
+] = {
+    "bands": plot_ensemble_bands,
+    "kpi": plot_ensemble_kpi,
+    "ternary": plot_ensemble_ternary,
+    "final": plot_ensemble_final,
+}
+
+
+class EnsembleVisualizationMixin:
+    """
+    Visualization mixin to add plotting functionality to the EnsembleResult class.
+    """
+
+    def plot(
+        self: EnsembleResult,
+        *,
+        plot_type: SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL = "bands",
+        **kwargs: Any,
+    ) -> None:
+        """
+        Unified plotting interface for ensembles of finite-agent simulations.
+
+        Supported plot types (see their functions in ``popgames.plotting.ensemble_plotters`` for all options):
+
+        * ``'bands'``: median and quantile bands of ``x``, ``p``, and ``q`` over time (``plot_ensemble_bands``).
+        * ``'kpi'``: median and quantile bands of a KPI over time (``plot_ensemble_kpi``).
+        * ``'ternary'``: trajectories of the runs on the simplex (``plot_ensemble_ternary``).
+        * ``'final'``: distribution of the strategic distributions at the final (or a given) time
+          (``plot_ensemble_final``).
+
+        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, and
+        ``plot_deterministic_approximation``.
+
+        Args:
+            plot_type (str): Plot type. Defaults to 'bands'.
+            **kwargs: Keyword arguments of the selected plot type. Unrecognized arguments raise a ``TypeError``.
+        """
+        plot_method = ENSEMBLE_PLOT_DISPATCH.get(plot_type, None)
+        if plot_method is None:
+            raise ValueError(
+                f"Plot type {plot_type!r} is not supported. Use one of: {list(ENSEMBLE_PLOT_DISPATCH.keys())}."
+            )
+        plot_method(self, **kwargs)

@@ -110,6 +110,94 @@ class TestDocsExamplesSmoke(unittest.TestCase):
         self.assertEqual(log.x.shape[0], 3)
         np.testing.assert_allclose(log.x.sum(axis=0), 1.0)
 
+    def test_example_rock_paper_scissors_ensemble(self):
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        x0 = np.array([0.5, 0.3, 0.2]).reshape(3, 1)
+        for protocol in [
+            pg.revision_protocol.Replicator(scale=0.5),
+            pg.revision_protocol.Smith(scale=0.25),
+        ]:
+            sim = pg.Simulator(
+                population_game=pg.SinglePopulationGame(
+                    num_strategies=3, fitness_function=fitness_function
+                ),
+                payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+                revision_processes=pg.PoissonRevisionProcess(
+                    Poisson_clock_rate=1, revision_protocol=protocol
+                ),
+                num_agents=200,
+            )
+            sim.reset(x0=x0)
+            ens = sim.run_ensemble(T_sim=5, num_runs=5, seed=0)
+            self.assertEqual(ens.x.shape, (5, 3, 201))
+            self.assertEqual(ens.final().x.shape, (5, 3))
+            self.assertEqual(np.prod(ens.final().x, axis=1).shape, (5,))
+
+    def test_example_rock_paper_scissors_phase_portrait(self):
+        from popgames.utilities import sample_initial_states
+
+        A = np.array([[0, -1, 1], [1, 0, -1], [-1, 1, 0]], dtype=float)
+
+        def fitness_function(x):
+            return np.dot(A, x)
+
+        population_game = pg.SinglePopulationGame(
+            num_strategies=3, fitness_function=fitness_function
+        )
+        x0s = sample_initial_states(population_game, num=6, seed=1)
+        sim = pg.Simulator(
+            population_game=population_game,
+            payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+            revision_processes=pg.PoissonRevisionProcess(
+                Poisson_clock_rate=1,
+                revision_protocol=pg.revision_protocol.Smith(scale=0.25),
+            ),
+            num_agents=200,
+        )
+        ens = sim.run_ensemble(T_sim=2, x0=np.repeat(x0s, 5, axis=0), seed=0)
+        self.assertEqual(len(ens), 30)
+        self.assertEqual(ens.num_groups, 6)
+        self.assertEqual(ens.deterministic().x.shape, (30, 3, 201))
+
+    def test_example_coordination_ensemble(self):
+        from popgames.utilities import sample_initial_states
+
+        a = np.array([1.0, 2.0, 3.0]).reshape(3, 1)
+
+        def fitness_function(x):
+            return a * x
+
+        population_game = pg.SinglePopulationGame(
+            num_strategies=3, fitness_function=fitness_function
+        )
+        sim = pg.Simulator(
+            population_game=population_game,
+            payoff_mechanism=pg.PayoffMechanism(h_map=fitness_function, n=3),
+            revision_processes=pg.PoissonRevisionProcess(
+                Poisson_clock_rate=1,
+                revision_protocol=pg.revision_protocol.Softmax(eta=0.05),
+            ),
+            num_agents=110,
+        )
+
+        # Case 1: same initial state (the mixed equilibrium, exact with 110 agents)
+        x_mixed = np.array([6, 3, 2]).reshape(3, 1) / 11
+        ens = sim.run_ensemble(T_sim=10, num_runs=20, x0=x_mixed, seed=0)
+        np.testing.assert_allclose(ens.x0, np.tile(x_mixed, (20, 1, 1)))
+        np.testing.assert_allclose(fitness_function(x_mixed), 6 / 11)
+        # Every run reaches (a neighborhood of) one of the pure equilibria
+        self.assertTrue(np.all(ens.final().x.max(axis=1) > 0.9))
+
+        # Case 2: different initial states, same seed
+        x0s = sample_initial_states(population_game, num=10, seed=3)
+        ens = sim.run_ensemble(T_sim=10, x0=x0s, seed=[0] * len(x0s))
+        self.assertEqual(ens.num_groups, 10)
+        np.testing.assert_array_equal(ens.seeds, 0)
+
 
 @unittest.skipUnless(NUMBA_AVAILABLE, "numba is not installed")
 class TestDocsExamplesNumbaBackend(unittest.TestCase):
