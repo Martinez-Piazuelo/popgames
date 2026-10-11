@@ -201,6 +201,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage_examples/rock_paper_scissors_ensemble_example.html">Ensembles of simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="performance/index.html">Performance</a></li>
@@ -213,6 +215,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="api/simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/utilities.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="contributing/index.html">Contributing</a></li>
@@ -251,7 +254,7 @@
           
 <section class="genindex-section">
   <h1 id="index">Index</h1>
-  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#V"><strong>V</strong></a></div>
+  <div class="genindex-jumpbox"><a href="#_"><strong>_</strong></a> | <a href="#A"><strong>A</strong></a> | <a href="#B"><strong>B</strong></a> | <a href="#C"><strong>C</strong></a> | <a href="#D"><strong>D</strong></a> | <a href="#E"><strong>E</strong></a> | <a href="#F"><strong>F</strong></a> | <a href="#G"><strong>G</strong></a> | <a href="#I"><strong>I</strong></a> | <a href="#L"><strong>L</strong></a> | <a href="#M"><strong>M</strong></a> | <a href="#N"><strong>N</strong></a> | <a href="#P"><strong>P</strong></a> | <a href="#Q"><strong>Q</strong></a> | <a href="#R"><strong>R</strong></a> | <a href="#S"><strong>S</strong></a> | <a href="#T"><strong>T</strong></a> | <a href="#V"><strong>V</strong></a> | <a href="#X"><strong>X</strong></a></div>
 </section>
 <section id="_" class="genindex-section">
   <h2>_</h2>
@@ -287,15 +290,17 @@
           <li><a href="api/population_game.html#popgames.population_game.SinglePopulationGame.A_eq">(popgames.population_game.SinglePopulationGame attribute)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/population_game.html#popgames.population_game.PopulationGame.A_ineq">A_ineq (popgames.population_game.PopulationGame attribute)</a>
 
         <ul>
           <li><a href="api/population_game.html#popgames.population_game.SinglePopulationGame.A_ineq">(popgames.population_game.SinglePopulationGame attribute)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/revision_process/alarm_clock.html#popgames.alarm_clock.AlarmClockABC">AlarmClockABC (class in popgames.alarm_clock)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.at">at() (popgames.ensemble.EnsembleResult method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -347,6 +352,54 @@
   </tr></table>
 </section>
 
+<section id="D" class="genindex-section">
+  <h2>D</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.deterministic">deterministic() (popgames.ensemble.EnsembleResult method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="E" class="genindex-section">
+  <h2>E</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult">EnsembleResult (class in popgames.ensemble)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin">EnsembleVisualizationMixin (class in popgames.plotting.visualization_mixin)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="F" class="genindex-section">
+  <h2>F</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.final">final() (popgames.ensemble.EnsembleResult method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="G" class="genindex-section">
+  <h2>G</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.group_index">group_index (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.groups">groups (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
 <section id="I" class="genindex-section">
   <h2>I</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
@@ -375,19 +428,39 @@
   <h2>M</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.plotting.plotters.make_default_kpi_function">make_default_kpi_function() (in module popgames.plotting.plotters)</a>
+</li>
         <li><a href="api/simulator.html#popgames.plotting.plotters.make_ternary_plot_multi_population">make_ternary_plot_multi_population() (in module popgames.plotting.plotters)</a>
 </li>
         <li><a href="api/simulator.html#popgames.plotting.plotters.make_ternary_plot_single_population">make_ternary_plot_single_population() (in module popgames.plotting.plotters)</a>
 </li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.mean">mean() (popgames.ensemble.EnsembleResult method)</a>
+</li>
         <li>
     module
 
         <ul>
+          <li><a href="api/simulator.html#module-popgames.plotting.ensemble_plotters">popgames.plotting.ensemble_plotters</a>
+</li>
           <li><a href="api/simulator.html#module-popgames.plotting.plotters">popgames.plotting.plotters</a>
 </li>
         </ul></li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="N" class="genindex-section">
+  <h2>N</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.num_groups">num_groups (popgames.ensemble.EnsembleResult property)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.num_runs">num_runs (popgames.ensemble.EnsembleResult property)</a>
+</li>
     </ul></td>
   </tr></table>
 </section>
@@ -396,28 +469,49 @@
   <h2>P</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.p">p (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
         <li><a href="api/payoff_mechanism.html#popgames.payoff_mechanism.PayoffMechanism">PayoffMechanism (class in popgames.payoff_mechanism)</a>
 </li>
-        <li><a href="api/simulator.html#popgames.plotting.visualization_mixin.VisualizationMixin.plot">plot() (popgames.plotting.visualization_mixin.VisualizationMixin method)</a>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.plot">plot() (popgames.ensemble.EnsembleResult method)</a>
 
         <ul>
+          <li><a href="api/simulator.html#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin.plot">(popgames.plotting.visualization_mixin.EnsembleVisualizationMixin method)</a>
+</li>
+          <li><a href="api/simulator.html#popgames.plotting.visualization_mixin.VisualizationMixin.plot">(popgames.plotting.visualization_mixin.VisualizationMixin method)</a>
+</li>
           <li><a href="api/simulator.html#popgames.simulator.Simulator.plot">(popgames.simulator.Simulator method)</a>
 </li>
         </ul></li>
+        <li><a href="api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_bands">plot_ensemble_bands() (in module popgames.plotting.ensemble_plotters)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_final">plot_ensemble_final() (in module popgames.plotting.ensemble_plotters)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_kpi">plot_ensemble_kpi() (in module popgames.plotting.ensemble_plotters)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_ternary">plot_ensemble_ternary() (in module popgames.plotting.ensemble_plotters)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/simulator.html#popgames.plotting.plotters.plot_kpi_over_time">plot_kpi_over_time() (in module popgames.plotting.plotters)</a>
 </li>
         <li><a href="api/simulator.html#popgames.plotting.plotters.plot_ternary_trajectories">plot_ternary_trajectories() (in module popgames.plotting.plotters)</a>
 </li>
         <li><a href="api/simulator.html#popgames.plotting.plotters.plot_univariate_trajectories_joint">plot_univariate_trajectories_joint() (in module popgames.plotting.plotters)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/simulator.html#popgames.plotting.plotters.plot_univariate_trajectories_split">plot_univariate_trajectories_split() (in module popgames.plotting.plotters)</a>
 </li>
         <li><a href="api/revision_process/alarm_clock.html#popgames.alarm_clock.Poisson">Poisson (class in popgames.alarm_clock)</a>
 </li>
         <li><a href="api/revision_process/index.html#popgames.revision_process.PoissonRevisionProcess">PoissonRevisionProcess (class in popgames.revision_process)</a>
 </li>
+        <li>
+    popgames.plotting.ensemble_plotters
+
+        <ul>
+          <li><a href="api/simulator.html#module-popgames.plotting.ensemble_plotters">module</a>
+</li>
+        </ul></li>
         <li>
     popgames.plotting.plotters
 
@@ -426,6 +520,22 @@
 </li>
         </ul></li>
         <li><a href="api/population_game.html#popgames.population_game.PopulationGame">PopulationGame (class in popgames.population_game)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="Q" class="genindex-section">
+  <h2>Q</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.q">q (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.q0">q0 (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.quantile">quantile() (popgames.ensemble.EnsembleResult method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -441,10 +551,10 @@
 </li>
         <li><a href="api/revision_process/index.html#popgames.revision_process.RevisionProcessABC">RevisionProcessABC (class in popgames.revision_process)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/revision_process/revision_protocol.html#popgames.revision_protocol.RevisionProtocolABC">RevisionProtocolABC (class in popgames.revision_protocol)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/revision_process/index.html#popgames.revision_process.PoissonRevisionProcess.rhs_edm">rhs_edm() (popgames.revision_process.PoissonRevisionProcess method)</a>
 
         <ul>
@@ -452,6 +562,8 @@
 </li>
         </ul></li>
         <li><a href="api/simulator.html#popgames.simulator.Simulator.run">run() (popgames.simulator.Simulator method)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.simulator.Simulator.run_ensemble">run_ensemble() (popgames.simulator.Simulator method)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -461,6 +573,8 @@
   <h2>S</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/utilities.html#popgames.utilities.sample_initial_states">sample_initial_states() (in module popgames.utilities)</a>
+</li>
         <li><a href="api/revision_process/index.html#popgames.revision_process.PoissonRevisionProcess.sample_next_revision_time">sample_next_revision_time() (popgames.revision_process.PoissonRevisionProcess method)</a>
 
         <ul>
@@ -473,15 +587,31 @@
           <li><a href="api/revision_process/index.html#popgames.revision_process.RevisionProcessABC.sample_next_strategy">(popgames.revision_process.RevisionProcessABC method)</a>
 </li>
         </ul></li>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.seeds">seeds (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/simulator.html#popgames.simulator.Simulator">Simulator (class in popgames.simulator)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.simulator">simulator (popgames.ensemble.EnsembleResult attribute)</a>
 </li>
         <li><a href="api/population_game.html#popgames.population_game.SinglePopulationGame">SinglePopulationGame (class in popgames.population_game)</a>
 </li>
         <li><a href="api/revision_process/revision_protocol.html#popgames.revision_protocol.Smith">Smith (class in popgames.revision_protocol)</a>
 </li>
         <li><a href="api/revision_process/revision_protocol.html#popgames.revision_protocol.Softmax">Softmax (class in popgames.revision_protocol)</a>
+</li>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.subset">subset() (popgames.ensemble.EnsembleResult method)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="T" class="genindex-section">
+  <h2>T</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.t">t (popgames.ensemble.EnsembleResult attribute)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -492,6 +622,20 @@
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="api/simulator.html#popgames.plotting.visualization_mixin.VisualizationMixin">VisualizationMixin (class in popgames.plotting.visualization_mixin)</a>
+</li>
+    </ul></td>
+  </tr></table>
+</section>
+
+<section id="X" class="genindex-section">
+  <h2>X</h2>
+  <table style="width: 100%" class="indextable genindextable"><tr>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.x">x (popgames.ensemble.EnsembleResult attribute)</a>
+</li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="api/simulator.html#popgames.ensemble.EnsembleResult.x0">x0 (popgames.ensemble.EnsembleResult attribute)</a>
 </li>
     </ul></td>
   </tr></table>

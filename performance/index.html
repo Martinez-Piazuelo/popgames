@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="API Reference" href="../api/index.html"><link rel="prev" title="Rock-Paper-Scissors" href="../usage_examples/rock_paper_scissors_example.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="API Reference" href="../api/index.html"><link rel="prev" title="Equilibrium selection in a coordination game" href="../usage_examples/coordination_ensemble_example.html">
         <link rel="prefetch" href="../_static/logo.png" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.png"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
@@ -203,6 +203,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage_examples/rock_paper_scissors_ensemble_example.html">Ensembles of simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Performance</a></li>
@@ -215,6 +217,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../api/simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utilities.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
@@ -346,7 +349,9 @@ typically takes around one second. Dividing this cost by the time saved per revi
 only. Below the break-even point, e.g., for the <a class="reference internal" href="../usage_examples/index.html"><span class="std std-doc">usage examples</span></a>, the numpy backend is
 just as fast or faster.</p>
 <p>Compiled functions are cached per function object: simulators that share the same functions (e.g., in a parameter
-sweep over the revision protocol or the number of agents) only compile them once per session.</p>
+sweep over the revision protocol or the number of agents) only compile them once per session. Likewise, all the runs
+of an ensemble (<code class="docutils literal notranslate"><span class="pre">sim.run_ensemble</span></code>) use the functions compiled for the simulator, so the break-even point applies to
+the total number of revision events of the ensemble.</p>
 </section>
 <section id="requirements-and-fallback">
 <h3>Requirements and fallback<a class="headerlink" href="#requirements-and-fallback" title="Link to this heading">¶</a></h3>
@@ -427,8 +432,11 @@ compilation errors where the function is defined: call it once with a test input
 <h2>Reproducibility<a class="headerlink" href="#reproducibility" title="Link to this heading">¶</a></h2>
 <p>Pass <code class="docutils literal notranslate"><span class="pre">seed</span></code> (an integer or a <code class="docutils literal notranslate"><span class="pre">np.random.Generator</span></code>) to the simulator for reproducible simulations. Without a
 seed, the simulator draws from NumPy’s global random state, so <code class="docutils literal notranslate"><span class="pre">np.random.seed</span></code> also makes simulations
-reproducible. The numpy and numba backends use different random streams: the same seed produces different (but
-statistically equivalent) trajectories with each backend.</p>
+reproducible. <code class="docutils literal notranslate"><span class="pre">reset(seed=...)</span></code> reseeds an existing simulator, and <code class="docutils literal notranslate"><span class="pre">run_ensemble(seed=...)</span></code> makes a whole ensemble
+reproducible (see <a class="reference internal" href="../usage_examples/rock_paper_scissors_ensemble_example.html"><span class="std std-doc">Ensembles of simulations</span></a>).</p>
+<p>Reproducibility is guaranteed for a given backend. Across backends, the same seed often produces the same trajectory,
+but this is not guaranteed: without a seed the backends draw from different random streams, and small floating-point
+differences between compiled and NumPy code can change individual revisions.</p>
 </section>
 <section id="other-options">
 <h2>Other options<a class="headerlink" href="#other-options" title="Link to this heading">¶</a></h2>
@@ -456,14 +464,14 @@ stiff dynamics) can be used with the numpy backend.</p></li>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../usage_examples/rock_paper_scissors_example.html">
+          <a class="prev-page" href="../usage_examples/coordination_ensemble_example.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Rock-Paper-Scissors</div>
+                <div class="title">Equilibrium selection in a coordination game</div>
                 
               </div>
             </a>

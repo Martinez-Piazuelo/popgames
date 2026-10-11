@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Contributing" href="../contributing/index.html"><link rel="prev" title="Revision Protocol" href="revision_process/revision_protocol.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Utilities" href="utilities.html"><link rel="prev" title="Revision Protocol" href="revision_process/revision_protocol.html">
         <link rel="prefetch" href="../_static/logo.png" as="image">
 
     <link rel="shortcut icon" href="../_static/favicon.png"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
@@ -203,6 +203,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage_examples/rock_paper_scissors_ensemble_example.html">Ensembles of simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../performance/index.html">Performance</a></li>
@@ -215,6 +217,7 @@
 </ul>
 </li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
@@ -379,13 +382,16 @@ Warning: unrecognized arguments are silently ignored.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="popgames.simulator.Simulator.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/simulator.html#Simulator.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.reset" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/simulator.html#Simulator.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.reset" title="Link to this definition">¶</a></dt>
 <dd><p>Resets the simulator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x0</strong> (<em>np.ndarray</em><em>, </em><em>Optional</em>) – The initial state for the strategic distribution of the society. Defaults to None.</p></li>
 <li><p><strong>q0</strong> (<em>np.ndarray</em><em>, </em><em>Optional</em>) – The initial state for the payoff mechanism’s PDM. Defaults to None.</p></li>
+<li><p><strong>seed</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>np.random.Generator</em><em>]</em><em>, </em><em>optional</em>) – If provided, the simulator draws from a new random
+number generator seeded with <code class="docutils literal notranslate"><span class="pre">seed</span></code> from now on (as if <code class="docutils literal notranslate"><span class="pre">seed</span></code> had been passed to the constructor).
+Defaults to None, in which case the current random number generator is kept.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -412,6 +418,357 @@ which case every revision event is logged. The final state is always logged.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#popgames.simulator.Simulator.run_ensemble" title="popgames.simulator.Simulator.run_ensemble"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_ensemble()</span></code></a>: Run the simulation for several seeds and/or initial states, sampled at common times.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.simulator.Simulator.run_ensemble">
+<span class="sig-name descname"><span class="pre">run_ensemble</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t_eval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/simulator.html#Simulator.run_ensemble"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.simulator.Simulator.run_ensemble" title="Link to this definition">¶</a></dt>
+<dd><p>Run several finite-agent simulations, e.g., from the same initial state with different seeds, or from
+different initial states.</p>
+<p>Each run <code class="docutils literal notranslate"><span class="pre">r</span></code> resets the simulator with <code class="docutils literal notranslate"><span class="pre">reset(x0_r,</span> <span class="pre">q0_r,</span> <span class="pre">seed=seed_r)</span></code> and runs it for <code class="docutils literal notranslate"><span class="pre">T_sim</span></code> time
+units. Its state is then sampled at the times <code class="docutils literal notranslate"><span class="pre">t_eval</span></code>: the value at time <code class="docutils literal notranslate"><span class="pre">t</span></code> is the state after the last
+revision event at or before <code class="docutils literal notranslate"><span class="pre">t</span></code> (the state of a finite population is constant between events).</p>
+<p>The seeds and the initial states can be shared by all runs or given per run:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code>: an integer, a <code class="docutils literal notranslate"><span class="pre">np.random.Generator</span></code>, or None to derive independent seeds for the runs, or a
+sequence with one seed per run (e.g., <code class="docutils literal notranslate"><span class="pre">[7]</span> <span class="pre">*</span> <span class="pre">M</span></code> to use the same seed in all runs).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: an array of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">1)</span></code> (or None) shared by all runs, or an array of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">1)</span></code> with one
+initial state per run (see <code class="docutils literal notranslate"><span class="pre">popgames.utilities.sample_initial_states</span></code>). Similarly for <code class="docutils literal notranslate"><span class="pre">q0</span></code>.</p></li>
+</ul>
+<p>The number of runs <code class="docutils literal notranslate"><span class="pre">M</span></code> is <code class="docutils literal notranslate"><span class="pre">num_runs</span></code> or the length of the per-run arguments (which must agree).</p>
+<p>After the call, the simulator holds the last run (e.g., in <code class="docutils literal notranslate"><span class="pre">log</span></code>), and its random number generator is the
+one it had before the call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T_sim</strong> (<em>int</em>) – The total time to simulate in each run.</p></li>
+<li><p><strong>num_runs</strong> (<em>int</em><em>, </em><em>optional</em>) – The number of runs. Defaults to None, in which case it is the length of the
+per-run arguments (required if there are none).</p></li>
+<li><p><strong>t_eval</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – Non-decreasing times in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">T_sim]</span></code> at which the runs are sampled.
+Defaults to None, in which case 201 evenly spaced times are used.</p></li>
+<li><p><strong>seed</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>np.random.Generator</em><em>, </em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Seed or random number generator from
+which independent seeds for the runs are derived, or a sequence of non-negative integers with the seed
+of each run. Defaults to None, in which case the seeds are derived from the simulator’s random number
+generator (NumPy’s global random state if the simulator has no seed, see <code class="docutils literal notranslate"><span class="pre">np.random.seed</span></code>).</p></li>
+<li><p><strong>x0</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – The initial strategic distribution, of shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">1)</span></code> for all runs or
+<code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">1)</span></code> per run. Defaults to None, in which case the initial state of the last reset
+(<code class="docutils literal notranslate"><span class="pre">log.x[:,</span> <span class="pre">[0]]</span></code>) is used for all runs.</p></li>
+<li><p><strong>q0</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – The initial state of the PDM, of shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">1)</span></code> for all runs or
+<code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">1)</span></code> per run. Defaults to None, in which case the initial state of the last reset
+(<code class="docutils literal notranslate"><span class="pre">log.q[:,</span> <span class="pre">[0]]</span></code>) is used for all runs.</p></li>
+<li><p><strong>log_interval</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum time between consecutive log entries within each run (see
+<code class="docutils literal notranslate"><span class="pre">run</span></code>). Defaults to None, in which case every revision event is logged and the sampled states are
+exact. Setting it reduces memory usage in very large runs, but then the state sampled at time <code class="docutils literal notranslate"><span class="pre">t</span></code>
+may lag behind by up to <code class="docutils literal notranslate"><span class="pre">log_interval</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sampled runs, with fields <code class="docutils literal notranslate"><span class="pre">t</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>), <code class="docutils literal notranslate"><span class="pre">x</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>), <code class="docutils literal notranslate"><span class="pre">q</span></code>
+(shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">K)</span></code>), <code class="docutils literal notranslate"><span class="pre">p</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>), <code class="docutils literal notranslate"><span class="pre">seeds</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,)</span></code>), <code class="docutils literal notranslate"><span class="pre">x0</span></code> (shape
+<code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">1)</span></code>), and <code class="docutils literal notranslate"><span class="pre">q0</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">1)</span></code>), where <code class="docutils literal notranslate"><span class="pre">K</span></code> is the number of sampling times.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult">EnsembleResult</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p>—</p>
+<p><strong>Ensemble Result</strong></p>
+<p>Returned by <code class="docutils literal notranslate"><span class="pre">Simulator.run_ensemble</span></code>: finite-agent simulations sampled at common times, from the same initial state
+or from different ones.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">popgames.ensemble.</span></span><span class="sig-name descname"><span class="pre">EnsembleResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seeds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin" title="popgames.plotting.visualization_mixin.EnsembleVisualizationMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">EnsembleVisualizationMixin</span></code></a></p>
+<p>Finite-agent simulations sampled at common times, e.g., from the same initial state with different seeds, or from
+different initial states.</p>
+<p>Ensembles are created by <code class="docutils literal notranslate"><span class="pre">Simulator.run_ensemble</span></code>. The arrays have one leading axis for the runs, followed by the
+layout of <code class="docutils literal notranslate"><span class="pre">Simulator.log</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ens.x[r]</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">K)</span></code>) is run <code class="docutils literal notranslate"><span class="pre">r</span></code>, with <code class="docutils literal notranslate"><span class="pre">ens.x[r,</span> <span class="pre">i]</span></code> the trajectory of strategy <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ens.x[:,</span> <span class="pre">i]</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">K)</span></code>) holds the trajectories of strategy <code class="docutils literal notranslate"><span class="pre">i</span></code> in all runs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ens.x[:,</span> <span class="pre">:,</span> <span class="pre">k]</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n)</span></code>) holds the strategic distributions of all runs at time <code class="docutils literal notranslate"><span class="pre">ens.t[k]</span></code>.</p></li>
+</ul>
+<p>Runs with the same initial state <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">q0)</span></code> form a <strong>group</strong> (<code class="docutils literal notranslate"><span class="pre">groups</span></code> and <code class="docutils literal notranslate"><span class="pre">group_index</span></code>). Statistics such as
+<code class="docutils literal notranslate"><span class="pre">mean</span></code> and <code class="docutils literal notranslate"><span class="pre">quantile</span></code> pool all runs; use <code class="docutils literal notranslate"><span class="pre">subset</span></code> for statistics per group, e.g.,
+<code class="docutils literal notranslate"><span class="pre">ens.subset(ens.groups[g]).mean()</span></code>. The plots show one group per initial state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simulator</strong> (<a class="reference internal" href="#popgames.simulator.Simulator" title="popgames.simulator.Simulator"><em>Simulator</em></a>)</p></li>
+<li><p><strong>t</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>x</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>q</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>p</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>seeds</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>x0</strong> (<em>np.ndarray</em>)</p></li>
+<li><p><strong>q0</strong> (<em>np.ndarray</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.t">
+<span class="sig-name descname"><span class="pre">t</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.t" title="Link to this definition">¶</a></dt>
+<dd><p>The sampling times, of shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.x">
+<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.x" title="Link to this definition">¶</a></dt>
+<dd><p>The strategic distributions, of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.q">
+<span class="sig-name descname"><span class="pre">q</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.q" title="Link to this definition">¶</a></dt>
+<dd><p>The states of the PDM, of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">K)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.p">
+<span class="sig-name descname"><span class="pre">p</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.p" title="Link to this definition">¶</a></dt>
+<dd><p>The payoffs, of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.seeds">
+<span class="sig-name descname"><span class="pre">seeds</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.seeds" title="Link to this definition">¶</a></dt>
+<dd><p>The seeds of the runs, of shape <code class="docutils literal notranslate"><span class="pre">(M,)</span></code>. Run <code class="docutils literal notranslate"><span class="pre">r</span></code> can be reproduced with
+<code class="docutils literal notranslate"><span class="pre">sim.reset(ens.x0[r],</span> <span class="pre">ens.q0[r],</span> <span class="pre">seed=int(ens.seeds[r]))</span></code> followed by <code class="docutils literal notranslate"><span class="pre">sim.run(T_sim)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.x0">
+<span class="sig-name descname"><span class="pre">x0</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.x0" title="Link to this definition">¶</a></dt>
+<dd><p>The initial strategic distribution of each run, of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">1)</span></code>. This is the state
+the run actually started from: <code class="docutils literal notranslate"><span class="pre">reset</span></code> rounds the requested state to a whole number of agents per
+strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.q0">
+<span class="sig-name descname"><span class="pre">q0</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.q0" title="Link to this definition">¶</a></dt>
+<dd><p>The initial state of the PDM of each run, of shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">1)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.groups">
+<span class="sig-name descname"><span class="pre">groups</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.groups" title="Link to this definition">¶</a></dt>
+<dd><p>The indices of the runs of each group (runs with the same initial state), in order
+of first appearance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.group_index">
+<span class="sig-name descname"><span class="pre">group_index</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.group_index" title="Link to this definition">¶</a></dt>
+<dd><p>The group of each run, of shape <code class="docutils literal notranslate"><span class="pre">(M,)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.simulator">
+<span class="sig-name descname"><span class="pre">simulator</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.simulator" title="Link to this definition">¶</a></dt>
+<dd><p>The simulator that produced the runs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#popgames.simulator.Simulator" title="popgames.simulator.Simulator">Simulator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.at">
+<span class="sig-name descname"><span class="pre">at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.at" title="Link to this definition">¶</a></dt>
+<dd><p>The states of all runs at the last sampling time at or before <code class="docutils literal notranslate"><span class="pre">t</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>float</em>) – The time, with <code class="docutils literal notranslate"><span class="pre">ens.t[0]</span> <span class="pre">&lt;=</span> <span class="pre">t</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fields <code class="docutils literal notranslate"><span class="pre">t</span></code> (the sampling time used), <code class="docutils literal notranslate"><span class="pre">x</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n)</span></code>), <code class="docutils literal notranslate"><span class="pre">q</span></code> (shape
+<code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d)</span></code>), and <code class="docutils literal notranslate"><span class="pre">p</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n)</span></code>).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.deterministic">
+<span class="sig-name descname"><span class="pre">deterministic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Radau'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.deterministic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.deterministic" title="Link to this definition">¶</a></dt>
+<dd><p>The deterministic approximation (EDM-PDM) from the initial state of each run, sampled at the same times.</p>
+<p>The approximation is computed with <code class="docutils literal notranslate"><span class="pre">Simulator.integrate_edm_pdm</span></code> once per group (distinct initial state),
+and cached.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method</strong> (<em>str</em>) – The integration method. Defaults to ‘Radau’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fields <code class="docutils literal notranslate"><span class="pre">t</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>), <code class="docutils literal notranslate"><span class="pre">x</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>), <code class="docutils literal notranslate"><span class="pre">q</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d,</span> <span class="pre">K)</span></code>),
+and <code class="docutils literal notranslate"><span class="pre">p</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>), with the same layout as the ensemble.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.final">
+<span class="sig-name descname"><span class="pre">final</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.final"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.final" title="Link to this definition">¶</a></dt>
+<dd><p>The states of all runs at the last sampling time (see <code class="docutils literal notranslate"><span class="pre">at</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Fields <code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n)</span></code>), <code class="docutils literal notranslate"><span class="pre">q</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">d)</span></code>), and <code class="docutils literal notranslate"><span class="pre">p</span></code> (shape
+<code class="docutils literal notranslate"><span class="pre">(M,</span> <span class="pre">n)</span></code>).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.mean">
+<span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.mean"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.mean" title="Link to this definition">¶</a></dt>
+<dd><p>The mean over all runs at each sampling time (see <code class="docutils literal notranslate"><span class="pre">subset</span></code> for the mean per initial state).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Fields <code class="docutils literal notranslate"><span class="pre">t</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>), <code class="docutils literal notranslate"><span class="pre">x</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">K)</span></code>), <code class="docutils literal notranslate"><span class="pre">q</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">K)</span></code>), and
+<code class="docutils literal notranslate"><span class="pre">p</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">K)</span></code>).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.num_groups">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">num_groups</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.num_groups" title="Link to this definition">¶</a></dt>
+<dd><p>The number of groups (distinct initial states).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.num_runs">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">num_runs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.num_runs" title="Link to this definition">¶</a></dt>
+<dd><p>The number of runs <code class="docutils literal notranslate"><span class="pre">M</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bands'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#popgames.ensemble.EnsembleResult.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Unified plotting interface for ensembles of finite-agent simulations.</p>
+<p>Supported plot types (see their functions in <code class="docutils literal notranslate"><span class="pre">popgames.plotting.ensemble_plotters</span></code> for all options):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'bands'</span></code>: median and quantile bands of <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">p</span></code>, and <code class="docutils literal notranslate"><span class="pre">q</span></code> over time (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_bands</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'kpi'</span></code>: median and quantile bands of a KPI over time (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_kpi</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'ternary'</span></code>: trajectories of the runs on the simplex (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_ternary</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'final'</span></code>: distribution of the strategic distributions at the final (or a given) time
+(<code class="docutils literal notranslate"><span class="pre">plot_ensemble_final</span></code>).</p></li>
+</ul>
+<p>All plot types accept <code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">figsize</span></code>, <code class="docutils literal notranslate"><span class="pre">fontsize</span></code>, <code class="docutils literal notranslate"><span class="pre">show</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">plot_deterministic_approximation</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_type</strong> (<em>str</em>) – Plot type. Defaults to ‘bands’.</p></li>
+<li><p><strong>**kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></span>) – Keyword arguments of the selected plot type. Unrecognized arguments raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p></li>
+<li><p><strong>self</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.quantile">
+<span class="sig-name descname"><span class="pre">quantile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantiles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.quantile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.quantile" title="Link to this definition">¶</a></dt>
+<dd><p>The quantiles over all runs at each sampling time (see <code class="docutils literal notranslate"><span class="pre">subset</span></code> for the quantiles per initial state).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>quantiles</strong> (<em>Union</em><em>[</em><em>float</em><em>, </em><em>Sequence</em><em>[</em><em>float</em><em>]</em><em>]</em>) – One or several quantiles in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Fields <code class="docutils literal notranslate"><span class="pre">t</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>), <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, and <code class="docutils literal notranslate"><span class="pre">p</span></code>. For a single quantile, <code class="docutils literal notranslate"><span class="pre">x</span></code> has
+shape <code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">K)</span></code> (similarly for <code class="docutils literal notranslate"><span class="pre">q</span></code> and <code class="docutils literal notranslate"><span class="pre">p</span></code>); for several quantiles, it has shape <code class="docutils literal notranslate"><span class="pre">(Q,</span> <span class="pre">n,</span> <span class="pre">K)</span></code>, with
+one entry per quantile.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SimpleNamespace</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.ensemble.EnsembleResult.subset">
+<span class="sig-name descname"><span class="pre">subset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/ensemble.html#EnsembleResult.subset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.ensemble.EnsembleResult.subset" title="Link to this definition">¶</a></dt>
+<dd><p>The ensemble restricted to some runs, e.g., <code class="docutils literal notranslate"><span class="pre">ens.subset(ens.groups[g])</span></code> for the runs of group <code class="docutils literal notranslate"><span class="pre">g</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>runs</strong> (<em>Union</em><em>[</em><em>Sequence</em><em>[</em><em>int</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em>) – The indices of the runs (or a boolean mask).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new ensemble with the selected runs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult">EnsembleResult</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -456,6 +813,24 @@ Warning: unrecognized arguments are silently ignored.</p></li>
 <p>—</p>
 <p><strong>Supported Plots</strong></p>
 <dl class="py function" id="module-popgames.plotting.plotters">
+<dt class="sig sig-object py" id="popgames.plotting.plotters.make_default_kpi_function">
+<span class="sig-prename descclassname"><span class="pre">popgames.plotting.plotters.</span></span><span class="sig-name descname"><span class="pre">make_default_kpi_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/plotters.html#make_default_kpi_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.plotters.make_default_kpi_function" title="Link to this definition">¶</a></dt>
+<dd><p>Make the default KPI function: the Euclidean distance to the GNE over time, normalized by its initial value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>simulator</strong> (<a class="reference internal" href="#popgames.simulator.Simulator" title="popgames.simulator.Simulator"><em>Simulator</em></a>) – The simulator whose population game defines the GNE.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The KPI function, mapping a log (with <code class="docutils literal notranslate"><span class="pre">x</span></code> of shape
+<code class="docutils literal notranslate"><span class="pre">(n,</span> <span class="pre">K)</span></code>) to an array of shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>, or None (with a warning) if no GNE was found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Callable[[SimpleNamespace], np.ndarray] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="popgames.plotting.plotters.make_ternary_plot_multi_population">
 <span class="sig-prename descclassname"><span class="pre">popgames.plotting.plotters.</span></span><span class="sig-name descname"><span class="pre">make_ternary_plot_multi_population</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_edm_trajectory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/plotters.html#make_ternary_plot_multi_population"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.plotters.make_ternary_plot_multi_population" title="Link to this definition">¶</a></dt>
 <dd><p>Plot the trajectory of a multiple population in multiple ternary plots.</p>
@@ -589,6 +964,182 @@ the deterministic approximation. Defaults to False.</p></li>
 </dl>
 </dd></dl>
 
+<p>—</p>
+<p><strong>Ensemble Visualization Mixin</strong></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="popgames.plotting.visualization_mixin.EnsembleVisualizationMixin">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">popgames.plotting.visualization_mixin.</span></span><span class="sig-name descname"><span class="pre">EnsembleVisualizationMixin</span></span><a class="reference internal" href="../_modules/popgames/plotting/visualization_mixin.html#EnsembleVisualizationMixin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Visualization mixin to add plotting functionality to the EnsembleResult class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="popgames.plotting.visualization_mixin.EnsembleVisualizationMixin.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bands'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/visualization_mixin.html#EnsembleVisualizationMixin.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Unified plotting interface for ensembles of finite-agent simulations.</p>
+<p>Supported plot types (see their functions in <code class="docutils literal notranslate"><span class="pre">popgames.plotting.ensemble_plotters</span></code> for all options):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'bands'</span></code>: median and quantile bands of <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">p</span></code>, and <code class="docutils literal notranslate"><span class="pre">q</span></code> over time (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_bands</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'kpi'</span></code>: median and quantile bands of a KPI over time (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_kpi</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'ternary'</span></code>: trajectories of the runs on the simplex (<code class="docutils literal notranslate"><span class="pre">plot_ensemble_ternary</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'final'</span></code>: distribution of the strategic distributions at the final (or a given) time
+(<code class="docutils literal notranslate"><span class="pre">plot_ensemble_final</span></code>).</p></li>
+</ul>
+<p>All plot types accept <code class="docutils literal notranslate"><span class="pre">filename</span></code>, <code class="docutils literal notranslate"><span class="pre">figsize</span></code>, <code class="docutils literal notranslate"><span class="pre">fontsize</span></code>, <code class="docutils literal notranslate"><span class="pre">show</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">plot_deterministic_approximation</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_type</strong> (<em>str</em>) – Plot type. Defaults to ‘bands’.</p></li>
+<li><p><strong>**kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></span>) – Keyword arguments of the selected plot type. Unrecognized arguments raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p></li>
+<li><p><strong>self</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p>—</p>
+<p><strong>Supported Ensemble Plots</strong></p>
+<dl class="py function" id="module-popgames.plotting.ensemble_plotters">
+<dt class="sig sig-object py" id="popgames.plotting.ensemble_plotters.plot_ensemble_bands">
+<span class="sig-prename descclassname"><span class="pre">popgames.plotting.ensemble_plotters.</span></span><span class="sig-name descname"><span class="pre">plot_ensemble_bands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ensemble</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">('x',</span> <span class="pre">'p',</span> <span class="pre">'q')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">((0.05,</span> <span class="pre">0.95),</span> <span class="pre">(0.25,</span> <span class="pre">0.75))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_median</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_deterministic_approximation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/ensemble_plotters.html#plot_ensemble_bands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.ensemble_plotters.plot_ensemble_bands" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the median and quantile bands of the runs over time.</p>
+<p>One figure is generated per population for <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">p</span></code>, and one for <code class="docutils literal notranslate"><span class="pre">q</span></code> (if <code class="docutils literal notranslate"><span class="pre">d</span> <span class="pre">&gt;</span> <span class="pre">0</span></code>). Each strategy has
+its own color: the solid line is the median over the runs, and the shaded regions are the bands between the given
+quantiles (e.g., 90% and 50% of the runs at each time with the default bands).</p>
+<p>The bands only mix runs with the same initial state: if the ensemble has several initial states (groups), the
+figures are generated for each of them (or only for <code class="docutils literal notranslate"><span class="pre">initial_state</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ensemble</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>) – The ensemble to plot.</p></li>
+<li><p><strong>variables</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – The variables to plot, among ‘x’, ‘p’, and ‘q’. Defaults to all of them.</p></li>
+<li><p><strong>bands</strong> (<em>Sequence</em><em>[</em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Pairs of lower and upper quantiles delimiting the bands.
+Defaults to ((0.05, 0.95), (0.25, 0.75)).</p></li>
+<li><p><strong>plot_median</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the median. Defaults to True.</p></li>
+<li><p><strong>plot_deterministic_approximation</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the trajectories of the deterministic
+approximation (EDM-PDM) as dotted lines. Defaults to False.</p></li>
+<li><p><strong>initial_state</strong> (<em>int</em><em>, </em><em>optional</em>) – The group (initial state) to plot, see <code class="docutils literal notranslate"><span class="pre">EnsembleResult.groups</span></code>. Defaults to
+None, in which case all groups are plotted.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Limits of the time axis. Defaults to None.</p></li>
+<li><p><strong>ylim</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Limits of the vertical axis per variable, e.g.,
+<code class="docutils literal notranslate"><span class="pre">{'x':</span> <span class="pre">(0,</span> <span class="pre">1)}</span></code>. Defaults to None.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – If provided, each figure is saved with the variable and population (and the group,
+if there are several) appended to the file name, e.g., <code class="docutils literal notranslate"><span class="pre">bands_x_1.pdf</span></code> or <code class="docutils literal notranslate"><span class="pre">bands_x_1_x0_2.pdf</span></code>.
+Defaults to None.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Figure size. Defaults to (4, 2).</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Font size. Defaults to 8.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to show the figures. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="popgames.plotting.ensemble_plotters.plot_ensemble_final">
+<span class="sig-prename descclassname"><span class="pre">popgames.plotting.ensemble_plotters.</span></span><span class="sig-name descname"><span class="pre">plot_ensemble_final</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ensemble</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_deterministic_approximation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_gne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/ensemble_plotters.html#plot_ensemble_final"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.ensemble_plotters.plot_ensemble_final" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the distribution of the strategic distributions of the runs at a given time (the final time by default).</p>
+<p>One figure is generated per population: a scatter plot on the simplex for populations with 3 strategies, and
+histograms of the strategies otherwise (only of the first strategy for populations with 2 strategies, since the
+second one is determined by the first). If the ensemble has several initial states (groups), the points and
+histograms of each group have their own color (up to 10 groups; black otherwise), and the histograms are plotted
+in one figure per strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ensemble</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>) – The ensemble to plot.</p></li>
+<li><p><strong>t</strong> (<em>float</em><em>, </em><em>optional</em>) – The time (the last sampling time at or before <code class="docutils literal notranslate"><span class="pre">t</span></code> is used). Defaults to None, in which
+case the final time is used.</p></li>
+<li><p><strong>bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of bins of the histograms. Defaults to 20.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Opacity of the points (scatter plots) or bars (histograms). Defaults to 0.5.</p></li>
+<li><p><strong>plot_deterministic_approximation</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to mark the state of the deterministic
+approximation (EDM-PDM) from each initial state at the same time. Defaults to False.</p></li>
+<li><p><strong>plot_gne</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to mark the GNE (if one is found). Defaults to True.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figures. The population (with several populations) and the
+strategy (for histograms with several initial states) are appended to the file name, e.g.,
+<code class="docutils literal notranslate"><span class="pre">final_pop_1.pdf</span></code> or <code class="docutils literal notranslate"><span class="pre">final_pop_1_x_2.pdf</span></code>. Defaults to None.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Figure size. Defaults to None, in which case (4, 3) is used for
+scatter plots on the simplex and (4, 2) for histograms.</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Font size. Defaults to 8.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to show the figures. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="popgames.plotting.ensemble_plotters.plot_ensemble_kpi">
+<span class="sig-prename descclassname"><span class="pre">popgames.plotting.ensemble_plotters.</span></span><span class="sig-name descname"><span class="pre">plot_ensemble_kpi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ensemble</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kpi_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">((0.05,</span> <span class="pre">0.95),</span> <span class="pre">(0.25,</span> <span class="pre">0.75))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_median</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_deterministic_approximation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">2)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/ensemble_plotters.html#plot_ensemble_kpi"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.ensemble_plotters.plot_ensemble_kpi" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the median and quantile bands of a KPI over time.</p>
+<p>The KPI is evaluated on each run separately (see <code class="docutils literal notranslate"><span class="pre">EnsembleResult.__getitem__</span></code>). If the ensemble has several
+initial states (groups), one band is plotted per group, with one color per group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ensemble</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>) – The ensemble to plot.</p></li>
+<li><p><strong>kpi_function</strong> (<em>Callable</em><em>[</em><em>[</em><em>SimpleNamespace</em><em>]</em><em>, </em><em>np.ndarray</em><em>]</em><em>, </em><em>optional</em>) – Function mapping a run (with fields <code class="docutils literal notranslate"><span class="pre">t</span></code>,
+<code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">q</span></code>, and <code class="docutils literal notranslate"><span class="pre">p</span></code> in the layout of <code class="docutils literal notranslate"><span class="pre">Simulator.log</span></code>) to the KPI over time, of shape <code class="docutils literal notranslate"><span class="pre">(K,)</span></code>.
+Defaults to None, in which case the Euclidean distance to the GNE (normalized by its initial value) is
+used.</p></li>
+<li><p><strong>bands</strong> (<em>Sequence</em><em>[</em><em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Pairs of lower and upper quantiles delimiting the bands.
+Defaults to ((0.05, 0.95), (0.25, 0.75)).</p></li>
+<li><p><strong>plot_median</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the median. Defaults to True.</p></li>
+<li><p><strong>plot_deterministic_approximation</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the KPI of the deterministic approximation
+(EDM-PDM). Defaults to False.</p></li>
+<li><p><strong>xlim</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Limits of the time axis. Defaults to None.</p></li>
+<li><p><strong>ylim</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Limits of the vertical axis. Defaults to None.</p></li>
+<li><p><strong>yscale</strong> (<em>str</em><em>, </em><em>optional</em>) – Scale of the vertical axis. Defaults to ‘linear’.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figure. Defaults to None.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Figure size. Defaults to (4, 2).</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Font size. Defaults to 8.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to show the figure. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="popgames.plotting.ensemble_plotters.plot_ensemble_ternary">
+<span class="sig-prename descclassname"><span class="pre">popgames.plotting.ensemble_plotters.</span></span><span class="sig-name descname"><span class="pre">plot_ensemble_ternary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ensemble</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_mean</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_deterministic_approximation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_gne</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(4,</span> <span class="pre">3)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/popgames/plotting/ensemble_plotters.html#plot_ensemble_ternary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#popgames.plotting.ensemble_plotters.plot_ensemble_ternary" title="Link to this definition">¶</a></dt>
+<dd><p>Plot the trajectories of the runs on the simplex, as semi-transparent lines.</p>
+<p>One ternary plot is generated per population with 3 strategies (other populations are skipped with a warning).
+If the ensemble has several initial states (groups), the plot is a phase portrait: the runs of each group have
+their own color (up to 10 groups; black otherwise), and the initial states are marked.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ensemble</strong> (<a class="reference internal" href="#popgames.ensemble.EnsembleResult" title="popgames.ensemble.EnsembleResult"><em>EnsembleResult</em></a>) – The ensemble to plot.</p></li>
+<li><p><strong>max_runs</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of runs to plot per initial state (the first ones). Defaults to 50.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – Opacity of each run. Defaults to 0.2.</p></li>
+<li><p><strong>plot_mean</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the mean over the runs of each initial state. Defaults to False.</p></li>
+<li><p><strong>plot_deterministic_approximation</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the trajectory of the deterministic
+approximation (EDM-PDM) from each initial state. Defaults to False.</p></li>
+<li><p><strong>plot_gne</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to plot the GNE (if one is found). Defaults to True.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save the figures. With several populations, the population is
+appended to the file name, e.g., <code class="docutils literal notranslate"><span class="pre">ternary_pop_1.pdf</span></code>. Defaults to None.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>[</em><em>float</em><em>, </em><em>float</em><em>]</em><em>, </em><em>optional</em>) – Figure size. Defaults to (4, 3).</p></li>
+<li><p><strong>fontsize</strong> (<em>int</em><em>, </em><em>optional</em>) – Font size. Defaults to 8.</p></li>
+<li><p><strong>show</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to show the figures. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
         </article>
@@ -596,12 +1147,12 @@ the deterministic approximation. Defaults to False.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../contributing/index.html">
+          <a class="next-page" href="utilities.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Contributing</div>
+                <div class="title">Utilities</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -674,18 +1225,50 @@ the deterministic approximation. Defaults to False.</p></li>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.plot"><code class="docutils literal notranslate"><span class="pre">Simulator.plot()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.reset"><code class="docutils literal notranslate"><span class="pre">Simulator.reset()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.simulator.Simulator.run"><code class="docutils literal notranslate"><span class="pre">Simulator.run()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.simulator.Simulator.run_ensemble"><code class="docutils literal notranslate"><span class="pre">Simulator.run_ensemble()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult"><code class="docutils literal notranslate"><span class="pre">EnsembleResult</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.t"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.t</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.x"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.x</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.q"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.q</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.p"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.p</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.seeds"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.seeds</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.x0"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.x0</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.q0"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.q0</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.groups"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.groups</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.group_index"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.group_index</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.simulator"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.simulator</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.at"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.at()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.deterministic"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.deterministic()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.final"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.final()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.mean"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.mean()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.num_groups"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.num_groups</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.num_runs"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.num_runs</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.plot"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.plot()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.quantile"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.quantile()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.ensemble.EnsembleResult.subset"><code class="docutils literal notranslate"><span class="pre">EnsembleResult.subset()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#popgames.plotting.visualization_mixin.VisualizationMixin"><code class="docutils literal notranslate"><span class="pre">VisualizationMixin</span></code></a><ul>
 <li><a class="reference internal" href="#popgames.plotting.visualization_mixin.VisualizationMixin.plot"><code class="docutils literal notranslate"><span class="pre">VisualizationMixin.plot()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#popgames.plotting.plotters.make_default_kpi_function"><code class="docutils literal notranslate"><span class="pre">make_default_kpi_function()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.make_ternary_plot_multi_population"><code class="docutils literal notranslate"><span class="pre">make_ternary_plot_multi_population()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.make_ternary_plot_single_population"><code class="docutils literal notranslate"><span class="pre">make_ternary_plot_single_population()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.plot_kpi_over_time"><code class="docutils literal notranslate"><span class="pre">plot_kpi_over_time()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.plot_ternary_trajectories"><code class="docutils literal notranslate"><span class="pre">plot_ternary_trajectories()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.plot_univariate_trajectories_joint"><code class="docutils literal notranslate"><span class="pre">plot_univariate_trajectories_joint()</span></code></a></li>
 <li><a class="reference internal" href="#popgames.plotting.plotters.plot_univariate_trajectories_split"><code class="docutils literal notranslate"><span class="pre">plot_univariate_trajectories_split()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin"><code class="docutils literal notranslate"><span class="pre">EnsembleVisualizationMixin</span></code></a><ul>
+<li><a class="reference internal" href="#popgames.plotting.visualization_mixin.EnsembleVisualizationMixin.plot"><code class="docutils literal notranslate"><span class="pre">EnsembleVisualizationMixin.plot()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#popgames.plotting.ensemble_plotters.plot_ensemble_bands"><code class="docutils literal notranslate"><span class="pre">plot_ensemble_bands()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.plotting.ensemble_plotters.plot_ensemble_final"><code class="docutils literal notranslate"><span class="pre">plot_ensemble_final()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.plotting.ensemble_plotters.plot_ensemble_kpi"><code class="docutils literal notranslate"><span class="pre">plot_ensemble_kpi()</span></code></a></li>
+<li><a class="reference internal" href="#popgames.plotting.ensemble_plotters.plot_ensemble_ternary"><code class="docutils literal notranslate"><span class="pre">plot_ensemble_ternary()</span></code></a></li>
 </ul>
 </li>
 </ul>

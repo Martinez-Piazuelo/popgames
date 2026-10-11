@@ -1,0 +1,991 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
+        <link rel="prefetch" href="../../../_static/logo.png" as="image">
+
+    <link rel="shortcut icon" href="../../../_static/favicon.png"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>popgames.plotting.ensemble_plotters - PopGames v1.0.3</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=ca07a0cd" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../index.html"><div class="brand">PopGames v1.0.3</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo" src="../../../_static/logo.png" alt="Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">PopGames v1.0.3</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../key_concepts/index.html">Key Concepts</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/rock_paper_scissors_ensemble_example.html">Ensembles of simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../performance/index.html">Performance</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/population_game.html">Population Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/payoff_mechanism.html">Payoff Mechanism</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../api/revision_process/index.html">Revision Process</a><input aria-label="Toggle navigation of Revision Process" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/revision_process/alarm_clock.html">Alarm Clock</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../api/revision_process/revision_protocol.html">Revision Protocol</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utilities.html">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">Contributing</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for popgames.plotting.ensemble_plotters</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ternary</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting._plot_config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DPI</span><span class="p">,</span>
+    <span class="n">FIGSIZE</span><span class="p">,</span>
+    <span class="n">FIGSIZE_TERNARY</span><span class="p">,</span>
+    <span class="n">FONTSIZE</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_default_kpi_function</span>
+
+<span class="k">if</span> <span class="n">typing</span><span class="o">.</span><span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.axes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Axes</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.figure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Figure</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnsembleResult</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;plot_ensemble_bands&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_ensemble_kpi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_ensemble_ternary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;plot_ensemble_final&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">DEFAULT_BANDS</span> <span class="o">=</span> <span class="p">((</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">))</span>
+<span class="n">DETERMINISTIC_STYLE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;dotted&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">}</span>
+<span class="n">MAX_GROUP_COLORS</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Groups (initial states) beyond this number are plotted in black</span>
+
+
+<div class="viewcode-block" id="plot_ensemble_bands">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_bands">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_ensemble_bands</span><span class="p">(</span>
+    <span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span>
+    <span class="n">variables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">),</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">DEFAULT_BANDS</span><span class="p">,</span>
+    <span class="n">plot_median</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">plot_deterministic_approximation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">initial_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">xlim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ylim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">FIGSIZE</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the median and quantile bands of the runs over time.</span>
+
+<span class="sd">    One figure is generated per population for ``x`` and ``p``, and one for ``q`` (if ``d &gt; 0``). Each strategy has</span>
+<span class="sd">    its own color: the solid line is the median over the runs, and the shaded regions are the bands between the given</span>
+<span class="sd">    quantiles (e.g., 90% and 50% of the runs at each time with the default bands).</span>
+
+<span class="sd">    The bands only mix runs with the same initial state: if the ensemble has several initial states (groups), the</span>
+<span class="sd">    figures are generated for each of them (or only for ``initial_state``).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ensemble (EnsembleResult): The ensemble to plot.</span>
+<span class="sd">        variables (Sequence[str], optional): The variables to plot, among &#39;x&#39;, &#39;p&#39;, and &#39;q&#39;. Defaults to all of them.</span>
+<span class="sd">        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands.</span>
+<span class="sd">            Defaults to ((0.05, 0.95), (0.25, 0.75)).</span>
+<span class="sd">        plot_median (bool, optional): Whether to plot the median. Defaults to True.</span>
+<span class="sd">        plot_deterministic_approximation (bool, optional): Whether to plot the trajectories of the deterministic</span>
+<span class="sd">            approximation (EDM-PDM) as dotted lines. Defaults to False.</span>
+<span class="sd">        initial_state (int, optional): The group (initial state) to plot, see ``EnsembleResult.groups``. Defaults to</span>
+<span class="sd">            None, in which case all groups are plotted.</span>
+<span class="sd">        xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.</span>
+<span class="sd">        ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable, e.g.,</span>
+<span class="sd">            ``{&#39;x&#39;: (0, 1)}``. Defaults to None.</span>
+<span class="sd">        filename (str, optional): If provided, each figure is saved with the variable and population (and the group,</span>
+<span class="sd">            if there are several) appended to the file name, e.g., ``bands_x_1.pdf`` or ``bands_x_1_x0_2.pdf``.</span>
+<span class="sd">            Defaults to None.</span>
+<span class="sd">        figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).</span>
+<span class="sd">        fontsize (int, optional): Font size. Defaults to 8.</span>
+<span class="sd">        show (bool, optional): Whether to show the figures. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_check_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
+    <span class="n">group_ids</span> <span class="o">=</span> <span class="n">_selected_groups</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">)</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">deterministic</span><span class="p">()</span> <span class="k">if</span> <span class="n">plot_deterministic_approximation</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_populations</span>
+
+    <span class="n">panels</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (variable, population, rows, labels, file suffix)</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">variables</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">_strategy_label</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+            <span class="n">panels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">var</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
+    <span class="k">if</span> <span class="s2">&quot;q&quot;</span> <span class="ow">in</span> <span class="n">variables</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+        <span class="n">panels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="sa">rf</span><span class="s2">&quot;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="s2">&quot;q&quot;</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">group_ids</span><span class="p">:</span>
+        <span class="n">runs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">groups</span><span class="p">[</span><span class="n">g</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">var</span><span class="p">)[</span><span class="n">runs</span><span class="p">]</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">)):</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">c</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">_plot_bands</span><span class="p">(</span>
+                    <span class="n">ax</span><span class="p">,</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">values</span><span class="p">[:,</span> <span class="n">row</span><span class="p">],</span> <span class="n">bands</span><span class="p">,</span> <span class="n">plot_median</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                        <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+                        <span class="nb">getattr</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">var</span><span class="p">)[</span><span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">row</span><span class="p">],</span>
+                        <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ylim</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">ylim</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="n">var</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Initial state </span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+                <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">_x0_</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">ylabel</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">rf</span><span class="s2">&quot;$\mathbf</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s2">(t)$&quot;</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">P</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="k">else</span> <span class="sa">rf</span><span class="s2">&quot;$\mathbf</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">(t)$&quot;</span>
+            <span class="p">)</span>
+            <span class="n">_format_time_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
+            <span class="n">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_ensemble_kpi">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_kpi">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_ensemble_kpi</span><span class="p">(</span>
+    <span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span>
+    <span class="n">kpi_function</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SimpleNamespace</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="n">DEFAULT_BANDS</span><span class="p">,</span>
+    <span class="n">plot_median</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">plot_deterministic_approximation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">xlim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ylim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">yscale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">FIGSIZE</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the median and quantile bands of a KPI over time.</span>
+
+<span class="sd">    The KPI is evaluated on each run separately (see ``EnsembleResult.__getitem__``). If the ensemble has several</span>
+<span class="sd">    initial states (groups), one band is plotted per group, with one color per group.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ensemble (EnsembleResult): The ensemble to plot.</span>
+<span class="sd">        kpi_function (Callable[[SimpleNamespace], np.ndarray], optional): Function mapping a run (with fields ``t``,</span>
+<span class="sd">            ``x``, ``q``, and ``p`` in the layout of ``Simulator.log``) to the KPI over time, of shape ``(K,)``.</span>
+<span class="sd">            Defaults to None, in which case the Euclidean distance to the GNE (normalized by its initial value) is</span>
+<span class="sd">            used.</span>
+<span class="sd">        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands.</span>
+<span class="sd">            Defaults to ((0.05, 0.95), (0.25, 0.75)).</span>
+<span class="sd">        plot_median (bool, optional): Whether to plot the median. Defaults to True.</span>
+<span class="sd">        plot_deterministic_approximation (bool, optional): Whether to plot the KPI of the deterministic approximation</span>
+<span class="sd">            (EDM-PDM). Defaults to False.</span>
+<span class="sd">        xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.</span>
+<span class="sd">        ylim (tuple[float, float], optional): Limits of the vertical axis. Defaults to None.</span>
+<span class="sd">        yscale (str, optional): Scale of the vertical axis. Defaults to &#39;linear&#39;.</span>
+<span class="sd">        filename (str, optional): Filename to save the figure. Defaults to None.</span>
+<span class="sd">        figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).</span>
+<span class="sd">        fontsize (int, optional): Font size. Defaults to 8.</span>
+<span class="sd">        show (bool, optional): Whether to show the figure. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kpi_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kpi_function</span> <span class="o">=</span> <span class="n">make_default_kpi_function</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kpi_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">G</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span>
+    <span class="k">if</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="n">MAX_GROUP_COLORS</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;The ensemble has </span><span class="si">{</span><span class="n">G</span><span class="si">}</span><span class="s2"> initial states: the KPI plot shows one band per initial state, which may be hard &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;to read. Consider plotting a subset (EnsembleResult.subset).&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">kpi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpi_function</span><span class="p">(</span><span class="n">run</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">ensemble</span><span class="p">])</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">deterministic</span><span class="p">()</span> <span class="k">if</span> <span class="n">plot_deterministic_approximation</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">runs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
+        <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;Finite agents&quot;</span>
+            <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;$\mathbf</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">_0$ #</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">_plot_bands</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">kpi</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span> <span class="n">bands</span><span class="p">,</span> <span class="n">plot_median</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kpi_det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">kpi_function</span><span class="p">(</span><span class="n">_run</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+                <span class="n">kpi_det</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">color</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;EDM-PDM&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;EDM-PDM&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">xlim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">xlim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ylim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="n">yscale</span><span class="p">)</span>
+    <span class="n">_format_time_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\operatorname</span><span class="si">{KPI}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">_legend</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">outside</span><span class="o">=</span><span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_ensemble_ternary">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_ternary">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_ensemble_ternary</span><span class="p">(</span>
+    <span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span>
+    <span class="n">max_runs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">plot_mean</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot_deterministic_approximation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">FIGSIZE_TERNARY</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the trajectories of the runs on the simplex, as semi-transparent lines.</span>
+
+<span class="sd">    One ternary plot is generated per population with 3 strategies (other populations are skipped with a warning).</span>
+<span class="sd">    If the ensemble has several initial states (groups), the plot is a phase portrait: the runs of each group have</span>
+<span class="sd">    their own color (up to 10 groups; black otherwise), and the initial states are marked.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ensemble (EnsembleResult): The ensemble to plot.</span>
+<span class="sd">        max_runs (int, optional): Maximum number of runs to plot per initial state (the first ones). Defaults to 50.</span>
+<span class="sd">        alpha (float, optional): Opacity of each run. Defaults to 0.2.</span>
+<span class="sd">        plot_mean (bool, optional): Whether to plot the mean over the runs of each initial state. Defaults to False.</span>
+<span class="sd">        plot_deterministic_approximation (bool, optional): Whether to plot the trajectory of the deterministic</span>
+<span class="sd">            approximation (EDM-PDM) from each initial state. Defaults to False.</span>
+<span class="sd">        plot_gne (bool, optional): Whether to plot the GNE (if one is found). Defaults to True.</span>
+<span class="sd">        filename (str, optional): Filename to save the figures. With several populations, the population is</span>
+<span class="sd">            appended to the file name, e.g., ``ternary_pop_1.pdf``. Defaults to None.</span>
+<span class="sd">        figsize (tuple[float, float], optional): Figure size. Defaults to (4, 3).</span>
+<span class="sd">        fontsize (int, optional): Font size. Defaults to 8.</span>
+<span class="sd">        show (bool, optional): Whether to show the figures. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span>
+    <span class="n">det</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">deterministic</span><span class="p">()</span> <span class="k">if</span> <span class="n">plot_deterministic_approximation</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">gne</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">compute_gne</span><span class="p">()</span> <span class="k">if</span> <span class="n">plot_gne</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">run_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">legend_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;gray&quot;</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">_ternary_populations</span><span class="p">(</span><span class="n">ensemble</span><span class="p">):</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">tax</span> <span class="o">=</span> <span class="n">_ternary_figure</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">runs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">run_color</span> <span class="ow">or</span> <span class="n">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">[:</span><span class="n">max_runs</span><span class="p">]:</span>
+                <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">_to_ternary</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">]),</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">plot_mean</span><span class="p">:</span>
+                <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">_to_ternary</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">runs</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:blue&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">color</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">_to_ternary</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">]),</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">color</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">_to_ternary</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">x0</span><span class="p">[</span><span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">]),</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">handles</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">([],</span> <span class="p">[],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">legend_color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Finite agents&quot;</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">plot_mean</span><span class="p">:</span>
+            <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                    <span class="p">[],</span>
+                    <span class="p">[],</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:blue&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">legend_color</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Mean&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                    <span class="p">[],</span>
+                    <span class="p">[],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">legend_color</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;EDM-PDM&quot;</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                    <span class="p">[],</span>
+                    <span class="p">[],</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">legend_color</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Initial states&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_plot_gne</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">gne</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">ensemble</span><span class="p">))</span>
+
+        <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="plot_ensemble_final">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.ensemble_plotters.plot_ensemble_final">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">plot_ensemble_final</span><span class="p">(</span>
+    <span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span>
+    <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bins</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">plot_deterministic_approximation</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the distribution of the strategic distributions of the runs at a given time (the final time by default).</span>
+
+<span class="sd">    One figure is generated per population: a scatter plot on the simplex for populations with 3 strategies, and</span>
+<span class="sd">    histograms of the strategies otherwise (only of the first strategy for populations with 2 strategies, since the</span>
+<span class="sd">    second one is determined by the first). If the ensemble has several initial states (groups), the points and</span>
+<span class="sd">    histograms of each group have their own color (up to 10 groups; black otherwise), and the histograms are plotted</span>
+<span class="sd">    in one figure per strategy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ensemble (EnsembleResult): The ensemble to plot.</span>
+<span class="sd">        t (float, optional): The time (the last sampling time at or before ``t`` is used). Defaults to None, in which</span>
+<span class="sd">            case the final time is used.</span>
+<span class="sd">        bins (int, optional): Number of bins of the histograms. Defaults to 20.</span>
+<span class="sd">        alpha (float, optional): Opacity of the points (scatter plots) or bars (histograms). Defaults to 0.5.</span>
+<span class="sd">        plot_deterministic_approximation (bool, optional): Whether to mark the state of the deterministic</span>
+<span class="sd">            approximation (EDM-PDM) from each initial state at the same time. Defaults to False.</span>
+<span class="sd">        plot_gne (bool, optional): Whether to mark the GNE (if one is found). Defaults to True.</span>
+<span class="sd">        filename (str, optional): Filename to save the figures. The population (with several populations) and the</span>
+<span class="sd">            strategy (for histograms with several initial states) are appended to the file name, e.g.,</span>
+<span class="sd">            ``final_pop_1.pdf`` or ``final_pop_1_x_2.pdf``. Defaults to None.</span>
+<span class="sd">        figsize (tuple[float, float], optional): Figure size. Defaults to None, in which case (4, 3) is used for</span>
+<span class="sd">            scatter plots on the simplex and (4, 2) for histograms.</span>
+<span class="sd">        fontsize (int, optional): Font size. Defaults to 8.</span>
+<span class="sd">        show (bool, optional): Whether to show the figures. Defaults to True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span>
+    <span class="n">snapshot</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">final</span><span class="p">()</span> <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">k_t</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">t</span> <span class="o">==</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">x_det</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">ensemble</span><span class="o">.</span><span class="n">deterministic</span><span class="p">()</span><span class="o">.</span><span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">k_t</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">plot_deterministic_approximation</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+    <span class="n">gne</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">compute_gne</span><span class="p">()</span> <span class="k">if</span> <span class="n">plot_gne</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gne</span> <span class="o">=</span> <span class="n">gne</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_populations</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+        <span class="n">nk</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">nk</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="n">nk</span>
+        <span class="n">suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;pop_</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">nk</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">tax</span> <span class="o">=</span> <span class="n">_ternary_figure</span><span class="p">(</span><span class="n">figsize</span> <span class="ow">or</span> <span class="n">FIGSIZE_TERNARY</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">runs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+                <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="n">_to_ternary</span><span class="p">(</span><span class="n">snapshot</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">runs</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">markersize</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span>
+                    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">x_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                        <span class="n">_to_ternary</span><span class="p">(</span><span class="n">x_det</span><span class="p">[</span><span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                        <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">color</span><span class="p">,</span>
+                        <span class="n">markeredgecolor</span><span class="o">=</span><span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="n">legend_color</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;gray&quot;</span>
+            <span class="n">handles</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                    <span class="p">[],</span>
+                    <span class="p">[],</span>
+                    <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;o&quot;</span><span class="p">,</span>
+                    <span class="n">markersize</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">legend_color</span><span class="p">,</span>
+                    <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Finite agents&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">x_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                        <span class="p">[],</span>
+                        <span class="p">[],</span>
+                        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">,</span>
+                        <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">legend_color</span><span class="p">,</span>
+                        <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;EDM-PDM&quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_plot_gne</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">gne</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">ensemble</span><span class="p">))</span>
+            <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">tax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;$t = </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+            <span class="n">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="n">strategies</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">nk</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="nb">range</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># One figure per population, one color per strategy</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span> <span class="ow">or</span> <span class="n">FIGSIZE</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">strategies</span><span class="p">):</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">c</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+                    <span class="n">snapshot</span><span class="o">.</span><span class="n">x</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span>
+                    <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="n">_strategy_label</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">P</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">x_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x_det</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">gne</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">_format_histogram</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathbf</span><span class="si">{x}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">strategies</span><span class="p">))</span>
+            <span class="n">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># One figure per strategy, one color per initial state</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">strategies</span><span class="p">:</span>
+            <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span> <span class="ow">or</span> <span class="n">FIGSIZE</span><span class="p">)</span>
+            <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram_bin_edges</span><span class="p">(</span><span class="n">snapshot</span><span class="o">.</span><span class="n">x</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">runs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">groups</span><span class="p">):</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">G</span><span class="p">)</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+                    <span class="n">snapshot</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">runs</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span>
+                    <span class="n">bins</span><span class="o">=</span><span class="n">edges</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="sa">rf</span><span class="s2">&quot;$\mathbf</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">_0$ #</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span>
+                    <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">x_det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x_det</span><span class="p">[</span><span class="n">runs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">gne</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">_format_histogram</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">_strategy_label</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">P</span><span class="p">),</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span><span class="p">:</span>
+                <span class="n">_legend</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">outside</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">strategy_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;x_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">_finish</span><span class="p">(</span>
+                <span class="n">fig</span><span class="p">,</span>
+                <span class="n">filename</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">suffix</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">strategy_suffix</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">suffix</span> <span class="k">else</span> <span class="n">strategy_suffix</span><span class="p">,</span>
+                <span class="n">show</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span> <span class="o">-</span> <span class="p">{</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Unknown variables </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">unknown</span><span class="p">)</span><span class="si">}</span><span class="s2">. Use &#39;x&#39;, &#39;p&#39;, and/or &#39;q&#39;.&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_selected_groups</span><span class="p">(</span><span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span>
+    <span class="k">if</span> <span class="n">initial_state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">G</span> <span class="o">&gt;</span> <span class="n">MAX_GROUP_COLORS</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The ensemble has </span><span class="si">{</span><span class="n">G</span><span class="si">}</span><span class="s2"> initial states: plotting the figures for each of them. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Use initial_state=g to plot a single one.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">))</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">initial_state</span> <span class="o">&lt;</span> <span class="n">G</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;initial_state must be an integer in [0, </span><span class="si">{</span><span class="n">G</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">], got </span><span class="si">{</span><span class="n">initial_state</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">initial_state</span><span class="p">)]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">G</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span> <span class="k">else</span> <span class="s2">&quot;black&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run</span><span class="p">(</span><span class="n">ns</span><span class="p">:</span> <span class="n">SimpleNamespace</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimpleNamespace</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run ``r`` of an ensemble-shaped namespace, in the layout of ``Simulator.log``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="n">ns</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">ns</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">q</span><span class="o">=</span><span class="n">ns</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">p</span><span class="o">=</span><span class="n">ns</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">r</span><span class="p">])</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_legend</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">outside</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a legend, inside the axes or to their right (e.g., one entry per initial state).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">outside</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper left&quot;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.02</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_histogram</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">xlabel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xlabel</span><span class="si">}</span><span class="s2">,  $t = </span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Number of runs&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_strategy_label</span><span class="p">(</span><span class="n">var</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">P</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="sa">rf</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span> <span class="k">if</span> <span class="n">P</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="sa">rf</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_bands</span><span class="p">(</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span>
+    <span class="n">t</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">bands</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="n">plot_median</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot the median and quantile bands of ``values`` (shape ``(M, K)``) over ``t``.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bands</span><span class="p">):</span>
+        <span class="n">q_lower</span><span class="p">,</span> <span class="n">q_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="p">[</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+            <span class="n">t</span><span class="p">,</span> <span class="n">q_lower</span><span class="p">,</span> <span class="n">q_upper</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">j</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot_median</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_time_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ternary_populations</span><span class="p">(</span><span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Yield ``(k, slice, file suffix)`` for each population with 3 strategies.&quot;&quot;&quot;</span>
+    <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
+    <span class="n">P</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_populations</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">P</span><span class="p">):</span>
+        <span class="n">nk</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">nk</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">pos</span> <span class="o">+</span> <span class="n">nk</span><span class="p">),</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;pop_</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Ternary plots require 3 strategies per population. Skipping population </span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">nk</span><span class="si">}</span><span class="s2"> strategies).&quot;</span>
+            <span class="p">)</span>
+        <span class="n">pos</span> <span class="o">+=</span> <span class="n">nk</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_to_ternary</span><span class="p">(</span><span class="n">x_k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Map strategic distributions of shape ``(3, K)`` to ternary coordinates of shape ``(K, 3)``.&quot;&quot;&quot;</span>
+    <span class="n">x_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x_k</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x_k</span><span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">/</span> <span class="n">x_k</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ternary_figure</span><span class="p">(</span><span class="n">figsize</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]):</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">tax</span> <span class="o">=</span> <span class="n">ternary</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="n">figsize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">figsize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">boundary</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">tax</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plot_gne</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">gne_k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ensemble</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">:</span>
+    <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="sa">r</span><span class="s2">&quot;$\operatorname</span><span class="si">{GNE}</span><span class="s2">$&quot;</span>
+        <span class="k">if</span> <span class="n">game</span><span class="o">.</span><span class="n">d_eq</span> <span class="o">+</span> <span class="n">game</span><span class="o">.</span><span class="n">d_ineq</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="sa">r</span><span class="s2">&quot;$\operatorname</span><span class="si">{NE}</span><span class="s2">$&quot;</span>
+    <span class="p">)</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">_to_ternary</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gne_k</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+        <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span>
+        <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+        <span class="p">[],</span> <span class="p">[],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">top_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_1$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">left_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_2$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">right_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_3$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">clear_matplotlib_ticks</span><span class="p">()</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+    <span class="n">tax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">handles</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_finish</span><span class="p">(</span><span class="n">fig</span><span class="p">:</span> <span class="n">Figure</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">suffix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Save the figure (with the suffix appended to the file name), then show or close it.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">name</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">suffix</span><span class="si">}{</span><span class="n">ext</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">suffix</span> <span class="k">else</span> <span class="n">filename</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">,</span>
+            <span class="n">pad_inches</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">dpi</span><span class="o">=</span><span class="n">DPI</span> <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.png&quot;</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Juan Martinez-Piazuelo
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link " href="https://github.com/Martinez-Piazuelo/popgames" aria-label="GitHub">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0"
+                     viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                    d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
+                    0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+                    -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87
+                    2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+                    0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21
+                    2.2.82a7.65 7.65 0 012-.27c.68 0 1.36.09 2 .27
+                    1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08
+                    2.12.51.56.82 1.27.82 2.15
+                    0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54
+                    1.48 0 1.07-.01 1.93-.01 2.2
+                    0 .21.15.46.55.38A8.01 8.01 0
+                    0016 8c0-4.42-3.58-8-8-8z">
+                    </path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    </body>
+</html>

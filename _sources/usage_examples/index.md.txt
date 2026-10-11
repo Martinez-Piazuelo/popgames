@@ -8,4 +8,6 @@ population games using the ``popgames`` package.
 
 prisoners_dilemma_example
 rock_paper_scissors_example
+rock_paper_scissors_ensemble_example
+coordination_ensemble_example
 ```

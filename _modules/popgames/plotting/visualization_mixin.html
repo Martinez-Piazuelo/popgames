@@ -202,6 +202,8 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../usage_examples/index.html">Usage Examples</a><input aria-label="Toggle navigation of Usage Examples" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/prisoners_dilemma_example.html">Prisoner’s Dilemma</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/rock_paper_scissors_example.html">Rock-Paper-Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/rock_paper_scissors_ensemble_example.html">Ensembles of simulations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../performance/index.html">Performance</a></li>
@@ -214,6 +216,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/simulator.html">Simulator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utilities.html">Utilities</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../../contributing/index.html">Contributing</a></li>
@@ -260,6 +263,12 @@
     <span class="n">FIGSIZE_TERNARY</span><span class="p">,</span>
     <span class="n">FONTSIZE</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting.ensemble_plotters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">plot_ensemble_bands</span><span class="p">,</span>
+    <span class="n">plot_ensemble_final</span><span class="p">,</span>
+    <span class="n">plot_ensemble_kpi</span><span class="p">,</span>
+    <span class="n">plot_ensemble_ternary</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting.plotters</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">plot_kpi_over_time</span><span class="p">,</span>
     <span class="n">plot_ternary_trajectories</span><span class="p">,</span>
@@ -271,9 +280,11 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">popgames</span><span class="w"> </span><span class="kn">import</span> <span class="n">Simulator</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">EnsembleResult</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;VisualizationMixin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EnsembleVisualizationMixin&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">SUPPORTED_PLOT_TYPES_LITERAL</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
@@ -347,6 +358,66 @@
                 <span class="s2">&quot;show&quot;</span><span class="p">:</span> <span class="n">show</span><span class="p">,</span>
             <span class="p">}</span>
             <span class="n">plot_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="n">SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Literal</span><span class="p">[</span>
+    <span class="s2">&quot;bands&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;kpi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ternary&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;final&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">ENSEMBLE_PLOT_DISPATCH</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span>
+    <span class="n">SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+<span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;bands&quot;</span><span class="p">:</span> <span class="n">plot_ensemble_bands</span><span class="p">,</span>
+    <span class="s2">&quot;kpi&quot;</span><span class="p">:</span> <span class="n">plot_ensemble_kpi</span><span class="p">,</span>
+    <span class="s2">&quot;ternary&quot;</span><span class="p">:</span> <span class="n">plot_ensemble_ternary</span><span class="p">,</span>
+    <span class="s2">&quot;final&quot;</span><span class="p">:</span> <span class="n">plot_ensemble_final</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="EnsembleVisualizationMixin">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.simulator.EnsembleVisualizationMixin">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EnsembleVisualizationMixin</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Visualization mixin to add plotting functionality to the EnsembleResult class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="EnsembleVisualizationMixin.plot">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.simulator.EnsembleVisualizationMixin.plot">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">EnsembleResult</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">plot_type</span><span class="p">:</span> <span class="n">SUPPORTED_ENSEMBLE_PLOT_TYPES_LITERAL</span> <span class="o">=</span> <span class="s2">&quot;bands&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unified plotting interface for ensembles of finite-agent simulations.</span>
+
+<span class="sd">        Supported plot types (see their functions in ``popgames.plotting.ensemble_plotters`` for all options):</span>
+
+<span class="sd">        * ``&#39;bands&#39;``: median and quantile bands of ``x``, ``p``, and ``q`` over time (``plot_ensemble_bands``).</span>
+<span class="sd">        * ``&#39;kpi&#39;``: median and quantile bands of a KPI over time (``plot_ensemble_kpi``).</span>
+<span class="sd">        * ``&#39;ternary&#39;``: trajectories of the runs on the simplex (``plot_ensemble_ternary``).</span>
+<span class="sd">        * ``&#39;final&#39;``: distribution of the strategic distributions at the final (or a given) time</span>
+<span class="sd">          (``plot_ensemble_final``).</span>
+
+<span class="sd">        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, and</span>
+<span class="sd">        ``plot_deterministic_approximation``.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plot_type (str): Plot type. Defaults to &#39;bands&#39;.</span>
+<span class="sd">            **kwargs: Keyword arguments of the selected plot type. Unrecognized arguments raise a ``TypeError``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plot_method</span> <span class="o">=</span> <span class="n">ENSEMBLE_PLOT_DISPATCH</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">plot_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plot_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Plot type </span><span class="si">{</span><span class="n">plot_type</span><span class="si">!r}</span><span class="s2"> is not supported. Use one of: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">ENSEMBLE_PLOT_DISPATCH</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">plot_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 </div>
 
 </pre></div>
