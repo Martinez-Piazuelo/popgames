@@ -281,6 +281,9 @@ class Simulator(VisualizationMixin):
 
         Returns:
             SimpleNamespace: The simulation results as a SimpleNamespace object.
+
+        See Also:
+            :meth:`run_ensemble`: Run the simulation for several seeds and/or initial states, sampled at common times.
         """
         check_type(arg=T_sim, expected_type=int, arg_name="T_sim")
         check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
