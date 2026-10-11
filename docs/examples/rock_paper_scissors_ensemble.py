@@ -53,4 +53,3 @@ for name, revision_protocol in revision_protocols.items():
 
     ens.plot(plot_type='ternary', plot_deterministic_approximation=True)
     ens.plot(plot_type='bands', variables=['x'], plot_deterministic_approximation=True)
-    ens.plot(plot_type='final', plot_deterministic_approximation=True)

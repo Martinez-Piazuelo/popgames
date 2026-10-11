@@ -46,17 +46,10 @@ containing 90% and 50% of the runs at each time (shaded regions), and the EDM (d
 The bands of the Replicator widen over time: the runs drift across orbits and out of phase with each other. The
 bands of the Smith protocol remain narrow.
 
-## Final states
+## Other plot types
 
-``ens.plot(plot_type="final")`` shows where the runs are at the final time (or at any time ``t``).
-
-```{image} ../_static/rps_ensemble_final.png
-:width: 90%
-:align: center
-:alt: Final states of the runs under the Replicator and Smith protocols
-```
-
-The same plot types are available for multi-population games and payoff dynamics models: ``bands`` also plots the
+``ens.plot(plot_type="final")`` shows where the runs are at the final time (or at any time ``t``); see the
+[coordination game example](coordination_ensemble_example.md) for a use case. The same plot types are available for multi-population games and payoff dynamics models: ``bands`` also plots the
 payoffs ``p`` and the PDM state ``q``, and ``kpi`` plots the bands of any KPI (by default, the distance to the GNE).
 
 ## Different initial states
