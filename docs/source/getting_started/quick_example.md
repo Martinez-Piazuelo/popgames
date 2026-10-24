@@ -190,4 +190,13 @@ ens.plot(plot_type="kpi", plot_deterministic_approximation=True)
 
 The result holds the runs in arrays of shape `(runs, strategies, times)` (e.g., `ens.x`), with helpers such as
 `ens.mean()` and `ens.quantile(...)`, and plots of quantile bands, KPIs, ternary trajectories, and final states.
+
+`integrate_ensemble` does the same for the deterministic approximation (EDM-PDM), e.g., to check that trajectories
+from many initial states converge. Its bands pool all initial states by default, and `statistic="mean_std"` shows the
+mean and standard deviation instead of the median and quantiles:
+
+```python
+ens = sim.integrate_ensemble(T_sim=10, x0=x0s)
+ens.plot(plot_type="bands", variables=["x"], statistic="mean_std")
+```
 See the usage examples in the documentation for more details.

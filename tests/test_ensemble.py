@@ -10,6 +10,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from popgames.ensemble import EnsembleResult
@@ -711,6 +712,162 @@ class TestRunEnsembleNumba(unittest.TestCase):
         sim.reset(ens.x0[2], ens.q0[2], seed=7)
         sim.run(T_sim=2)
         np.testing.assert_array_equal(_hold(sim.log, ens.t), ens.x[2])
+
+
+class TestIntegrateEnsemble(unittest.TestCase):
+    def test_runs_match_integrate_edm_pdm_per_initial_state(self) -> None:
+        sim = _make_rps_simulator()
+        t_eval = np.linspace(0, 3, 7)
+        ens = sim.integrate_ensemble(T_sim=3, x0=_X0S, t_eval=t_eval)
+        self.assertTrue(ens.is_deterministic)
+        self.assertIsNone(ens.seeds)
+        self.assertEqual(ens.x.shape, (3, 3, 7))
+        self.assertEqual(ens.num_groups, 3)
+        np.testing.assert_allclose(ens.x0, _X0S)
+        for r in range(3):
+            out = sim.integrate_edm_pdm(t_span=(0.0, 3.0), x0=_X0S[r], t_eval=t_eval)
+            np.testing.assert_allclose(ens.x[r], out.x)
+            np.testing.assert_allclose(ens.p[r], out.p)
+
+    def test_shared_initial_state_defaults_to_last_reset(self) -> None:
+        sim = _make_rps_simulator()
+        sim.reset(x0=_RPS_X0)
+        ens = sim.integrate_ensemble(T_sim=1.5)
+        self.assertEqual(len(ens), 1)
+        self.assertEqual(ens.t.size, 201)
+        np.testing.assert_allclose(ens.x0[0], _RPS_X0)
+
+    def test_per_run_pdm_states(self) -> None:
+        sim = _make_multi_population_pdm_simulator()
+        x0 = np.array([[1.0], [0.0], [2.0], [0.0], [0.0]])
+        q0s = np.array([[[0.0]], [[1.0]]])
+        ens = sim.integrate_ensemble(T_sim=1, x0=x0, q0=q0s)
+        self.assertEqual(len(ens), 2)
+        np.testing.assert_allclose(ens.x0, np.stack([x0, x0]))
+        np.testing.assert_allclose(ens.q[:, :, 0], [[0.0], [1.0]])
+        self.assertEqual(ens.num_groups, 2)
+
+    def test_invalid_arguments(self) -> None:
+        sim = _make_multi_population_pdm_simulator()
+        x0s = np.zeros((2, 5, 1))
+        with self.assertRaises(ValueError):
+            sim.integrate_ensemble(T_sim=1, x0=x0s, q0=np.zeros((3, 1, 1)))
+        with self.assertRaises(ValueError):
+            sim.integrate_ensemble(T_sim=1, x0=x0s, t_eval=[0.0, 2.0])
+        with self.assertRaises(ValueError):
+            sim.integrate_ensemble(T_sim=0, x0=x0s)
+
+    def test_deterministic_and_subset(self) -> None:
+        ens = _make_rps_simulator().integrate_ensemble(T_sim=1, x0=_X0S)
+        det = ens.deterministic()
+        np.testing.assert_array_equal(det.x, ens.x)
+        sub = ens.subset([2, 0])
+        self.assertTrue(sub.is_deterministic)
+        self.assertIsNone(sub.seeds)
+        np.testing.assert_array_equal(sub.x, ens.x[[2, 0]])
+
+
+class TestPooledBands(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        sim = _make_rps_simulator(seed=0)
+        t_eval = np.linspace(0, 2, 11)
+        x0s = np.repeat(_X0S, 4, axis=0)  # 12 runs from 3 initial states
+        cls.ens = sim.run_ensemble(T_sim=2, x0=x0s, seed=0, t_eval=t_eval)
+        cls.det = sim.integrate_ensemble(T_sim=2, x0=x0s, t_eval=t_eval)
+
+    def setUp(self) -> None:
+        plt.close("all")
+        self.addCleanup(plt.close, "all")
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+
+    def _files(self) -> list[str]:
+        return sorted(os.listdir(self._tmp.name))
+
+    def _path(self, name: str) -> str:
+        return os.path.join(self._tmp.name, name)
+
+    def test_deterministic_ensembles_pool_initial_states_by_default(self) -> None:
+        self.det.plot(plot_type="bands", filename=self._path("b.png"), show=False)
+        self.assertEqual(self._files(), ["b_p_1.png", "b_x_1.png"])
+
+    def test_finite_agent_ensembles_can_pool_initial_states(self) -> None:
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            pool_initial_states=True,
+            filename=self._path("b.png"),
+            show=False,
+        )
+        self.assertEqual(self._files(), ["b_x_1.png"])
+        with self.assertRaises(ValueError):
+            self.ens.plot(
+                plot_type="bands", pool_initial_states=True, initial_state=0, show=False
+            )
+
+    def test_mean_std_bands(self) -> None:
+        fig, ax = plt.subplots()
+        self.det.plot(
+            plot_type="bands",
+            variables=["x"],
+            statistic="mean_std",
+            num_std=(1, 2),
+            ax=ax,
+        )
+        mean, std = self.det.x[:, 0].mean(axis=0), self.det.x[:, 0].std(axis=0)
+        np.testing.assert_allclose(ax.lines[0].get_ydata(), mean)
+        # Widest band first: mean -/+ 2 std
+        lower = ax.collections[0].get_paths()[0].vertices[:, 1]
+        self.assertAlmostEqual(lower.min(), (mean - 2 * std).min())
+        self.assertAlmostEqual(lower.max(), (mean + 2 * std).max())
+
+    def test_pooled_deterministic_overlay_uses_the_same_statistic(self) -> None:
+        fig, ax = plt.subplots()
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            pool_initial_states=True,
+            statistic="mean_std",
+            plot_deterministic_approximation=True,
+            ax=ax,
+        )
+        dotted = [line for line in ax.lines if line.get_linestyle() == ":"]
+        self.assertEqual(len(dotted), 3)
+        np.testing.assert_allclose(
+            dotted[0].get_ydata(), self.det.x[:, 0].mean(axis=0), atol=1e-6
+        )
+
+    def test_kpi_of_deterministic_ensemble(self) -> None:
+        fig, ax = plt.subplots()
+        self.det.plot(
+            plot_type="kpi",
+            kpi_function=lambda run: run.x[0],
+            statistic="mean_std",
+            plot_deterministic_approximation=True,  # Ignored: the runs are the EDM-PDM
+            ax=ax,
+        )
+        self.assertEqual(len(ax.lines), 1)
+        self.assertEqual(ax.get_legend_handles_labels()[1], ["EDM-PDM"])
+        np.testing.assert_allclose(
+            ax.lines[0].get_ydata(), self.det.x[:, 0].mean(axis=0)
+        )
+
+    def test_ternary_and_final_of_deterministic_ensemble(self) -> None:
+        fig, axes = plt.subplots(1, 2)
+        self.det.plot(plot_type="ternary", plot_gne=False, ax=axes[0])
+        self.det.plot(plot_type="final", t=1.0, plot_gne=False, ax=axes[1])
+        labels = [text.get_text() for text in axes[0].get_legend().get_texts()]
+        self.assertIn("EDM-PDM", labels)
+        self.assertNotIn("Finite agents", labels)
+
+    def test_invalid_statistic(self) -> None:
+        with self.assertRaises(ValueError):
+            self.det.plot(plot_type="bands", statistic="mode", show=False)
+        with self.assertRaises(ValueError):
+            self.det.plot(
+                plot_type="bands", statistic="mean_std", num_std=(0,), show=False
+            )
 
 
 if __name__ == "__main__":

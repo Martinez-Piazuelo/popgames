@@ -16,7 +16,7 @@ from popgames.plotting._plot_config import (
 from popgames.plotting.plotters import make_default_kpi_function
 
 if typing.TYPE_CHECKING:
-    from typing import Callable, Sequence
+    from typing import Callable, Literal, Sequence
 
     from matplotlib.axes import Axes
 
@@ -32,6 +32,7 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 DEFAULT_BANDS = ((0.05, 0.95), (0.25, 0.75))
+DEFAULT_NUM_STD = (1,)
 DETERMINISTIC_STYLE = {"linestyle": "dotted", "linewidth": 1.5}
 MAX_GROUP_COLORS = 10  # Groups (initial states) beyond this number are plotted in black
 
@@ -43,6 +44,9 @@ def plot_ensemble_bands(
     plot_median: bool = True,
     plot_deterministic_approximation: bool = False,
     initial_state: int = None,
+    pool_initial_states: bool = None,
+    statistic: Literal["quantile", "mean_std"] = "quantile",
+    num_std: Sequence[float] = DEFAULT_NUM_STD,
     xlim: tuple[float, float] = None,
     ylim: dict[str, tuple[float, float]] = None,
     filename: str = None,
@@ -52,42 +56,56 @@ def plot_ensemble_bands(
     ax: Axes | Sequence[Axes] = None,
 ) -> None:
     """
-    Plot the median and quantile bands of the runs over time.
+    Plot the median and quantile bands (or the mean and standard deviation bands) of the runs over time.
 
     One figure is generated per population for ``x`` and ``p``, and one for ``q`` (if ``d > 0``). Each strategy has
     its own color: the solid line is the median over the runs, and the shaded regions are the bands between the given
-    quantiles (e.g., 90% and 50% of the runs at each time with the default bands).
+    quantiles (e.g., 90% and 50% of the runs at each time with the default bands). With ``statistic='mean_std'``, the
+    solid line is the mean instead, and the bands are the mean plus or minus ``num_std`` standard deviations.
 
-    The bands only mix runs with the same initial state: if the ensemble has several initial states (groups), the
-    figures are generated for each of them (or only for ``initial_state``).
+    By default, the bands of a finite-agent ensemble only mix runs with the same initial state: if the ensemble has
+    several initial states (groups), the figures are generated for each of them (or only for ``initial_state``). With
+    ``pool_initial_states=True``, the bands mix all runs instead, e.g., to show how trajectories from many initial
+    states converge. This is the default for deterministic ensembles (``Simulator.integrate_ensemble``), which have a
+    single run per initial state.
 
     Args:
         ensemble (EnsembleResult): The ensemble to plot.
         variables (Sequence[str], optional): The variables to plot, among 'x', 'p', and 'q'. Defaults to all of them.
-        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands.
-            Defaults to ((0.05, 0.95), (0.25, 0.75)).
-        plot_median (bool, optional): Whether to plot the median. Defaults to True.
+        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands
+            (with ``statistic='quantile'``). Defaults to ((0.05, 0.95), (0.25, 0.75)).
+        plot_median (bool, optional): Whether to plot the central line: the median, or the mean with
+            ``statistic='mean_std'``. Defaults to True.
         plot_deterministic_approximation (bool, optional): Whether to plot the trajectories of the deterministic
-            approximation (EDM-PDM) as dotted lines. Defaults to False.
+            approximation (EDM-PDM) as dotted lines (when pooling several initial states, the same statistic as the
+            central line over their trajectories). Ignored for deterministic ensembles. Defaults to False.
         initial_state (int, optional): The group (initial state) to plot, see ``EnsembleResult.groups``. Defaults to
-            None, in which case all groups are plotted.
+            None, in which case all groups are plotted. Cannot be combined with ``pool_initial_states=True``.
+        pool_initial_states (bool, optional): Whether the bands mix the runs of all initial states, in a single set
+            of figures. Defaults to None, in which case it is True for deterministic ensembles and False otherwise.
+        statistic (str, optional): 'quantile' for the median and quantile bands, or 'mean_std' for the mean and bands
+            of plus or minus ``num_std`` (population) standard deviations. Note that the latter may leave the feasible
+            region, e.g., become negative. Defaults to 'quantile'.
+        num_std (Sequence[float], optional): The widths of the bands in standard deviations (with
+            ``statistic='mean_std'``). Defaults to (1,).
         xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.
         ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable, e.g.,
             ``{'x': (0, 1)}``. Defaults to None.
         filename (str, optional): If provided, each figure is saved with the variable and population (and the group,
-            if there are several) appended to the file name, e.g., ``bands_x_1.pdf`` or ``bands_x_1_x0_2.pdf``.
-            Defaults to None.
+            if there are several and they are not pooled) appended to the file name, e.g., ``bands_x_1.pdf`` or
+            ``bands_x_1_x0_2.pdf``. Defaults to None.
         figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figures. Defaults to True.
         ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would
-            otherwise be generated, in the order of the initial states and, for each one, of ``x`` (per population),
-            ``p`` (per population), and ``q``. The figures are then neither saved, shown, nor closed. Defaults to
-            None.
+            otherwise be generated, in the order of the initial states (unless pooled) and, for each one, of ``x``
+            (per population), ``p`` (per population), and ``q``. The figures are then neither saved, shown, nor
+            closed. Defaults to None.
     """
     _check_variables(variables)
-    group_ids = _selected_groups(ensemble, initial_state)
-    det = ensemble.deterministic() if plot_deterministic_approximation else None
+    stat = _statistic(statistic, bands, num_std)
+    run_sets = _run_sets(ensemble, initial_state, pool_initial_states)
+    det = _deterministic(ensemble, plot_deterministic_approximation)
     game = ensemble.simulator.population_game
     P = game.num_populations
 
@@ -106,30 +124,25 @@ def plot_ensemble_bands(
         rows = list(range(d))
         panels.append(("q", None, rows, [rf"$q_{{{i + 1}}}$" for i in rows], "q"))
 
-    figures = Panels(ax, len(group_ids) * len(panels), filename)
-    for g in group_ids:
-        runs = ensemble.groups[g]
+    figures = Panels(ax, len(run_sets) * len(panels), filename)
+    for g, runs in run_sets:
         for var, k, rows, labels, suffix in panels:
             values = getattr(ensemble, var)[runs]
             fig, ax = figures.new(figsize)
             for c, (row, label) in enumerate(zip(rows, labels)):
                 color = f"C{c % 10}"
                 _plot_bands(
-                    ax, ensemble.t, values[:, row], bands, plot_median, color, label
+                    ax, ensemble.t, values[:, row], stat, plot_median, color, label
                 )
                 if det is not None:
-                    ax.plot(
-                        ensemble.t,
-                        getattr(det, var)[runs[0], row],
-                        color=color,
-                        **DETERMINISTIC_STYLE,
-                    )
+                    center, _ = stat(getattr(det, var)[runs, row])
+                    ax.plot(ensemble.t, center, color=color, **DETERMINISTIC_STYLE)
 
             if xlim is not None:
                 ax.set_xlim(xlim)
             if isinstance(ylim, dict) and var in ylim:
                 ax.set_ylim(ylim[var])
-            if ensemble.num_groups > 1:
+            if g is not None and ensemble.num_groups > 1:
                 ax.set_title(f"Initial state {g + 1}", fontsize=fontsize)
                 suffix = f"{suffix}_x0_{g + 1}"
             ylabel = (
@@ -149,6 +162,9 @@ def plot_ensemble_kpi(
     bands: Sequence[tuple[float, float]] = DEFAULT_BANDS,
     plot_median: bool = True,
     plot_deterministic_approximation: bool = False,
+    pool_initial_states: bool = None,
+    statistic: Literal["quantile", "mean_std"] = "quantile",
+    num_std: Sequence[float] = DEFAULT_NUM_STD,
     xlim: tuple[float, float] = None,
     ylim: tuple[float, float] = None,
     yscale: str = "linear",
@@ -159,10 +175,11 @@ def plot_ensemble_kpi(
     ax: Axes = None,
 ) -> None:
     """
-    Plot the median and quantile bands of a KPI over time.
+    Plot the median and quantile bands (or the mean and standard deviation bands) of a KPI over time.
 
     The KPI is evaluated on each run separately (see ``EnsembleResult.__getitem__``). If the ensemble has several
-    initial states (groups), one band is plotted per group, with one color per group.
+    initial states (groups), one band is plotted per group, with one color per group, unless they are pooled into a
+    single band (the default for deterministic ensembles).
 
     Args:
         ensemble (EnsembleResult): The ensemble to plot.
@@ -170,11 +187,17 @@ def plot_ensemble_kpi(
             ``x``, ``q``, and ``p`` in the layout of ``Simulator.log``) to the KPI over time, of shape ``(K,)``.
             Defaults to None, in which case the Euclidean distance to the GNE (normalized by its initial value) is
             used.
-        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands.
-            Defaults to ((0.05, 0.95), (0.25, 0.75)).
-        plot_median (bool, optional): Whether to plot the median. Defaults to True.
+        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands
+            (with ``statistic='quantile'``). Defaults to ((0.05, 0.95), (0.25, 0.75)).
+        plot_median (bool, optional): Whether to plot the central line: the median, or the mean with
+            ``statistic='mean_std'``. Defaults to True.
         plot_deterministic_approximation (bool, optional): Whether to plot the KPI of the deterministic approximation
-            (EDM-PDM). Defaults to False.
+            (EDM-PDM). Ignored for deterministic ensembles. Defaults to False.
+        pool_initial_states (bool, optional): Whether to plot a single band mixing the runs of all initial states.
+            Defaults to None, in which case it is True for deterministic ensembles and False otherwise.
+        statistic (str, optional): 'quantile' or 'mean_std', see ``plot_ensemble_bands``. Defaults to 'quantile'.
+        num_std (Sequence[float], optional): The widths of the bands in standard deviations (with
+            ``statistic='mean_std'``). Defaults to (1,).
         xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.
         ylim (tuple[float, float], optional): Limits of the vertical axis. Defaults to None.
         yscale (str, optional): Scale of the vertical axis. Defaults to 'linear'.
@@ -186,35 +209,49 @@ def plot_ensemble_kpi(
             closed. Defaults to None.
     """
     figures = Panels(ax, 1, filename)
+    stat = _statistic(statistic, bands, num_std)
+    if pool_initial_states is None:
+        pool_initial_states = ensemble.is_deterministic
+    run_sets = (
+        [(None, np.arange(ensemble.num_runs))]
+        if pool_initial_states
+        else list(enumerate(ensemble.groups))
+    )
     if kpi_function is None:
         kpi_function = make_default_kpi_function(ensemble.simulator)
         if kpi_function is None:
             return None
 
-    G = ensemble.num_groups
+    G = len(run_sets)
     if G > MAX_GROUP_COLORS:
         logger.warning(
             f"The ensemble has {G} initial states: the KPI plot shows one band per initial state, which may be hard "
-            f"to read. Consider plotting a subset (EnsembleResult.subset)."
+            f"to read. Consider pooling them (pool_initial_states=True) or plotting a subset (EnsembleResult.subset)."
         )
 
     kpi = np.vstack([np.asarray(kpi_function(run)).reshape(-1) for run in ensemble])
-    det = ensemble.deterministic() if plot_deterministic_approximation else None
+    det = _deterministic(ensemble, plot_deterministic_approximation)
+    if det is not None:
+        kpi_det = np.vstack(
+            [
+                np.asarray(kpi_function(_run(det, r))).reshape(-1)
+                for r in range(ensemble.num_runs)
+            ]
+        )
 
     fig, ax = figures.new(figsize)
-    for g, runs in enumerate(ensemble.groups):
+    for g, (_, runs) in enumerate(run_sets):
         color = "black" if G == 1 else _group_color(g, G)
         label = (
-            "Finite agents"
+            _runs_label(ensemble)
             if G == 1
             else (rf"$\mathbf{{x}}_0$ #{g + 1}" if G <= MAX_GROUP_COLORS else None)
         )
-        _plot_bands(ax, ensemble.t, kpi[runs], bands, plot_median, color, label)
+        _plot_bands(ax, ensemble.t, kpi[runs], stat, plot_median, color, label)
         if det is not None:
-            kpi_det = np.asarray(kpi_function(_run(det, runs[0]))).reshape(-1)
             ax.plot(
                 ensemble.t,
-                kpi_det,
+                stat(kpi_det[runs])[0],
                 color="magenta" if G == 1 else color,
                 label="EDM-PDM" if G == 1 else None,
                 **DETERMINISTIC_STYLE,
@@ -271,7 +308,7 @@ def plot_ensemble_ternary(
     populations = list(_ternary_populations(ensemble))
     figures = Panels(ax, len(populations), filename)
     G = ensemble.num_groups
-    det = ensemble.deterministic() if plot_deterministic_approximation else None
+    det = _deterministic(ensemble, plot_deterministic_approximation)
     gne = ensemble.simulator.population_game.compute_gne() if plot_gne else None
     run_color = "black" if G == 1 else None
     legend_color = "black" if G == 1 else "gray"
@@ -310,7 +347,9 @@ def plot_ensemble_ternary(
                 )
 
         handles = [
-            plt.Line2D([], [], linewidth=1, color=legend_color, label="Finite agents")
+            plt.Line2D(
+                [], [], linewidth=1, color=legend_color, label=_runs_label(ensemble)
+            )
         ]
         if plot_mean:
             handles.append(
@@ -399,11 +438,8 @@ def plot_ensemble_final(
     figures = Panels(ax, num_panels, filename)
     snapshot = ensemble.final() if t is None else ensemble.at(t)
     k_t = int(np.flatnonzero(ensemble.t == snapshot.t)[-1])
-    x_det = (
-        ensemble.deterministic().x[:, :, k_t]
-        if plot_deterministic_approximation
-        else None
-    )
+    det = _deterministic(ensemble, plot_deterministic_approximation)
+    x_det = det.x[:, :, k_t] if det is not None else None
     gne = ensemble.simulator.population_game.compute_gne() if plot_gne else None
     if gne is not None:
         gne = gne.reshape(-1)
@@ -448,7 +484,7 @@ def plot_ensemble_final(
                     markersize=3,
                     color=legend_color,
                     linestyle="",
-                    label="Finite agents",
+                    label=_runs_label(ensemble),
                 )
             ]
             if x_det is not None:
@@ -549,6 +585,73 @@ def _selected_groups(ensemble: EnsembleResult, initial_state: int | None) -> lis
     return [int(initial_state)]
 
 
+def _run_sets(
+    ensemble: EnsembleResult, initial_state: int | None, pool: bool | None
+) -> list[tuple[int | None, np.ndarray]]:
+    """
+    The sets of runs over which the statistics are computed, as ``(group, runs)`` pairs: one per selected group, or a
+    single one with all runs (and group None) if the initial states are pooled (by default, for deterministic
+    ensembles).
+    """
+    if pool is None:
+        pool = ensemble.is_deterministic
+    if not pool:
+        return [
+            (g, ensemble.groups[g]) for g in _selected_groups(ensemble, initial_state)
+        ]
+    if initial_state is not None:
+        raise ValueError(
+            "initial_state cannot be combined with pooled initial states (pool_initial_states)."
+        )
+    return [(None, np.arange(ensemble.num_runs))]
+
+
+def _deterministic(
+    ensemble: EnsembleResult, plot_deterministic_approximation: bool
+) -> SimpleNamespace | None:
+    """The deterministic approximation to overlay, if requested (None for deterministic ensembles: they are it)."""
+    if not plot_deterministic_approximation or ensemble.is_deterministic:
+        return None
+    return ensemble.deterministic()
+
+
+def _runs_label(ensemble: EnsembleResult) -> str:
+    return "EDM-PDM" if ensemble.is_deterministic else "Finite agents"
+
+
+def _statistic(
+    statistic: str,
+    bands: Sequence[tuple[float, float]],
+    num_std: Sequence[float],
+) -> Callable[[np.ndarray], tuple[np.ndarray, list[tuple[np.ndarray, np.ndarray]]]]:
+    """
+    Make the function mapping ``values`` (shape ``(M, K)``) to the central line (shape ``(K,)``) and the bands (pairs
+    of lower and upper bounds, widest first) over the runs.
+    """
+    if statistic == "quantile":
+
+        def quantile_bands(values):
+            intervals = [tuple(np.quantile(values, b, axis=0)) for b in bands]
+            return np.median(values, axis=0), intervals
+
+        return quantile_bands
+
+    if statistic == "mean_std":
+        widths = sorted(np.asarray(num_std, dtype=float).reshape(-1), reverse=True)
+        if not widths or widths[-1] <= 0:
+            raise ValueError(
+                f"num_std must be a non-empty sequence of positive numbers, got {num_std}."
+            )
+
+        def mean_std_bands(values):
+            mean, std = values.mean(axis=0), values.std(axis=0)
+            return mean, [(mean - w * std, mean + w * std) for w in widths]
+
+        return mean_std_bands
+
+    raise ValueError(f"statistic must be 'quantile' or 'mean_std', got {statistic!r}.")
+
+
 def _group_color(g: int, G: int) -> str:
     return f"C{g % 10}" if G <= MAX_GROUP_COLORS else "black"
 
@@ -582,19 +685,17 @@ def _plot_bands(
     ax: Axes,
     t: np.ndarray,
     values: np.ndarray,
-    bands: Sequence[tuple[float, float]],
-    plot_median: bool,
+    stat: Callable,
+    plot_center: bool,
     color: str,
     label: str,
 ) -> None:
-    """Plot the median and quantile bands of ``values`` (shape ``(M, K)``) over ``t``."""
-    for j, (lower, upper) in enumerate(bands):
-        q_lower, q_upper = np.quantile(values, [lower, upper], axis=0)
-        ax.fill_between(
-            t, q_lower, q_upper, color=color, alpha=0.15 + 0.1 * j, linewidth=0
-        )
-    if plot_median:
-        ax.plot(t, np.median(values, axis=0), color=color, linewidth=1, label=label)
+    """Plot the central line and bands (see ``_statistic``) of ``values`` (shape ``(M, K)``) over ``t``."""
+    center, intervals = stat(values)
+    for j, (lower, upper) in enumerate(intervals):
+        ax.fill_between(t, lower, upper, color=color, alpha=0.15 + 0.1 * j, linewidth=0)
+    if plot_center:
+        ax.plot(t, center, color=color, linewidth=1, label=label)
     else:
         ax.fill_between([], [], [], color=color, alpha=0.3, label=label)
 

@@ -20,10 +20,11 @@ __all__ = [
 
 class EnsembleResult(EnsembleVisualizationMixin):
     """
-    Finite-agent simulations sampled at common times, e.g., from the same initial state with different seeds, or from
-    different initial states.
+    Simulations sampled at common times, e.g., from the same initial state with different seeds, or from different
+    initial states.
 
-    Ensembles are created by ``Simulator.run_ensemble``. The arrays have one leading axis for the runs, followed by the
+    Ensembles of finite-agent simulations are created by ``Simulator.run_ensemble``, and ensembles of the deterministic
+    approximation (EDM-PDM) from several initial states by ``Simulator.integrate_ensemble``. The arrays have one leading axis for the runs, followed by the
     layout of ``Simulator.log``:
 
     * ``ens.x[r]`` (shape ``(n, K)``) is run ``r``, with ``ens.x[r, i]`` the trajectory of strategy ``i``.
@@ -32,22 +33,26 @@ class EnsembleResult(EnsembleVisualizationMixin):
 
     Runs with the same initial state ``(x0, q0)`` form a **group** (``groups`` and ``group_index``). Statistics such as
     ``mean`` and ``quantile`` pool all runs; use ``subset`` for statistics per group, e.g.,
-    ``ens.subset(ens.groups[g]).mean()``. The plots show one group per initial state.
+    ``ens.subset(ens.groups[g]).mean()``. The plots show one group per initial state, unless the initial states are
+    pooled (the default for deterministic ensembles, see ``plot_ensemble_bands``).
 
     Attributes:
         t (np.ndarray): The sampling times, of shape ``(K,)``.
         x (np.ndarray): The strategic distributions, of shape ``(M, n, K)``.
         q (np.ndarray): The states of the PDM, of shape ``(M, d, K)``.
         p (np.ndarray): The payoffs, of shape ``(M, n, K)``.
-        seeds (np.ndarray): The seeds of the runs, of shape ``(M,)``. Run ``r`` can be reproduced with
-            ``sim.reset(ens.x0[r], ens.q0[r], seed=int(ens.seeds[r]))`` followed by ``sim.run(T_sim)``.
-        x0 (np.ndarray): The initial strategic distribution of each run, of shape ``(M, n, 1)``. This is the state
-            the run actually started from: ``reset`` rounds the requested state to a whole number of agents per
-            strategy.
+        seeds (np.ndarray | None): The seeds of the runs, of shape ``(M,)``, or None for deterministic ensembles. Run
+            ``r`` can be reproduced with ``sim.reset(ens.x0[r], ens.q0[r], seed=int(ens.seeds[r]))`` followed by
+            ``sim.run(T_sim)``.
+        x0 (np.ndarray): The initial strategic distribution of each run, of shape ``(M, n, 1)``. For finite-agent
+            runs, this is the state the run actually started from: ``reset`` rounds the requested state to a whole
+            number of agents per strategy.
         q0 (np.ndarray): The initial state of the PDM of each run, of shape ``(M, d, 1)``.
         groups (list[np.ndarray]): The indices of the runs of each group (runs with the same initial state), in order
             of first appearance.
         group_index (np.ndarray): The group of each run, of shape ``(M,)``.
+        is_deterministic (bool): Whether the runs are trajectories of the deterministic approximation (EDM-PDM)
+            rather than finite-agent simulations.
         simulator (Simulator): The simulator that produced the runs.
     """
 
@@ -58,9 +63,10 @@ class EnsembleResult(EnsembleVisualizationMixin):
         x: np.ndarray,
         q: np.ndarray,
         p: np.ndarray,
-        seeds: np.ndarray,
+        seeds: np.ndarray | None,
         x0: np.ndarray,
         q0: np.ndarray,
+        is_deterministic: bool = False,
     ) -> None:
         self.simulator = simulator
         self.t = t
@@ -70,6 +76,7 @@ class EnsembleResult(EnsembleVisualizationMixin):
         self.seeds = seeds
         self.x0 = x0
         self.q0 = q0
+        self.is_deterministic = is_deterministic
         self._deterministic = {}
 
         # Groups of runs with the same initial state, numbered in order of first appearance
@@ -187,9 +194,10 @@ class EnsembleResult(EnsembleVisualizationMixin):
             x=self.x[runs],
             q=self.q[runs],
             p=self.p[runs],
-            seeds=self.seeds[runs],
+            seeds=None if self.seeds is None else self.seeds[runs],
             x0=self.x0[runs],
             q0=self.q0[runs],
+            is_deterministic=self.is_deterministic,
         )
 
     @property
@@ -202,7 +210,7 @@ class EnsembleResult(EnsembleVisualizationMixin):
         The deterministic approximation (EDM-PDM) from the initial state of each run, sampled at the same times.
 
         The approximation is computed with ``Simulator.integrate_edm_pdm`` once per group (distinct initial state),
-        and cached.
+        and cached. For a deterministic ensemble, these are the runs themselves.
 
         Args:
             method (str): The integration method. Defaults to 'Radau'.
@@ -211,6 +219,8 @@ class EnsembleResult(EnsembleVisualizationMixin):
             SimpleNamespace: Fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q`` (shape ``(M, d, K)``),
             and ``p`` (shape ``(M, n, K)``), with the same layout as the ensemble.
         """
+        if self.is_deterministic:
+            return SimpleNamespace(t=self.t, x=self.x, q=self.q, p=self.p)
         if method not in self._deterministic:
             x = np.empty_like(self.x)
             q = np.empty_like(self.q)
