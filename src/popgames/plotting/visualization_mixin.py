@@ -138,7 +138,8 @@ class EnsembleVisualizationMixin:
 
         * ``'bands'``: median and quantile bands (or mean and standard deviation bands, ``statistic='mean_std'``) of
           ``x``, ``p``, and ``q`` over time, per initial state or pooled, in one panel or one panel per strategy, with
-          optional reference lines such as an equilibrium (``plot_ensemble_bands``).
+          optional reference lines such as an equilibrium, and of quantities derived from the state
+          (``plot_ensemble_bands``).
         * ``'kpi'``: the same bands for a KPI over time (``plot_ensemble_kpi``).
         * ``'ternary'``: trajectories of the runs on the simplex (``plot_ensemble_ternary``).
         * ``'final'``: distribution of the strategic distributions at the final (or a given) time

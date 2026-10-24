@@ -55,6 +55,7 @@ def plot_ensemble_bands(
     ncols: int = 3,
     reference: dict[str, np.ndarray] = None,
     plot_gne: bool = False,
+    derived: dict[str, Callable[[SimpleNamespace], np.ndarray]] = None,
     xlim: tuple[float, float] = None,
     ylim: dict[str, tuple[float, float]] = None,
     filename: str = None,
@@ -76,6 +77,10 @@ def plot_ensemble_bands(
     axis, e.g., for games with many strategies. Reference values, such as an equilibrium, are plotted as dashed
     horizontal lines in the color of each strategy, and the deterministic approximation as dotted lines.
 
+    Quantities derived from the state (``derived``), e.g., temperatures that depend on ``x``, are plotted like the
+    variables, after them. Their statistics are computed on the derived values of the runs (which differs from
+    applying the function to the statistics of ``x`` if the function is nonlinear).
+
     By default, the bands of a finite-agent ensemble only mix runs with the same initial state: if the ensemble has
     several initial states (groups), the figures are generated for each of them (or only for ``initial_state``). With
     ``pool_initial_states=True``, the bands mix all runs instead, e.g., to show how trajectories from many initial
@@ -85,6 +90,7 @@ def plot_ensemble_bands(
     Args:
         ensemble (EnsembleResult): The ensemble to plot.
         variables (Sequence[str], optional): The variables to plot, among 'x', 'p', and 'q'. Defaults to all of them.
+            Use ``[]`` to plot only the derived quantities.
         bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands
             (with ``statistic='quantile'``). Defaults to ((0.05, 0.95), (0.25, 0.75)).
         plot_median (bool, optional): Whether to plot the central line: the median, or the mean with
@@ -106,12 +112,16 @@ def plot_ensemble_bands(
         ncols (int, optional): Number of columns of the grid of panels (with ``layout='per_strategy'``). Defaults
             to 3.
         reference (dict[str, np.ndarray], optional): Reference values plotted as dashed horizontal lines, per
-            variable, e.g., ``{'x': x_star}`` with ``x_star`` of shape ``(n, 1)``. Defaults to None.
+            variable or derived quantity, e.g., ``{'x': x_star}`` with ``x_star`` of shape ``(n, 1)``. A scalar is
+            used for all entries, e.g., ``{'T': 30.0}``. Defaults to None.
         plot_gne (bool, optional): Whether to plot the GNE (if one is found) as the reference of ``x``. Cannot be
             combined with ``reference['x']``. Defaults to False.
+        derived (dict[str, Callable[[SimpleNamespace], np.ndarray]], optional): Quantities derived from the state, by
+            name (a short symbol, used in the labels, e.g., ``'T'``): functions mapping a run (see
+            ``EnsembleResult.apply``) to an array of shape ``(m, K)``, one row per entry. Defaults to None.
         xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.
-        ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable, e.g.,
-            ``{'x': (0, 1)}``. Defaults to None.
+        ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable or derived quantity,
+            e.g., ``{'x': (0, 1)}``. Defaults to None.
         filename (str, optional): If provided, each figure is saved with the variable and population (and the group,
             if there are several and they are not pooled) appended to the file name, e.g., ``bands_x_1.pdf`` or
             ``bands_x_1_x0_2.pdf``. Defaults to None.
@@ -121,7 +131,7 @@ def plot_ensemble_bands(
         show (bool, optional): Whether to show the figures. Defaults to True.
         ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per panel that would
             otherwise be generated, in the order of the initial states (unless pooled) and, for each one, of ``x``
-            (per population), ``p`` (per population), and ``q`` (and of the strategies, with
+            (per population), ``p`` (per population), ``q``, and the derived quantities (and of the entries, with
             ``layout='per_strategy'``), e.g., the array of axes from ``plt.subplots(2, 3)``. The figures are then
             neither saved, shown, nor closed. Defaults to None.
     """
@@ -131,9 +141,26 @@ def plot_ensemble_bands(
     stat = _statistic(statistic, bands, num_std)
     run_sets = _run_sets(ensemble, initial_state, pool_initial_states)
     det = _deterministic(ensemble, plot_deterministic_approximation)
-    references = make_reference_values(ensemble.simulator, reference, plot_gne)
     game = ensemble.simulator.population_game
     P = game.num_populations
+
+    # Values of each variable and derived quantity, of shape (M, rows, K)
+    data = {var: getattr(ensemble, var) for var in ("x", "p", "q")}
+    data_det = {var: getattr(det, var) for var in data} if det is not None else None
+    for name, function in (derived or {}).items():
+        if not isinstance(name, str) or name in data:
+            raise ValueError(
+                f"Derived quantities need a name other than 'x', 'p', and 'q', got {name!r}."
+            )
+        data[name] = ensemble.apply(function)
+        if det is not None:
+            data_det[name] = ensemble.apply(function, deterministic=True)
+    references = make_reference_values(
+        ensemble.simulator,
+        reference,
+        plot_gne,
+        derived_sizes={name: data[name].shape[1] for name in derived or {}},
+    )
 
     panels = []  # (variable, population, rows, labels, file suffix)
     for var in ("x", "p"):
@@ -149,13 +176,21 @@ def plot_ensemble_bands(
     if "q" in variables and d > 0:
         rows = list(range(d))
         panels.append(("q", None, rows, [rf"$q_{{{i + 1}}}$" for i in rows], "q"))
+    for name in derived or {}:
+        rows = list(range(data[name].shape[1]))
+        labels = (
+            [rf"${name}$"]
+            if len(rows) == 1
+            else [rf"${name}_{{{i + 1}}}$" for i in rows]
+        )
+        panels.append((name, None, rows, labels, name))
 
     per_strategy = layout == "per_strategy"
     num_panels = sum(len(rows) if per_strategy else 1 for _, _, rows, _, _ in panels)
     figures = Panels(ax, len(run_sets) * num_panels, filename)
     for g, runs in run_sets:
         for var, k, rows, labels, suffix in panels:
-            values = getattr(ensemble, var)[runs]
+            values = data[var][runs]
             if per_strategy:
                 fig, axes, edges = figures.new_grid(len(rows), ncols, FIGSIZE, figsize)
             else:
@@ -168,7 +203,7 @@ def plot_ensemble_bands(
                     axes[c], ensemble.t, values[:, row], stat, plot_median, color, label
                 )
                 if det is not None:
-                    center, _ = stat(getattr(det, var)[runs, row])
+                    center, _ = stat(data_det[var][runs, row])
                     axes[c].plot(ensemble.t, center, color=color, **DETERMINISTIC_STYLE)
                 if var in references:
                     axes[c].axhline(
