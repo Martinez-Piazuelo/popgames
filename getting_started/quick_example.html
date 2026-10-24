@@ -436,8 +436,15 @@ different seeds, or from different initial states:</p>
 </pre></div>
 </div>
 <p>The result holds the runs in arrays of shape <code class="docutils literal notranslate"><span class="pre">(runs,</span> <span class="pre">strategies,</span> <span class="pre">times)</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">ens.x</span></code>), with helpers such as
-<code class="docutils literal notranslate"><span class="pre">ens.mean()</span></code> and <code class="docutils literal notranslate"><span class="pre">ens.quantile(...)</span></code>, and plots of quantile bands, KPIs, ternary trajectories, and final states.
-See the usage examples in the documentation for more details.</p>
+<code class="docutils literal notranslate"><span class="pre">ens.mean()</span></code> and <code class="docutils literal notranslate"><span class="pre">ens.quantile(...)</span></code>, and plots of quantile bands, KPIs, ternary trajectories, and final states.</p>
+<p><code class="docutils literal notranslate"><span class="pre">integrate_ensemble</span></code> does the same for the deterministic approximation (EDM-PDM), e.g., to check that trajectories
+from many initial states converge. Its bands pool all initial states by default, and <code class="docutils literal notranslate"><span class="pre">statistic=&quot;mean_std&quot;</span></code> shows the
+mean and standard deviation instead of the median and quantiles:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ens</span> <span class="o">=</span> <span class="n">sim</span><span class="o">.</span><span class="n">integrate_ensemble</span><span class="p">(</span><span class="n">T_sim</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="n">x0s</span><span class="p">)</span>
+<span class="n">ens</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_type</span><span class="o">=</span><span class="s2">&quot;bands&quot;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">statistic</span><span class="o">=</span><span class="s2">&quot;mean_std&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See the usage examples in the documentation for more details.</p>
 </section>
 </section>
 

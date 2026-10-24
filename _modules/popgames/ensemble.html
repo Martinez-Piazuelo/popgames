@@ -277,10 +277,11 @@
 <a class="viewcode-back" href="../../api/simulator.html#popgames.ensemble.EnsembleResult">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EnsembleResult</span><span class="p">(</span><span class="n">EnsembleVisualizationMixin</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Finite-agent simulations sampled at common times, e.g., from the same initial state with different seeds, or from</span>
-<span class="sd">    different initial states.</span>
+<span class="sd">    Simulations sampled at common times, e.g., from the same initial state with different seeds, or from different</span>
+<span class="sd">    initial states.</span>
 
-<span class="sd">    Ensembles are created by ``Simulator.run_ensemble``. The arrays have one leading axis for the runs, followed by the</span>
+<span class="sd">    Ensembles of finite-agent simulations are created by ``Simulator.run_ensemble``, and ensembles of the deterministic</span>
+<span class="sd">    approximation (EDM-PDM) from several initial states by ``Simulator.integrate_ensemble``. The arrays have one leading axis for the runs, followed by the</span>
 <span class="sd">    layout of ``Simulator.log``:</span>
 
 <span class="sd">    * ``ens.x[r]`` (shape ``(n, K)``) is run ``r``, with ``ens.x[r, i]`` the trajectory of strategy ``i``.</span>
@@ -289,22 +290,26 @@
 
 <span class="sd">    Runs with the same initial state ``(x0, q0)`` form a **group** (``groups`` and ``group_index``). Statistics such as</span>
 <span class="sd">    ``mean`` and ``quantile`` pool all runs; use ``subset`` for statistics per group, e.g.,</span>
-<span class="sd">    ``ens.subset(ens.groups[g]).mean()``. The plots show one group per initial state.</span>
+<span class="sd">    ``ens.subset(ens.groups[g]).mean()``. The plots show one group per initial state, unless the initial states are</span>
+<span class="sd">    pooled (the default for deterministic ensembles, see ``plot_ensemble_bands``).</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        t (np.ndarray): The sampling times, of shape ``(K,)``.</span>
 <span class="sd">        x (np.ndarray): The strategic distributions, of shape ``(M, n, K)``.</span>
 <span class="sd">        q (np.ndarray): The states of the PDM, of shape ``(M, d, K)``.</span>
 <span class="sd">        p (np.ndarray): The payoffs, of shape ``(M, n, K)``.</span>
-<span class="sd">        seeds (np.ndarray): The seeds of the runs, of shape ``(M,)``. Run ``r`` can be reproduced with</span>
-<span class="sd">            ``sim.reset(ens.x0[r], ens.q0[r], seed=int(ens.seeds[r]))`` followed by ``sim.run(T_sim)``.</span>
-<span class="sd">        x0 (np.ndarray): The initial strategic distribution of each run, of shape ``(M, n, 1)``. This is the state</span>
-<span class="sd">            the run actually started from: ``reset`` rounds the requested state to a whole number of agents per</span>
-<span class="sd">            strategy.</span>
+<span class="sd">        seeds (np.ndarray | None): The seeds of the runs, of shape ``(M,)``, or None for deterministic ensembles. Run</span>
+<span class="sd">            ``r`` can be reproduced with ``sim.reset(ens.x0[r], ens.q0[r], seed=int(ens.seeds[r]))`` followed by</span>
+<span class="sd">            ``sim.run(T_sim)``.</span>
+<span class="sd">        x0 (np.ndarray): The initial strategic distribution of each run, of shape ``(M, n, 1)``. For finite-agent</span>
+<span class="sd">            runs, this is the state the run actually started from: ``reset`` rounds the requested state to a whole</span>
+<span class="sd">            number of agents per strategy.</span>
 <span class="sd">        q0 (np.ndarray): The initial state of the PDM of each run, of shape ``(M, d, 1)``.</span>
 <span class="sd">        groups (list[np.ndarray]): The indices of the runs of each group (runs with the same initial state), in order</span>
 <span class="sd">            of first appearance.</span>
 <span class="sd">        group_index (np.ndarray): The group of each run, of shape ``(M,)``.</span>
+<span class="sd">        is_deterministic (bool): Whether the runs are trajectories of the deterministic approximation (EDM-PDM)</span>
+<span class="sd">            rather than finite-agent simulations.</span>
 <span class="sd">        simulator (Simulator): The simulator that produced the runs.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -315,9 +320,10 @@
         <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">q</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">p</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
-        <span class="n">seeds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">seeds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">q0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">is_deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span> <span class="o">=</span> <span class="n">simulator</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">t</span>
@@ -327,6 +333,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="o">=</span> <span class="n">seeds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">q0</span> <span class="o">=</span> <span class="n">q0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_deterministic</span> <span class="o">=</span> <span class="n">is_deterministic</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deterministic</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># Groups of runs with the same initial state, numbered in order of first appearance</span>
@@ -458,9 +465,10 @@
             <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
             <span class="n">q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
             <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
-            <span class="n">seeds</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
+            <span class="n">seeds</span><span class="o">=</span><span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">seeds</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
             <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
             <span class="n">q0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q0</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
+            <span class="n">is_deterministic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_deterministic</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -476,7 +484,7 @@
 <span class="sd">        The deterministic approximation (EDM-PDM) from the initial state of each run, sampled at the same times.</span>
 
 <span class="sd">        The approximation is computed with ``Simulator.integrate_edm_pdm`` once per group (distinct initial state),</span>
-<span class="sd">        and cached.</span>
+<span class="sd">        and cached. For a deterministic ensemble, these are the runs themselves.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            method (str): The integration method. Defaults to &#39;Radau&#39;.</span>
@@ -485,6 +493,8 @@
 <span class="sd">            SimpleNamespace: Fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q`` (shape ``(M, d, K)``),</span>
 <span class="sd">            and ``p`` (shape ``(M, n, K)``), with the same layout as the ensemble.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_deterministic</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deterministic</span><span class="p">:</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
             <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q</span><span class="p">)</span>

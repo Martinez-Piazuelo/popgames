@@ -629,19 +629,7 @@
         <span class="n">check_type</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">expected_type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;T_sim&quot;</span><span class="p">)</span>
         <span class="n">check_scalar_value_bounds</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;T_sim&quot;</span><span class="p">,</span> <span class="n">strictly_positive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">t_eval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">t_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
-        <span class="n">t_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_eval</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span>
-            <span class="n">t_eval</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span>
-            <span class="ow">or</span> <span class="n">t_eval</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t_eval</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="ow">or</span> <span class="n">t_eval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
-            <span class="ow">or</span> <span class="n">t_eval</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">T_sim</span>
-        <span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim].&quot;</span>
-            <span class="p">)</span>
+        <span class="n">t_eval</span> <span class="o">=</span> <span class="n">_check_t_eval</span><span class="p">(</span><span class="n">t_eval</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">)</span>
 
         <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
         <span class="n">initial_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flattened_log</span><span class="p">()</span>
@@ -741,6 +729,97 @@
             <span class="n">seeds</span><span class="o">=</span><span class="n">seeds</span><span class="p">,</span>
             <span class="n">x0</span><span class="o">=</span><span class="n">x0_runs</span><span class="p">,</span>
             <span class="n">q0</span><span class="o">=</span><span class="n">q0_runs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Simulator.integrate_ensemble">
+<a class="viewcode-back" href="../../api/simulator.html#popgames.simulator.Simulator.integrate_ensemble">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">integrate_ensemble</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">T_sim</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">q0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">t_eval</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Radau&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EnsembleResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Integrate the deterministic approximation (EDM-PDM) from several initial states, e.g., to check that every</span>
+<span class="sd">        trajectory converges regardless of where it starts.</span>
+
+<span class="sd">        Each run ``r`` is ``integrate_edm_pdm`` from ``(x0_r, q0_r)`` over ``[0, T_sim]``, sampled at the times</span>
+<span class="sd">        ``t_eval``. The result is an ``EnsembleResult`` (with ``is_deterministic=True`` and no seeds), so it supports</span>
+<span class="sd">        the same statistics and plots as the ensembles of finite-agent simulations from ``run_ensemble``. For</span>
+<span class="sd">        instance, ``ens.plot(plot_type=&#39;bands&#39;, statistic=&#39;mean_std&#39;)`` shows the mean and standard deviation over the</span>
+<span class="sd">        initial states.</span>
+
+<span class="sd">        The initial states can be shared by all runs or given per run, as in ``run_ensemble``:</span>
+
+<span class="sd">        * ``x0``: an array of shape ``(n, 1)`` (or None) shared by all runs, or an array of shape ``(M, n, 1)`` with one</span>
+<span class="sd">          initial state per run (see ``popgames.utilities.sample_initial_states``). Similarly for ``q0``.</span>
+
+<span class="sd">        The number of runs ``M`` is the length of the per-run arguments (which must agree), or 1 if there are none.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            T_sim (float): The time horizon of each run.</span>
+<span class="sd">            x0 (np.ndarray, optional): The initial strategic distribution, of shape ``(n, 1)`` for all runs or</span>
+<span class="sd">                ``(M, n, 1)`` per run. Defaults to None, in which case the initial state of the last reset</span>
+<span class="sd">                (``log.x[:, [0]]``) is used.</span>
+<span class="sd">            q0 (np.ndarray, optional): The initial state of the PDM, of shape ``(d, 1)`` for all runs or</span>
+<span class="sd">                ``(M, d, 1)`` per run. Defaults to None, in which case the initial state of the last reset</span>
+<span class="sd">                (``log.q[:, [0]]``) is used.</span>
+<span class="sd">            t_eval (np.ndarray, optional): Non-decreasing times in ``[0, T_sim]`` at which the runs are sampled.</span>
+<span class="sd">                Defaults to None, in which case 201 evenly spaced times are used.</span>
+<span class="sd">            method (str, optional): The integration method (see ``integrate_edm_pdm``). Defaults to &#39;Radau&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            EnsembleResult: The sampled runs, with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q``</span>
+<span class="sd">            (shape ``(M, d, K)``), ``p`` (shape ``(M, n, K)``), ``x0`` (shape ``(M, n, 1)``), and ``q0`` (shape</span>
+<span class="sd">            ``(M, d, 1)``), where ``K`` is the number of sampling times.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check_type</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">expected_type</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">),</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;T_sim&quot;</span><span class="p">)</span>
+        <span class="n">check_scalar_value_bounds</span><span class="p">(</span><span class="n">arg</span><span class="o">=</span><span class="n">T_sim</span><span class="p">,</span> <span class="n">arg_name</span><span class="o">=</span><span class="s2">&quot;T_sim&quot;</span><span class="p">,</span> <span class="n">strictly_positive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">t_eval</span> <span class="o">=</span> <span class="n">_check_t_eval</span><span class="p">(</span><span class="n">t_eval</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">)</span>
+
+        <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
+        <span class="n">initial_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_flattened_log</span><span class="p">()</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">initial_state</span><span class="o">.</span><span class="n">x</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">if</span> <span class="n">x0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x0</span>
+        <span class="n">q0</span> <span class="o">=</span> <span class="n">initial_state</span><span class="o">.</span><span class="n">q</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">if</span> <span class="n">q0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">q0</span>
+        <span class="n">x0</span><span class="p">,</span> <span class="n">num_runs_x0</span> <span class="o">=</span> <span class="n">_shared_or_per_run</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;x0&quot;</span><span class="p">)</span>
+        <span class="n">q0</span><span class="p">,</span> <span class="n">num_runs_q0</span> <span class="o">=</span> <span class="n">_shared_or_per_run</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;q0&quot;</span><span class="p">)</span>
+        <span class="n">lengths</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="n">length</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">length</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;x0&quot;</span><span class="p">,</span> <span class="n">num_runs_x0</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;q0&quot;</span><span class="p">,</span> <span class="n">num_runs_q0</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">length</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">lengths</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inconsistent numbers of runs: </span><span class="si">{</span><span class="n">lengths</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">num_runs</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">lengths</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">x0_runs</span> <span class="o">=</span> <span class="n">x0</span> <span class="k">if</span> <span class="n">num_runs_x0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="p">(</span><span class="n">num_runs</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">q0_runs</span> <span class="o">=</span> <span class="n">q0</span> <span class="k">if</span> <span class="n">num_runs_q0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">q0</span><span class="p">,</span> <span class="p">(</span><span class="n">num_runs</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_runs</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_runs</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_runs</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">t_eval</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_runs</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrate_edm_pdm</span><span class="p">(</span>
+                <span class="n">t_span</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">T_sim</span><span class="p">)),</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">x0_runs</span><span class="p">[</span><span class="n">r</span><span class="p">],</span>
+                <span class="n">q0</span><span class="o">=</span><span class="n">q0_runs</span><span class="p">[</span><span class="n">r</span><span class="p">],</span>
+                <span class="n">t_eval</span><span class="o">=</span><span class="n">t_eval</span><span class="p">,</span>
+                <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">x</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">q</span><span class="p">[</span><span class="n">r</span><span class="p">],</span> <span class="n">p</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">q</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">p</span>
+
+        <span class="k">return</span> <span class="n">EnsembleResult</span><span class="p">(</span>
+            <span class="n">simulator</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">t</span><span class="o">=</span><span class="n">t_eval</span><span class="p">,</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+            <span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">,</span>
+            <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">,</span>
+            <span class="n">seeds</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">x0</span><span class="o">=</span><span class="n">x0_runs</span><span class="p">,</span>
+            <span class="n">q0</span><span class="o">=</span><span class="n">q0_runs</span><span class="p">,</span>
+            <span class="n">is_deterministic</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -1331,6 +1410,24 @@
             <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flattened_log</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_t_eval</span><span class="p">(</span><span class="n">t_eval</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate the sampling times of an ensemble (201 evenly spaced times in ``[0, T_sim]`` if None).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">t_eval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">t_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">T_sim</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+    <span class="n">t_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">t_eval</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">t_eval</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span>
+        <span class="ow">or</span> <span class="n">t_eval</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">t_eval</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">t_eval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+        <span class="ow">or</span> <span class="n">t_eval</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">T_sim</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim].&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">t_eval</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_shared_or_per_run</span><span class="p">(</span>
