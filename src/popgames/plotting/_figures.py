@@ -148,3 +148,66 @@ class Panels:
             plt.show()
         else:
             plt.close(fig)
+
+
+def ternary_legend(tax, handles: list, fontsize: int, legend: bool) -> None:
+    """
+    Draw the legend of a ternary plot from its handles, or, if ``legend`` is False, attach the handles to the axes
+    without drawing them, so that ``ax.get_legend_handles_labels()`` (and ``add_shared_legend``) can collect them.
+    """
+    if legend:
+        tax.legend(handles=handles, loc=1, fontsize=fontsize)
+        return
+    ax = tax.get_axes()
+    for handle in handles:
+        ax.add_line(handle)
+
+
+def add_shared_legend(
+    fig: Figure,
+    axes: Axes | Sequence[Axes] | None = None,
+    loc: str = "upper center",
+    ncol: int | None = None,
+    fontsize: int | None = None,
+    **kwargs,
+):
+    """
+    Draw one legend for several plots of a figure, e.g., ternary plots drawn with ``ax=...`` and ``legend=False``.
+
+    The entries of all axes are collected (``ax.get_legend_handles_labels()``), keeping the first entry of each label,
+    and drawn as a figure legend. Legends already drawn inside the axes are left as they are.
+
+    Args:
+        fig (Figure): The figure.
+        axes (Axes | Sequence[Axes], optional): The axes whose entries are collected. Defaults to None, in which case
+            all the axes of the figure are used.
+        loc (str, optional): Location of the legend (see ``matplotlib.figure.Figure.legend``). Defaults to
+            'upper center'.
+        ncol (int, optional): Number of columns. Defaults to None, in which case all entries are in one row.
+        fontsize (int, optional): Font size. Defaults to None, in which case Matplotlib's default is used.
+        **kwargs: Further keyword arguments of ``matplotlib.figure.Figure.legend``, e.g., ``bbox_to_anchor``.
+
+    Returns:
+        matplotlib.legend.Legend: The legend.
+    """
+    if axes is None:
+        axes = fig.axes
+    elif isinstance(axes, Axes):
+        axes = [axes]
+    else:
+        axes = list(np.ravel(np.array(axes, dtype=object)))
+
+    entries = {}
+    for ax in axes:
+        for handle, label in zip(*ax.get_legend_handles_labels()):
+            entries.setdefault(label, handle)
+    if not entries:
+        raise ValueError("No legend entries were found in the axes.")
+    return fig.legend(
+        list(entries.values()),
+        list(entries.keys()),
+        loc=loc,
+        ncol=ncol or len(entries),
+        fontsize=fontsize,
+        **kwargs,
+    )

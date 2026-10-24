@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import matplotlib.pyplot as plt
 import numpy as np
 
-from popgames.plotting._figures import Panels
+from popgames.plotting._figures import Panels, ternary_legend
 from popgames.plotting._plot_config import (
     FIGSIZE,
     FIGSIZE_TERNARY,
@@ -51,10 +51,13 @@ def plot_ensemble_bands(
     pool_initial_states: bool = None,
     statistic: Literal["quantile", "mean_std"] = "quantile",
     num_std: Sequence[float] = DEFAULT_NUM_STD,
+    linewidth: float = 1.0,
+    band_alpha: float | Sequence[float] = None,
     layout: Literal["joint", "per_strategy"] = "joint",
     ncols: int = 3,
     reference: dict[str, np.ndarray] = None,
     plot_gne: bool = False,
+    reference_style: dict = None,
     derived: dict[str, Callable[[SimpleNamespace], np.ndarray]] = None,
     xlim: tuple[float, float] = None,
     ylim: dict[str, tuple[float, float]] = None,
@@ -63,6 +66,7 @@ def plot_ensemble_bands(
     fontsize: int = FONTSIZE,
     show: bool = True,
     ax: Axes | Sequence[Axes] = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the median and quantile bands (or the mean and standard deviation bands) of the runs over time.
@@ -107,6 +111,9 @@ def plot_ensemble_bands(
             region, e.g., become negative. Defaults to 'quantile'.
         num_std (Sequence[float], optional): The widths of the bands in standard deviations (with
             ``statistic='mean_std'``). Defaults to (1,).
+        linewidth (float, optional): Line width of the central line. Defaults to 1.
+        band_alpha (float | Sequence[float], optional): Opacity of the bands: one value for all of them, or one per
+            band (widest first). Defaults to None, in which case 0.15 for the widest band, 0.25 for the next one, etc.
         layout (str, optional): 'joint' for one panel per figure, or 'per_strategy' for one panel per strategy.
             Defaults to 'joint'.
         ncols (int, optional): Number of columns of the grid of panels (with ``layout='per_strategy'``). Defaults
@@ -116,6 +123,9 @@ def plot_ensemble_bands(
             used for all entries, e.g., ``{'T': 30.0}``. Defaults to None.
         plot_gne (bool, optional): Whether to plot the GNE (if one is found) as the reference of ``x``. Cannot be
             combined with ``reference['x']``. Defaults to False.
+        reference_style (dict, optional): Keyword arguments of ``matplotlib.axes.Axes.axhline`` overriding the style
+            of the reference lines (dashed, in the color of each entry), e.g.,
+            ``{'color': 'black', 'linestyle': 'dotted'}``. Defaults to None.
         derived (dict[str, Callable[[SimpleNamespace], np.ndarray]], optional): Quantities derived from the state, by
             name (a short symbol, used in the labels, e.g., ``'T'``): functions mapping a run (see
             ``EnsembleResult.apply``) to an array of shape ``(m, K)``, one row per entry. Defaults to None.
@@ -134,6 +144,9 @@ def plot_ensemble_bands(
             (per population), ``p`` (per population), ``q``, and the derived quantities (and of the entries, with
             ``layout='per_strategy'``), e.g., the array of axes from ``plt.subplots(2, 3)``. The figures are then
             neither saved, shown, nor closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``popgames.plotting.add_shared_legend``). Defaults to True.
     """
     _check_variables(variables)
     if layout not in ("joint", "per_strategy"):
@@ -200,14 +213,25 @@ def plot_ensemble_bands(
             for c, (row, label) in enumerate(zip(rows, labels)):
                 color = f"C{c % 10}"
                 _plot_bands(
-                    axes[c], ensemble.t, values[:, row], stat, plot_median, color, label
+                    axes[c],
+                    ensemble.t,
+                    values[:, row],
+                    stat,
+                    plot_median,
+                    color,
+                    label,
+                    linewidth,
+                    band_alpha,
                 )
                 if det is not None:
                     center, _ = stat(data_det[var][runs, row])
                     axes[c].plot(ensemble.t, center, color=color, **DETERMINISTIC_STYLE)
                 if var in references:
                     axes[c].axhline(
-                        references[var][row], color=color, **REFERENCE_STYLE
+                        references[var][row],
+                        **(
+                            REFERENCE_STYLE | {"color": color} | (reference_style or {})
+                        ),
                     )
 
             group_title = None
@@ -242,7 +266,8 @@ def plot_ensemble_bands(
                     ax.set_ylabel(ylabel, fontsize=fontsize)
             figures.tight_layout(fig)
             if not per_strategy:
-                axes[0].legend(fontsize=fontsize, ncol=len(rows))
+                if legend:
+                    axes[0].legend(fontsize=fontsize, ncol=len(rows))
             figures.finish(fig, filename, suffix, show)
 
 
@@ -255,6 +280,8 @@ def plot_ensemble_kpi(
     pool_initial_states: bool = None,
     statistic: Literal["quantile", "mean_std"] = "quantile",
     num_std: Sequence[float] = DEFAULT_NUM_STD,
+    linewidth: float = 1.0,
+    band_alpha: float | Sequence[float] = None,
     xlim: tuple[float, float] = None,
     ylim: tuple[float, float] = None,
     yscale: str = "linear",
@@ -263,6 +290,7 @@ def plot_ensemble_kpi(
     fontsize: int = FONTSIZE,
     show: bool = True,
     ax: Axes = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the median and quantile bands (or the mean and standard deviation bands) of a KPI over time.
@@ -288,6 +316,9 @@ def plot_ensemble_kpi(
         statistic (str, optional): 'quantile' or 'mean_std', see ``plot_ensemble_bands``. Defaults to 'quantile'.
         num_std (Sequence[float], optional): The widths of the bands in standard deviations (with
             ``statistic='mean_std'``). Defaults to (1,).
+        linewidth (float, optional): Line width of the central line. Defaults to 1.
+        band_alpha (float | Sequence[float], optional): Opacity of the bands: one value for all of them, or one per
+            band (widest first). Defaults to None, in which case 0.15 for the widest band, 0.25 for the next one, etc.
         xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.
         ylim (tuple[float, float], optional): Limits of the vertical axis. Defaults to None.
         yscale (str, optional): Scale of the vertical axis. Defaults to 'linear'.
@@ -297,6 +328,9 @@ def plot_ensemble_kpi(
         show (bool, optional): Whether to show the figure. Defaults to True.
         ax (Axes, optional): Existing ``matplotlib`` axes to draw on. The figure is then neither saved, shown, nor
             closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``popgames.plotting.add_shared_legend``). Defaults to True.
     """
     figures = Panels(ax, 1, filename)
     stat = _statistic(statistic, bands, num_std)
@@ -337,7 +371,17 @@ def plot_ensemble_kpi(
             if G == 1
             else (rf"$\mathbf{{x}}_0$ #{g + 1}" if G <= MAX_GROUP_COLORS else None)
         )
-        _plot_bands(ax, ensemble.t, kpi[runs], stat, plot_median, color, label)
+        _plot_bands(
+            ax,
+            ensemble.t,
+            kpi[runs],
+            stat,
+            plot_median,
+            color,
+            label,
+            linewidth,
+            band_alpha,
+        )
         if det is not None:
             ax.plot(
                 ensemble.t,
@@ -355,7 +399,10 @@ def plot_ensemble_kpi(
         ax.set_ylim(ylim)
     ax.set_yscale(yscale)
     _format_time_axes(ax, r"$\operatorname{KPI}(t)$", fontsize)
-    _legend(figures, ax, fontsize, outside=G > 1)
+    if legend:
+        _legend(figures, ax, fontsize, outside=G > 1)
+    else:
+        figures.tight_layout(fig)
     figures.finish(fig, filename, None, show)
 
 
@@ -371,6 +418,7 @@ def plot_ensemble_ternary(
     fontsize: int = FONTSIZE,
     show: bool = True,
     ax: Axes | Sequence[Axes] = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the trajectories of the runs on the simplex, as semi-transparent lines.
@@ -394,6 +442,9 @@ def plot_ensemble_ternary(
         show (bool, optional): Whether to show the figures. Defaults to True.
         ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population with 3
             strategies. The figures are then neither saved, shown, nor closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``popgames.plotting.add_shared_legend``). Defaults to True.
     """
     populations = list(_ternary_populations(ensemble))
     figures = Panels(ax, len(populations), filename)
@@ -476,7 +527,7 @@ def plot_ensemble_ternary(
         if gne is not None:
             handles.append(_plot_gne(tax, gne[s], ensemble))
 
-        _format_ternary(tax, handles, fontsize)
+        _format_ternary(tax, handles, fontsize, legend)
         figures.finish(fig, filename, suffix, show)
 
 
@@ -492,6 +543,7 @@ def plot_ensemble_final(
     fontsize: int = FONTSIZE,
     show: bool = True,
     ax: Axes | Sequence[Axes] = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the distribution of the strategic distributions of the runs at a given time (the final time by default).
@@ -521,6 +573,9 @@ def plot_ensemble_final(
         ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would
             otherwise be generated, in the order of the populations (and, for histograms with several initial
             states, of the strategies). The figures are then neither saved, shown, nor closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``popgames.plotting.add_shared_legend``). Defaults to True.
     """
     G = ensemble.num_groups
     game = ensemble.simulator.population_game
@@ -591,7 +646,7 @@ def plot_ensemble_final(
                 )
             if gne is not None:
                 handles.append(_plot_gne(tax, gne[s], ensemble))
-            _format_ternary(tax, handles, fontsize)
+            _format_ternary(tax, handles, fontsize, legend)
             tax.set_title(rf"$t = {snapshot.t:g}$", fontsize=fontsize, pad=20)
             figures.finish(fig, filename, suffix, show)
             continue
@@ -615,7 +670,8 @@ def plot_ensemble_final(
                     ax.axvline(gne[i], color=color, linestyle="dashed", linewidth=1)
             _format_histogram(ax, r"$\mathbf{x}(t)$", snapshot.t, fontsize)
             figures.tight_layout(fig)
-            ax.legend(fontsize=fontsize, ncol=len(strategies))
+            if legend:
+                ax.legend(fontsize=fontsize, ncol=len(strategies))
             figures.finish(fig, filename, suffix, show)
             continue
 
@@ -640,7 +696,7 @@ def plot_ensemble_final(
                 ax.axvline(gne[i], color="tab:red", linestyle="dashed", linewidth=1)
             _format_histogram(ax, _strategy_label("x", i, k, P), snapshot.t, fontsize)
             figures.tight_layout(fig)
-            if G <= MAX_GROUP_COLORS:
+            if legend and G <= MAX_GROUP_COLORS:
                 _legend(figures, ax, fontsize, outside=True)
             strategy_suffix = f"x_{i + 1}"
             figures.finish(
@@ -742,6 +798,25 @@ def _statistic(
     raise ValueError(f"statistic must be 'quantile' or 'mean_std', got {statistic!r}.")
 
 
+def _band_alphas(
+    band_alpha: float | Sequence[float] | None, num_bands: int
+) -> list[float]:
+    """
+    The opacity of each band, widest first: 0.15, 0.25, ... by default, the same for all bands if a scalar is given,
+    or one per band.
+    """
+    if band_alpha is None:
+        return [0.15 + 0.1 * j for j in range(num_bands)]
+    alphas = np.asarray(band_alpha, dtype=float).reshape(-1)
+    if alphas.size == 1:
+        alphas = np.repeat(alphas, num_bands)
+    if alphas.size != num_bands or np.any((alphas < 0) | (alphas > 1)):
+        raise ValueError(
+            f"band_alpha must be a number in [0, 1] or one per band ({num_bands}), got {band_alpha}."
+        )
+    return alphas.tolist()
+
+
 def _group_color(g: int, G: int) -> str:
     return f"C{g % 10}" if G <= MAX_GROUP_COLORS else "black"
 
@@ -779,13 +854,17 @@ def _plot_bands(
     plot_center: bool,
     color: str,
     label: str,
+    linewidth: float = 1.0,
+    band_alpha: float | Sequence[float] | None = None,
 ) -> None:
     """Plot the central line and bands (see ``_statistic``) of ``values`` (shape ``(M, K)``) over ``t``."""
     center, intervals = stat(values)
-    for j, (lower, upper) in enumerate(intervals):
-        ax.fill_between(t, lower, upper, color=color, alpha=0.15 + 0.1 * j, linewidth=0)
+    for (lower, upper), alpha in zip(
+        intervals, _band_alphas(band_alpha, len(intervals))
+    ):
+        ax.fill_between(t, lower, upper, color=color, alpha=alpha, linewidth=0)
     if plot_center:
-        ax.plot(t, center, color=color, linewidth=1, label=label)
+        ax.plot(t, center, color=color, linewidth=linewidth, label=label)
     else:
         ax.fill_between([], [], [], color=color, alpha=0.3, label=label)
 
@@ -845,10 +924,10 @@ def _plot_gne(tax, gne_k: np.ndarray, ensemble: EnsembleResult) -> plt.Line2D:
     )
 
 
-def _format_ternary(tax, handles: list, fontsize: int) -> None:
+def _format_ternary(tax, handles: list, fontsize: int, legend: bool = True) -> None:
     tax.top_corner_label(r"$e_1$", fontsize=fontsize)
     tax.left_corner_label(r"$e_2$", fontsize=fontsize)
     tax.right_corner_label(r"$e_3$", fontsize=fontsize)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis("off")
-    tax.legend(handles=handles, loc=1, fontsize=fontsize)
+    ternary_legend(tax, handles, fontsize, legend)
