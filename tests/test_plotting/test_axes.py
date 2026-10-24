@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from popgames.payoff_mechanism import PayoffMechanism
+from popgames.plotting import add_shared_legend
 from popgames.population_game import PopulationGame, SinglePopulationGame
 from popgames.revision_process import PoissonRevisionProcess
 from popgames.revision_protocol import Smith
@@ -126,6 +127,38 @@ class TestAxes(unittest.TestCase):
         for ax in axes[0]:
             dashed = [line for line in ax.lines if line.get_linestyle() == "--"]
             np.testing.assert_allclose(dashed[0].get_ydata(), 1 / 3, atol=1e-3)
+
+    def test_ternary_plots_can_share_one_legend(self) -> None:
+        fig, axes = plt.subplots(1, 3)
+        for ax in axes:
+            self.sim.plot(
+                plot_type="ternary",
+                ax=ax,
+                legend=False,
+                plot_deterministic_approximation=True,
+            )
+        for ax in axes:
+            self.assertIsNone(ax.get_legend())
+        self.assertEqual(
+            axes[0].get_legend_handles_labels()[1],
+            [r"$\operatorname{NE}$", r"$\mathbf{x}(t)$", r"$\mathbf{x}(t)$ (EDM)"],
+        )
+        legend = add_shared_legend(fig, fontsize=7)
+        self.assertEqual(fig.legends, [legend])
+        self.assertEqual(len(legend.get_texts()), 3)  # Entries of the 3 panels merged
+
+    def test_legend_false_on_time_plots(self) -> None:
+        fig, axes = plt.subplots(1, 3)
+        self.sim.plot(plot_type="kpi", ax=axes[0], legend=False)
+        self.sim.plot(plot_type="univariate", ax=axes[1:], legend=False)
+        self.assertTrue(all(ax.get_legend() is None for ax in axes))
+        legend = add_shared_legend(fig, axes=axes[1])
+        self.assertEqual(len(legend.get_texts()), 3)  # x_1, x_2, x_3
+
+    def test_shared_legend_without_entries_raises(self) -> None:
+        fig, ax = plt.subplots()
+        with self.assertRaises(ValueError):
+            add_shared_legend(fig)
 
     def test_ternary_multi_population_draws_one_axes_per_population(self) -> None:
         sim = _make_two_population_simulator()

@@ -1057,5 +1057,65 @@ class TestDerivedQuantities(unittest.TestCase):
             )
 
 
+class TestBandStyleAndLegends(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.ens = _make_rps_simulator().integrate_ensemble(
+            T_sim=2, x0=_X0S, t_eval=np.linspace(0, 2, 11)
+        )
+
+    def setUp(self) -> None:
+        plt.close("all")
+        self.addCleanup(plt.close, "all")
+
+    def test_line_width_and_band_opacity(self) -> None:
+        fig, ax = plt.subplots()
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            bands=[(0.0, 1.0), (0.25, 0.75)],
+            linewidth=2.5,
+            band_alpha=[0.1, 0.4],
+            ax=ax,
+        )
+        self.assertEqual({line.get_linewidth() for line in ax.lines}, {2.5})
+        self.assertEqual([band.get_alpha() for band in ax.collections[:2]], [0.1, 0.4])
+
+        fig, ax = plt.subplots()
+        self.ens.plot(
+            plot_type="kpi", kpi_function=lambda run: run.x[0], band_alpha=0.3, ax=ax
+        )
+        self.assertEqual({band.get_alpha() for band in ax.collections}, {0.3})
+
+    def test_reference_style(self) -> None:
+        fig, ax = plt.subplots()
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            reference={"x": 1 / 3},
+            reference_style={"color": "black", "linestyle": "dotted"},
+            ax=ax,
+        )
+        refs = [line for line in ax.lines if line.get_linestyle() == ":"]
+        self.assertEqual(len(refs), 3)
+        self.assertEqual({line.get_color() for line in refs}, {"black"})
+
+    def test_invalid_band_alpha(self) -> None:
+        for band_alpha in ([0.1, 0.2, 0.3], 1.5):
+            with self.assertRaises(ValueError):
+                self.ens.plot(plot_type="bands", band_alpha=band_alpha, show=False)
+
+    def test_legend_false_keeps_entries(self) -> None:
+        fig, axes = plt.subplots(1, 3)
+        self.ens.plot(plot_type="bands", variables=["x"], legend=False, ax=axes[0])
+        self.ens.plot(plot_type="ternary", plot_gne=False, legend=False, ax=axes[1])
+        self.ens.plot(plot_type="final", plot_gne=False, legend=False, ax=axes[2])
+        self.assertTrue(all(ax.get_legend() is None for ax in axes))
+        self.assertEqual(len(axes[0].get_legend_handles_labels()[1]), 3)
+        self.assertEqual(
+            axes[1].get_legend_handles_labels()[1], ["EDM-PDM", "Initial states"]
+        )
+
+
 if __name__ == "__main__":
     unittest.main()  # pragma: no cover

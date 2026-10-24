@@ -7,7 +7,7 @@ import matplotlib
 import numpy as np
 from ternary.helpers import simplex_iterator
 
-from popgames.plotting._figures import Panels
+from popgames.plotting._figures import Panels, ternary_legend
 from popgames.plotting._plot_config import (
     FIGSIZE,
     FONTSIZE,
@@ -129,13 +129,15 @@ def plot_kpi_over_time(
         simulator (Simulator): The simulator object holding the data to plot.
         plot_deterministic_approximation (bool, optional): Whether to plot the KPI under the deterministic
             approximation. Defaults to False.
-        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``kpi_function``, or ``ax``
-            to draw on an existing ``matplotlib`` axes (the figure is then neither saved, shown, nor closed).
+        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``kpi_function``, ``ax``
+            to draw on an existing ``matplotlib`` axes (the figure is then neither saved, shown, nor closed), or
+            ``legend=False`` to leave the legend out (see ``popgames.plotting.add_shared_legend``).
     """
     filename = kwargs.get("filename", None)
     figsize = kwargs.get("figsize", FIGSIZE)
     fontsize = kwargs.get("fontsize", FONTSIZE)
     show = kwargs.get("show", True)
+    legend = kwargs.get("legend", True)
     panels = Panels(kwargs.get("ax", None), 1, filename)
 
     xlim = kwargs.get("xlim", None)
@@ -184,7 +186,7 @@ def plot_kpi_over_time(
     _format_time_axes(ax, r"$\operatorname{KPI}(t)$", fontsize)
     panels.tight_layout(fig)
 
-    if plot_deterministic_approximation:
+    if legend and plot_deterministic_approximation:
         ax.legend(fontsize=fontsize)
 
     panels.finish(fig, filename, None, show)
@@ -210,13 +212,15 @@ def plot_univariate_trajectories_joint(
             ``matplotlib`` axes: one per plot, in the order ``x`` (per population), ``p`` (per population), and ``q``
             (if ``d > 0``). The figures are then neither saved, shown, nor closed. ``reference`` (values per
             variable, e.g., ``{'x': x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed
-            horizontal lines, see ``make_reference_values``.
+            horizontal lines, see ``make_reference_values``. ``legend=False`` leaves the legends out (see
+            ``popgames.plotting.add_shared_legend``).
     """
 
     filename = kwargs.get("filename", None)
     figsize = kwargs.get("figsize", FIGSIZE)
     fontsize = kwargs.get("fontsize", FONTSIZE)
     show = kwargs.get("show", True)
+    legend = kwargs.get("legend", True)
 
     xlim = kwargs.get("xlim", None)
     ylim = kwargs.get("ylim", None)
@@ -283,7 +287,8 @@ def plot_univariate_trajectories_joint(
             _format_time_axes(ax, ylabel, fontsize)
             panels.tight_layout(fig)
 
-            ax.legend(fontsize=fontsize, ncol=nk)
+            if legend:
+                ax.legend(fontsize=fontsize, ncol=nk)
             panels.finish(fig, filename, f"{var}_{k + 1}", show)
 
     if d > 0:
@@ -306,7 +311,8 @@ def plot_univariate_trajectories_joint(
         _format_time_axes(ax, r"$\mathbf{q}(t)$", fontsize)
         panels.tight_layout(fig)
 
-        ax.legend(fontsize=fontsize, ncol=d)
+        if legend:
+            ax.legend(fontsize=fontsize, ncol=d)
         panels.finish(fig, filename, "q", show)
 
 
@@ -330,13 +336,15 @@ def plot_univariate_trajectories_split(
             ``matplotlib`` axes: one per plot, in the order ``x_1, ..., x_n``, ``p_1, ..., p_n``, and
             ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed. ``reference`` (values per
             variable, e.g., ``{'x': x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed
-            horizontal lines, see ``make_reference_values``.
+            horizontal lines, see ``make_reference_values``. ``legend=False`` leaves the legends out (see
+            ``popgames.plotting.add_shared_legend``).
     """
 
     filename = kwargs.get("filename", None)
     figsize = kwargs.get("figsize", FIGSIZE)
     fontsize = kwargs.get("fontsize", FONTSIZE)
     show = kwargs.get("show", True)
+    legend = kwargs.get("legend", True)
 
     xlim = kwargs.get("xlim", None)
     ylim = kwargs.get("ylim", None)
@@ -394,7 +402,7 @@ def plot_univariate_trajectories_split(
                 )
                 panels.tight_layout(fig)
 
-                if plot_deterministic_approximation:
+                if legend and plot_deterministic_approximation:
                     ax.legend(fontsize=fontsize)
 
                 panels.finish(fig, filename, f"{var}_{idx + 1}_{k + 1}", show)
@@ -428,7 +436,7 @@ def plot_univariate_trajectories_split(
         _format_time_axes(ax, rf"$q_{{{i + 1}}}(t)$", fontsize)
         panels.tight_layout(fig)
 
-        if plot_deterministic_approximation:
+        if legend and plot_deterministic_approximation:
             ax.legend(fontsize=fontsize)
 
         panels.finish(fig, filename, f"q{i + 1}", show)
@@ -486,6 +494,9 @@ def plot_ternary_trajectories(
         show (bool): Whether to show the figure(s). Defaults to True.
         ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population (a single
             one for single-population games). The figures are then neither saved, shown, nor closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend in the plot(s). If False, its entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``add_shared_legend``). Defaults to True.
     """
 
     filename = kwargs.get("filename", None)
@@ -493,6 +504,7 @@ def plot_ternary_trajectories(
     fontsize = kwargs.get("fontsize", FONTSIZE)
     show = kwargs.get("show", True)
     ax = kwargs.get("ax", None)
+    legend = kwargs.get("legend", True)
 
     if simulator.population_game.num_populations > 1:
         if potential_function is not None:
@@ -509,6 +521,7 @@ def plot_ternary_trajectories(
             filename=filename,
             show=show,
             ax=ax,
+            legend=legend,
         )
 
     else:
@@ -530,6 +543,7 @@ def plot_ternary_trajectories(
             filename=filename,
             show=show,
             ax=ax,
+            legend=legend,
         )
 
 
@@ -543,6 +557,7 @@ def make_ternary_plot_single_population(
     filename: str = None,
     show: bool = True,
     ax: Axes = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the trajectory of a single population in a ternary plot.
@@ -560,6 +575,9 @@ def make_ternary_plot_single_population(
         show (bool, optional): Whether to show the figure. Defaults to True.
         ax (Axes, optional): Existing ``matplotlib`` axes to draw on. The figure is then neither saved, shown, nor
             closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend in the plot. If False, its entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``add_shared_legend``). Defaults to True.
     """
     panels = Panels(ax, 1, filename)
 
@@ -650,7 +668,6 @@ def make_ternary_plot_single_population(
             linewidth=1,
             linestyle="dashed",
             color="tab:red",
-            label=r"$\mathcal{X}$" if num_constraints > 0 else None,
         )
     else:
         # TODO: IMPLEMENT THIS
@@ -660,7 +677,7 @@ def make_ternary_plot_single_population(
     tax.boundary(linewidth=1.0)
 
     # Plot trajectory
-    tax.plot(points, linewidth=1, color="black", label=r"$\mathbf{x}(t)$")
+    tax.plot(points, linewidth=1, color="black")
 
     # Plot EDM trajectory (if enabled)
     if plot_edm_trajectory:
@@ -669,7 +686,6 @@ def make_ternary_plot_single_population(
             linewidth=1.5,
             linestyle="dotted",
             color="magenta",
-            label=r"$\mathbf{x}(t)$ (EDM)",
         )
 
     # Plot GNE (if available)
@@ -681,9 +697,6 @@ def make_ternary_plot_single_population(
             color="tab:red",
             linestyle="",
             linewidth=0,
-            label=r"$\operatorname{GNE}$"
-            if num_constraints > 0
-            else r"$\operatorname{NE}$",
         )
 
     # Plot formating
@@ -739,7 +752,7 @@ def make_ternary_plot_single_population(
     tax.right_corner_label(r"$e_3$", fontsize=fontsize)
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis("off")
-    tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
+    ternary_legend(tax, custom_legend, fontsize, legend)
     panels.finish(figure, filename, None, show)
 
 
@@ -752,6 +765,7 @@ def make_ternary_plot_multi_population(
     filename=None,
     show: bool = True,
     ax: Axes | Sequence[Axes] = None,
+    legend: bool = True,
 ) -> None:
     """
     Plot the trajectory of a multiple population in multiple ternary plots.
@@ -768,6 +782,9 @@ def make_ternary_plot_multi_population(
         show (bool, optional): Whether to show the figure. Defaults to True.
         ax (Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population. The figures are
             then neither saved, shown, nor closed. Defaults to None.
+        legend (bool, optional): Whether to draw the legend in the plot. If False, its entries remain available through
+            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see
+            ``add_shared_legend``). Defaults to True.
     """
     panels = Panels(ax, simulator.population_game.num_populations, filename)
 
@@ -843,7 +860,6 @@ def make_ternary_plot_multi_population(
             points[k],
             linewidth=1,
             color="black",
-            label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$",
         )
 
         # Plot EDM trajectory (if enabled)
@@ -853,7 +869,6 @@ def make_ternary_plot_multi_population(
                 linewidth=1.5,
                 linestyle="dotted",
                 color="magenta",
-                label=rf"$\mathbf{{x}}^{{{k + 1}}}(t)$ (EDM)",
             )
 
         # Plot GNE (if available)
@@ -865,9 +880,6 @@ def make_ternary_plot_multi_population(
                 color="tab:red",
                 linestyle="",
                 linewidth=0,
-                label=r"$\operatorname{GNE}$"
-                if num_constraints > 0
-                else r"$\operatorname{NE}$",
             )
 
         # Plot formating
@@ -915,5 +927,5 @@ def make_ternary_plot_multi_population(
         tax.right_corner_label(r"$e_3$", fontsize=fontsize)
         tax.clear_matplotlib_ticks()
         tax.get_axes().axis("off")
-        tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
+        ternary_legend(tax, custom_legend, fontsize, legend)
         panels.finish(figure, filename, f"pop_{k + 1}", show)
