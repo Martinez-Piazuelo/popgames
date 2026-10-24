@@ -488,7 +488,9 @@ mean and standard deviation instead of the median and quantiles:</p>
 <span class="n">ens</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_type</span><span class="o">=</span><span class="s2">&quot;bands&quot;</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">statistic</span><span class="o">=</span><span class="s2">&quot;mean_std&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>See the usage examples in the documentation for more details.</p>
+<p>For games with many strategies, <code class="docutils literal notranslate"><span class="pre">layout=&quot;per_strategy&quot;</span></code> draws one panel per strategy, and <code class="docutils literal notranslate"><span class="pre">reference={&quot;x&quot;:</span> <span class="pre">x_star}</span></code>
+(or <code class="docutils literal notranslate"><span class="pre">plot_gne=True</span></code>) adds the equilibrium as dashed lines.
+See the usage examples in the documentation for more details.</p>
 <p>For the considered example, if everything works as expected, you should see a plot like:</p>
 <a class="reference internal image-reference" href="../_images/prisoners_dilemma.png"><img alt="Prisoner's Dilemma trajectory" class="align-center" src="../_images/prisoners_dilemma.png" style="width: 50%;" />
 </a>

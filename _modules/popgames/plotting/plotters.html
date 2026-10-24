@@ -279,6 +279,8 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+<span class="n">REFERENCE_STYLE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="s2">&quot;linewidth&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">}</span>
+
 
 <div class="viewcode-block" id="make_default_kpi_function">
 <a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.plotters.make_default_kpi_function">[docs]</a>
@@ -317,6 +319,56 @@
         <span class="k">return</span> <span class="n">_kpi</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">_kpi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">1e-8</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">kpi_function</span></div>
+
+
+
+<div class="viewcode-block" id="make_reference_values">
+<a class="viewcode-back" href="../../../api/simulator.html#popgames.plotting.plotters.make_reference_values">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_reference_values</span><span class="p">(</span>
+    <span class="n">simulator</span><span class="p">:</span> <span class="n">Simulator</span><span class="p">,</span>
+    <span class="n">reference</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make the reference values plotted as horizontal lines (e.g., an equilibrium) per variable.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        simulator (Simulator): The simulator defining the dimensions and the GNE.</span>
+<span class="sd">        reference (dict[str, np.ndarray], optional): Reference values per variable, among &#39;x&#39;, &#39;p&#39; (``n`` entries,</span>
+<span class="sd">            e.g., of shape ``(n, 1)``) and &#39;q&#39; (``d`` entries). Defaults to None.</span>
+<span class="sd">        plot_gne (bool, optional): Whether to use the GNE (``PopulationGame.compute_gne``) as the reference of &#39;x&#39;.</span>
+<span class="sd">            Cannot be combined with ``reference[&#39;x&#39;]``. Defaults to False.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict[str, np.ndarray]: The flattened reference values per variable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sizes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+        <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+        <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">reference</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown reference variable </span><span class="si">{</span><span class="n">var</span><span class="si">!r}</span><span class="s2">. Use &#39;x&#39;, &#39;p&#39;, and/or &#39;q&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">sizes</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;reference[</span><span class="si">{</span><span class="n">var</span><span class="si">!r}</span><span class="s2">] must have </span><span class="si">{</span><span class="n">sizes</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="si">}</span><span class="s2"> entries, got </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">values</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">if</span> <span class="n">plot_gne</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;x&quot;</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;plot_gne cannot be combined with reference[&#39;x&#39;].&quot;</span><span class="p">)</span>
+        <span class="n">gne</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">compute_gne</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No GNE was found: its reference lines are not plotted.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gne</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">values</span></div>
 
 
 
@@ -416,7 +468,9 @@
 <span class="sd">            the deterministic approximation. Defaults to False.</span>
 <span class="sd">        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing</span>
 <span class="sd">            ``matplotlib`` axes: one per plot, in the order ``x`` (per population), ``p`` (per population), and ``q``</span>
-<span class="sd">            (if ``d &gt; 0``). The figures are then neither saved, shown, nor closed.</span>
+<span class="sd">            (if ``d &gt; 0``). The figures are then neither saved, shown, nor closed. ``reference`` (values per</span>
+<span class="sd">            variable, e.g., ``{&#39;x&#39;: x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed</span>
+<span class="sd">            horizontal lines, see ``make_reference_values``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -432,6 +486,9 @@
     <span class="n">P</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_populations</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
     <span class="n">panels</span> <span class="o">=</span> <span class="n">Panels</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">P</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">references</span> <span class="o">=</span> <span class="n">make_reference_values</span><span class="p">(</span>
+        <span class="n">simulator</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reference&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plot_gne&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="n">sim_log</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">log</span>
     <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
@@ -451,7 +508,7 @@
             <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">panels</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span>
             <span class="n">nk</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">num_strategies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nk</span><span class="p">):</span>
-                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
                     <span class="n">sim_log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
                     <span class="n">val</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
                     <span class="n">label</span><span class="o">=</span><span class="sa">rf</span><span class="s2">&quot;$</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span>
@@ -459,6 +516,10 @@
                     <span class="k">else</span> <span class="sa">rf</span><span class="s2">&quot;$</span><span class="se">{{</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="se">}}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span><span class="p">,</span>
                     <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="p">)</span>
+                <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>
+                        <span class="n">references</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span> <span class="o">**</span><span class="n">REFERENCE_STYLE</span>
+                    <span class="p">)</span>
                 <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
@@ -488,7 +549,13 @@
     <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">panels</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sim_log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="sa">rf</span><span class="s2">&quot;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">sim_log</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="sa">rf</span><span class="s2">&quot;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="s2">&quot;q&quot;</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>
+                    <span class="n">references</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">line</span><span class="o">.</span><span class="n">get_color</span><span class="p">(),</span> <span class="o">**</span><span class="n">REFERENCE_STYLE</span>
+                <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_prop_cycle</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
@@ -524,7 +591,9 @@
 <span class="sd">            the deterministic approximation. Defaults to False.</span>
 <span class="sd">        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing</span>
 <span class="sd">            ``matplotlib`` axes: one per plot, in the order ``x_1, ..., x_n``, ``p_1, ..., p_n``, and</span>
-<span class="sd">            ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed.</span>
+<span class="sd">            ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed. ``reference`` (values per</span>
+<span class="sd">            variable, e.g., ``{&#39;x&#39;: x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed</span>
+<span class="sd">            horizontal lines, see ``make_reference_values``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -540,6 +609,9 @@
     <span class="n">n</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span>
     <span class="n">d</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span>
     <span class="n">panels</span> <span class="o">=</span> <span class="n">Panels</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ax&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="n">d</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+    <span class="n">references</span> <span class="o">=</span> <span class="n">make_reference_values</span><span class="p">(</span>
+        <span class="n">simulator</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;reference&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plot_gne&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="n">sim_log</span> <span class="o">=</span> <span class="n">simulator</span><span class="o">.</span><span class="n">log</span>
     <span class="k">if</span> <span class="n">plot_deterministic_approximation</span><span class="p">:</span>
@@ -576,6 +648,9 @@
                         <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
                     <span class="p">)</span>
 
+                <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
+                    <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">references</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">idx</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">REFERENCE_STYLE</span><span class="p">)</span>
+
                 <span class="n">_set_axes_options</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="n">xscale</span><span class="p">,</span> <span class="n">yscale</span><span class="p">)</span>
                 <span class="n">_format_time_axes</span><span class="p">(</span>
                     <span class="n">ax</span><span class="p">,</span> <span class="sa">rf</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">^</span><span class="se">{{</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">fontsize</span>
@@ -608,6 +683,9 @@
                 <span class="n">color</span><span class="o">=</span><span class="s2">&quot;magenta&quot;</span><span class="p">,</span>
                 <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="s2">&quot;q&quot;</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">references</span><span class="p">[</span><span class="s2">&quot;q&quot;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">REFERENCE_STYLE</span><span class="p">)</span>
 
         <span class="n">_set_axes_options</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
         <span class="n">_format_time_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="sa">rf</span><span class="s2">&quot;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
