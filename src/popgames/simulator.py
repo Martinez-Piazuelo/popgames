@@ -364,19 +364,7 @@ class Simulator(VisualizationMixin):
         check_type(arg=T_sim, expected_type=int, arg_name="T_sim")
         check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
 
-        if t_eval is None:
-            t_eval = np.linspace(0, T_sim, 201)
-        t_eval = np.asarray(t_eval, dtype=float)
-        if (
-            t_eval.ndim != 1
-            or t_eval.size == 0
-            or np.any(np.diff(t_eval) < 0)
-            or t_eval[0] < 0
-            or t_eval[-1] > T_sim
-        ):
-            raise ValueError(
-                "t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim]."
-            )
+        t_eval = _check_t_eval(t_eval, T_sim)
 
         n, d = self.population_game.n, self.payoff_mechanism.d
         initial_state = self._get_flattened_log()
@@ -476,6 +464,94 @@ class Simulator(VisualizationMixin):
             seeds=seeds,
             x0=x0_runs,
             q0=q0_runs,
+        )
+
+    def integrate_ensemble(
+        self,
+        T_sim: float,
+        x0: np.ndarray = None,
+        q0: np.ndarray = None,
+        t_eval: np.ndarray = None,
+        method: str = "Radau",
+    ) -> EnsembleResult:
+        """
+        Integrate the deterministic approximation (EDM-PDM) from several initial states, e.g., to check that every
+        trajectory converges regardless of where it starts.
+
+        Each run ``r`` is ``integrate_edm_pdm`` from ``(x0_r, q0_r)`` over ``[0, T_sim]``, sampled at the times
+        ``t_eval``. The result is an ``EnsembleResult`` (with ``is_deterministic=True`` and no seeds), so it supports
+        the same statistics and plots as the ensembles of finite-agent simulations from ``run_ensemble``. For
+        instance, ``ens.plot(plot_type='bands', statistic='mean_std')`` shows the mean and standard deviation over the
+        initial states.
+
+        The initial states can be shared by all runs or given per run, as in ``run_ensemble``:
+
+        * ``x0``: an array of shape ``(n, 1)`` (or None) shared by all runs, or an array of shape ``(M, n, 1)`` with one
+          initial state per run (see ``popgames.utilities.sample_initial_states``). Similarly for ``q0``.
+
+        The number of runs ``M`` is the length of the per-run arguments (which must agree), or 1 if there are none.
+
+        Args:
+            T_sim (float): The time horizon of each run.
+            x0 (np.ndarray, optional): The initial strategic distribution, of shape ``(n, 1)`` for all runs or
+                ``(M, n, 1)`` per run. Defaults to None, in which case the initial state of the last reset
+                (``log.x[:, [0]]``) is used.
+            q0 (np.ndarray, optional): The initial state of the PDM, of shape ``(d, 1)`` for all runs or
+                ``(M, d, 1)`` per run. Defaults to None, in which case the initial state of the last reset
+                (``log.q[:, [0]]``) is used.
+            t_eval (np.ndarray, optional): Non-decreasing times in ``[0, T_sim]`` at which the runs are sampled.
+                Defaults to None, in which case 201 evenly spaced times are used.
+            method (str, optional): The integration method (see ``integrate_edm_pdm``). Defaults to 'Radau'.
+
+        Returns:
+            EnsembleResult: The sampled runs, with fields ``t`` (shape ``(K,)``), ``x`` (shape ``(M, n, K)``), ``q``
+            (shape ``(M, d, K)``), ``p`` (shape ``(M, n, K)``), ``x0`` (shape ``(M, n, 1)``), and ``q0`` (shape
+            ``(M, d, 1)``), where ``K`` is the number of sampling times.
+        """
+        check_type(arg=T_sim, expected_type=(int, float), arg_name="T_sim")
+        check_scalar_value_bounds(arg=T_sim, arg_name="T_sim", strictly_positive=True)
+        t_eval = _check_t_eval(t_eval, T_sim)
+
+        n, d = self.population_game.n, self.payoff_mechanism.d
+        initial_state = self._get_flattened_log()
+        x0 = initial_state.x[:, [0]] if x0 is None else x0
+        q0 = initial_state.q[:, [0]] if q0 is None else q0
+        x0, num_runs_x0 = _shared_or_per_run(x0, (n, 1), "x0")
+        q0, num_runs_q0 = _shared_or_per_run(q0, (d, 1), "q0")
+        lengths = {
+            name: length
+            for name, length in [("x0", num_runs_x0), ("q0", num_runs_q0)]
+            if length is not None
+        }
+        if len(set(lengths.values())) > 1:
+            raise ValueError(f"Inconsistent numbers of runs: {lengths}.")
+        num_runs = next(iter(lengths.values()), 1)
+
+        x0_runs = x0 if num_runs_x0 else np.broadcast_to(x0, (num_runs, n, 1)).copy()
+        q0_runs = q0 if num_runs_q0 else np.broadcast_to(q0, (num_runs, d, 1)).copy()
+        x = np.empty((num_runs, n, t_eval.size))
+        q = np.empty((num_runs, d, t_eval.size))
+        p = np.empty((num_runs, n, t_eval.size))
+        for r in range(num_runs):
+            out = self.integrate_edm_pdm(
+                t_span=(0.0, float(T_sim)),
+                x0=x0_runs[r],
+                q0=q0_runs[r],
+                t_eval=t_eval,
+                method=method,
+            )
+            x[r], q[r], p[r] = out.x, out.q, out.p
+
+        return EnsembleResult(
+            simulator=self,
+            t=t_eval,
+            x=x,
+            q=q,
+            p=p,
+            seeds=None,
+            x0=x0_runs,
+            q0=q0_runs,
+            is_deterministic=True,
         )
 
     def _run_per_agent_path(self, T_sim: int, verbose: bool) -> None:
@@ -1061,6 +1137,24 @@ class Simulator(VisualizationMixin):
                 p=np.hstack(self._log.p),
             )
         return self._flattened_log
+
+
+def _check_t_eval(t_eval: np.ndarray | None, T_sim: float) -> np.ndarray:
+    """Validate the sampling times of an ensemble (201 evenly spaced times in ``[0, T_sim]`` if None)."""
+    if t_eval is None:
+        t_eval = np.linspace(0, T_sim, 201)
+    t_eval = np.asarray(t_eval, dtype=float)
+    if (
+        t_eval.ndim != 1
+        or t_eval.size == 0
+        or np.any(np.diff(t_eval) < 0)
+        or t_eval[0] < 0
+        or t_eval[-1] > T_sim
+    ):
+        raise ValueError(
+            "t_eval must be a non-empty, non-decreasing 1-D array with values in [0, T_sim]."
+        )
+    return t_eval
 
 
 def _shared_or_per_run(
