@@ -4,13 +4,11 @@ import logging
 import typing
 
 import matplotlib
-import matplotlib.pyplot as plt
 import numpy as np
-import ternary
 from ternary.helpers import simplex_iterator
 
+from popgames.plotting._figures import Panels
 from popgames.plotting._plot_config import (
-    DPI,
     FIGSIZE,
     FONTSIZE,
 )
@@ -18,7 +16,9 @@ from popgames.utilities.input_validators import check_function_signature
 
 if typing.TYPE_CHECKING:
     from types import SimpleNamespace
-    from typing import Any, Callable
+    from typing import Any, Callable, Sequence
+
+    from matplotlib.axes import Axes
 
     from popgames import Simulator
 
@@ -67,10 +67,21 @@ def plot_kpi_over_time(
     plot_deterministic_approximation: bool = False,
     **kwargs: dict[str, Any],
 ) -> None:
+    """
+    Plot a KPI over time (by default, the normalized Euclidean distance to the GNE).
+
+    Args:
+        simulator (Simulator): The simulator object holding the data to plot.
+        plot_deterministic_approximation (bool, optional): Whether to plot the KPI under the deterministic
+            approximation. Defaults to False.
+        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``kpi_function``, or ``ax``
+            to draw on an existing ``matplotlib`` axes (the figure is then neither saved, shown, nor closed).
+    """
     filename = kwargs.get("filename", None)
     figsize = kwargs.get("figsize", FIGSIZE)
     fontsize = kwargs.get("fontsize", FONTSIZE)
     show = kwargs.get("show", True)
+    panels = Panels(kwargs.get("ax", None), 1, filename)
 
     xlim = kwargs.get("xlim", None)
     ylim = kwargs.get("ylim", None)
@@ -94,11 +105,11 @@ def plot_kpi_over_time(
     out = simulator.log
     kpi = kpi_function(out)
 
-    plt.figure(figsize=figsize)
-    plt.plot(sim_log.t, kpi, label="Finite agents", color="black", linewidth=1)
+    fig, ax = panels.new(figsize)
+    ax.plot(sim_log.t, kpi, label="Finite agents", color="black", linewidth=1)
 
     if plot_deterministic_approximation:
-        plt.plot(
+        ax.plot(
             sim_log.t,
             kpi_det,
             label="EDM-PDM",
@@ -108,33 +119,20 @@ def plot_kpi_over_time(
         )
 
     if xlim is not None:
-        plt.xlim(xlim)
+        ax.set_xlim(xlim)
 
     if ylim is not None:
-        plt.ylim(ylim)
+        ax.set_ylim(ylim)
 
-    plt.xscale(xscale)
-    plt.yscale(yscale)
-    plt.xticks(fontsize=fontsize)
-    plt.yticks(fontsize=fontsize)
-    plt.xlabel(r"$t$", fontsize=fontsize)
-    plt.ylabel(r"$\operatorname{KPI}(t)$", fontsize=fontsize)
-    plt.grid()
-    plt.tight_layout()
+    ax.set_xscale(xscale)
+    ax.set_yscale(yscale)
+    _format_time_axes(ax, r"$\operatorname{KPI}(t)$", fontsize)
+    panels.tight_layout(fig)
 
     if plot_deterministic_approximation:
-        plt.legend(fontsize=fontsize)
+        ax.legend(fontsize=fontsize)
 
-    if filename is not None:
-        name, ext = filename.split(".")
-        dpi = DPI if ext == ".png" else None
-        plt.savefig(filename, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
-
-    if show:
-        plt.show()
-
-    else:
-        plt.close()
+    panels.finish(fig, filename, None, show)
 
 
 def plot_univariate_trajectories_joint(
@@ -153,7 +151,9 @@ def plot_univariate_trajectories_joint(
         simulator (Simulator): The simulator object holding the data to plot.
         plot_deterministic_approximation (bool, optional): Whether to plot the related trajectories under
             the deterministic approximation. Defaults to False.
-        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.
+        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing
+            ``matplotlib`` axes: one per plot, in the order ``x`` (per population), ``p`` (per population), and ``q``
+            (if ``d > 0``). The figures are then neither saved, shown, nor closed.
     """
 
     filename = kwargs.get("filename", None)
@@ -165,6 +165,10 @@ def plot_univariate_trajectories_joint(
     ylim = kwargs.get("ylim", None)
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
+
+    P = simulator.population_game.num_populations
+    d = simulator.payoff_mechanism.d
+    panels = Panels(kwargs.get("ax", None), 2 * P + (d > 0), filename)
 
     sim_log = simulator.log
     if plot_deterministic_approximation:
@@ -178,14 +182,13 @@ def plot_univariate_trajectories_joint(
     for var in ["x", "p"]:
         val = getattr(out, var)
 
-        P = simulator.population_game.num_populations
         idx = 0
         idx_det = 0
         for k in range(P):
-            plt.figure(figsize=figsize)
+            fig, ax = panels.new(figsize)
             nk = simulator.population_game.num_strategies[k]
             for _ in range(nk):
-                plt.plot(
+                ax.plot(
                     sim_log.t,
                     val[idx],
                     label=rf"${{{var}}}_{{{idx + 1}}}$"
@@ -196,10 +199,10 @@ def plot_univariate_trajectories_joint(
                 idx += 1
 
             if plot_deterministic_approximation:
-                plt.gca().set_prop_cycle(None)
+                ax.set_prop_cycle(None)
                 for _ in range(nk):
                     val_det = getattr(out_det, var)
-                    plt.plot(
+                    ax.plot(
                         sim_log.t,
                         val_det[idx_det, :],
                         linestyle="dotted",
@@ -207,83 +210,34 @@ def plot_univariate_trajectories_joint(
                     )
                     idx_det += 1
 
-            if isinstance(xlim, dict) and var in xlim:
-                plt.xlim(xlim[var])
-
-            if isinstance(ylim, dict) and var in ylim:
-                plt.ylim(ylim[var])
-
-            if isinstance(xscale, dict) and var in xscale:
-                plt.xscale(xscale[var])
-
-            if isinstance(yscale, dict) and var in yscale:
-                plt.yscale(yscale[var])
-
-            plt.xticks(fontsize=fontsize)
-            plt.yticks(fontsize=fontsize)
-            plt.xlabel(r"$t$", fontsize=fontsize)
+            _set_axes_options(ax, var, xlim, ylim, xscale, yscale)
             ylabel = (
                 rf"$\mathbf{{{var}}}(t)$"
                 if P == 1
                 else rf"$\mathbf{{{var}}}^{{{k + 1}}}(t)$"
             )
-            plt.ylabel(ylabel, fontsize=fontsize)
-            plt.grid()
-            plt.tight_layout()
+            _format_time_axes(ax, ylabel, fontsize)
+            panels.tight_layout(fig)
 
-            plt.legend(fontsize=fontsize, ncol=nk)
+            ax.legend(fontsize=fontsize, ncol=nk)
+            panels.finish(fig, filename, f"{var}_{k + 1}", show)
 
-            if filename is not None:
-                name, ext = filename.split(".")
-                filename_k = "_".join([name, f"{var}_{k + 1}"])
-                filename_k = ".".join([filename_k, ext])
-                dpi = DPI if ext == ".png" else None
-                plt.savefig(filename_k, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
-
-            if show:
-                plt.show()
-
-            else:
-                plt.close()
-
-    d = simulator.payoff_mechanism.d
     if d > 0:
-        plt.figure(figsize=figsize)
+        fig, ax = panels.new(figsize)
         for i in range(d):
-            plt.plot(sim_log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1)
+            ax.plot(sim_log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1)
 
         if plot_deterministic_approximation:
-            plt.gca().set_prop_cycle(None)
+            ax.set_prop_cycle(None)
             for i in range(d):
-                plt.plot(sim_log.t, out_det.q[i, :], linestyle="dotted", linewidth=1.5)
+                ax.plot(sim_log.t, out_det.q[i, :], linestyle="dotted", linewidth=1.5)
 
-        if isinstance(xlim, dict) and "q" in xlim:
-            plt.xlim(xlim["q"])
+        _set_axes_options(ax, "q", xlim, ylim, None, None)
+        _format_time_axes(ax, r"$\mathbf{q}(t)$", fontsize)
+        panels.tight_layout(fig)
 
-        if isinstance(ylim, dict) and "q" in ylim:
-            plt.ylim(ylim["q"])
-
-        plt.xticks(fontsize=fontsize)
-        plt.yticks(fontsize=fontsize)
-        plt.xlabel(r"$t$", fontsize=fontsize)
-        plt.ylabel(r"$\mathbf{q}(t)$", fontsize=fontsize)
-        plt.grid()
-        plt.tight_layout()
-
-        plt.legend(fontsize=fontsize, ncol=d)
-
-        if filename is not None:
-            name, ext = filename.split(".")
-            filename_q = "_".join([name, "q"])
-            filename_q = ".".join([filename_q, ext])
-            dpi = DPI if ext == ".png" else None
-            plt.savefig(filename_q, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
-
-        if show:
-            plt.show()
-
-        else:
-            plt.close()
+        ax.legend(fontsize=fontsize, ncol=d)
+        panels.finish(fig, filename, "q", show)
 
 
 def plot_univariate_trajectories_split(
@@ -302,7 +256,9 @@ def plot_univariate_trajectories_split(
         simulator (Simulator): The simulator object holding the data to plot.
         plot_deterministic_approximation (bool, optional): Whether to plot the related trajectories under
             the deterministic approximation. Defaults to False.
-        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options.
+        **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing
+            ``matplotlib`` axes: one per plot, in the order ``x_1, ..., x_n``, ``p_1, ..., p_n``, and
+            ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed.
     """
 
     filename = kwargs.get("filename", None)
@@ -314,6 +270,10 @@ def plot_univariate_trajectories_split(
     ylim = kwargs.get("ylim", None)
     xscale = kwargs.get("xscale", None)
     yscale = kwargs.get("yscale", None)
+
+    n = simulator.population_game.n
+    d = simulator.payoff_mechanism.d
+    panels = Panels(kwargs.get("ax", None), 2 * n + d, filename)
 
     sim_log = simulator.log
     if plot_deterministic_approximation:
@@ -330,8 +290,8 @@ def plot_univariate_trajectories_split(
         idx = 0
         for k in range(simulator.population_game.num_populations):
             for _ in range(simulator.population_game.num_strategies[k]):
-                plt.figure(figsize=figsize)
-                plt.plot(
+                fig, ax = panels.new(figsize)
+                ax.plot(
                     sim_log.t,
                     val[idx],
                     label="Finite agents",
@@ -341,7 +301,7 @@ def plot_univariate_trajectories_split(
 
                 if plot_deterministic_approximation:
                     val_det = getattr(out_det, var)
-                    plt.plot(
+                    ax.plot(
                         sim_log.t,
                         val_det[idx, :],
                         label="EDM-PDM",
@@ -350,94 +310,76 @@ def plot_univariate_trajectories_split(
                         linewidth=1.5,
                     )
 
-                if isinstance(xlim, dict) and var in xlim:
-                    plt.xlim(xlim[var])
-
-                if isinstance(ylim, dict) and var in ylim:
-                    plt.ylim(ylim[var])
-
-                if isinstance(xscale, dict) and var in xscale:
-                    plt.xscale(xscale[var])
-
-                if isinstance(yscale, dict) and var in yscale:
-                    plt.yscale(yscale[var])
-
-                plt.xticks(fontsize=fontsize)
-                plt.yticks(fontsize=fontsize)
-                plt.xlabel(r"$t$", fontsize=fontsize)
-                plt.ylabel(rf"${var}_{{{idx + 1}}}^{{{k + 1}}}(t)$", fontsize=fontsize)
-                plt.grid()
-                plt.tight_layout()
+                _set_axes_options(ax, var, xlim, ylim, xscale, yscale)
+                _format_time_axes(
+                    ax, rf"${var}_{{{idx + 1}}}^{{{k + 1}}}(t)$", fontsize
+                )
+                panels.tight_layout(fig)
 
                 if plot_deterministic_approximation:
-                    plt.legend(fontsize=fontsize)
+                    ax.legend(fontsize=fontsize)
 
-                if filename is not None:
-                    name, ext = filename.split(".")
-                    filename_ik = "_".join([name, f"{var}_{idx + 1}_{k + 1}"])
-                    filename_ik = ".".join([filename_ik, ext])
-                    dpi = DPI if ext == ".png" else None
-                    plt.savefig(
-                        filename_ik, bbox_inches="tight", pad_inches=0.05, dpi=dpi
-                    )
-
-                if show:
-                    plt.show()
-
-                else:
-                    plt.close()
+                panels.finish(fig, filename, f"{var}_{idx + 1}_{k + 1}", show)
 
                 idx += 1
 
-    if simulator.payoff_mechanism.d > 0:
-        for i in range(simulator.payoff_mechanism.d):
-            plt.figure(figsize=figsize)
-            plt.plot(
+    for i in range(d):
+        fig, ax = panels.new(figsize)
+        ax.plot(
+            sim_log.t,
+            out.q[i, :],
+            label="Finite agents",
+            color="black",
+            linewidth=1,
+        )
+
+        if plot_deterministic_approximation:
+            ax.plot(
                 sim_log.t,
-                out.q[i, :],
-                label="Finite agents",
-                color="black",
-                linewidth=1,
+                out_det.q[i, :],
+                label="EDM-PDM",
+                linestyle="dotted",
+                color="magenta",
+                linewidth=1.5,
             )
 
-            if plot_deterministic_approximation:
-                plt.plot(
-                    sim_log.t,
-                    out_det.q[i, :],
-                    label="EDM-PDM",
-                    linestyle="dotted",
-                    color="magenta",
-                    linewidth=1.5,
-                )
+        _set_axes_options(ax, "q", xlim, ylim, None, None)
+        _format_time_axes(ax, rf"$q_{{{i + 1}}}(t)$", fontsize)
+        panels.tight_layout(fig)
 
-            if isinstance(xlim, dict) and "q" in xlim:
-                plt.xlim(xlim["q"])
+        if plot_deterministic_approximation:
+            ax.legend(fontsize=fontsize)
 
-            if isinstance(ylim, dict) and "q" in ylim:
-                plt.ylim(ylim["q"])
+        panels.finish(fig, filename, f"q{i + 1}", show)
 
-            plt.xticks(fontsize=fontsize)
-            plt.yticks(fontsize=fontsize)
-            plt.xlabel(r"$t$", fontsize=fontsize)
-            plt.ylabel(rf"$q_{{{i + 1}}}(t)$", fontsize=fontsize)
-            plt.grid()
-            plt.tight_layout()
 
-            if plot_deterministic_approximation:
-                plt.legend(fontsize=fontsize)
+def _set_axes_options(
+    ax: Axes,
+    var: str,
+    xlim: dict | None,
+    ylim: dict | None,
+    xscale: dict | None,
+    yscale: dict | None,
+) -> None:
+    """Apply the per-variable limits and scales (dictionaries keyed by ``'x'``, ``'p'``, or ``'q'``)."""
+    if isinstance(xlim, dict) and var in xlim:
+        ax.set_xlim(xlim[var])
 
-            if filename is not None:
-                name, ext = filename.split(".")
-                filename_qi = "_".join([name, f"q{i + 1}"])
-                filename_qi = ".".join([filename_qi, ext])
-                dpi = DPI if ext == ".png" else None
-                plt.savefig(filename_qi, bbox_inches="tight", pad_inches=0.05, dpi=dpi)
+    if isinstance(ylim, dict) and var in ylim:
+        ax.set_ylim(ylim[var])
 
-            if show:
-                plt.show()
+    if isinstance(xscale, dict) and var in xscale:
+        ax.set_xscale(xscale[var])
 
-            else:
-                plt.close()
+    if isinstance(yscale, dict) and var in yscale:
+        ax.set_yscale(yscale[var])
+
+
+def _format_time_axes(ax: Axes, ylabel: str, fontsize: int) -> None:
+    ax.tick_params(labelsize=fontsize)
+    ax.set_xlabel(r"$t$", fontsize=fontsize)
+    ax.set_ylabel(ylabel, fontsize=fontsize)
+    ax.grid()
 
 
 def plot_ternary_trajectories(
@@ -460,11 +402,16 @@ def plot_ternary_trajectories(
         filename (str, optional): Filename to save the figure. Defaults to None.
         plot_edm_trajectory (bool): Whether to plot edm trajectory or not. Defaults to False.
         potential_function (Callable[[np.ndarray], np.ndarray]): Potential function to plot as a heatmap. Defaults to None.
+        show (bool): Whether to show the figure(s). Defaults to True.
+        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population (a single
+            one for single-population games). The figures are then neither saved, shown, nor closed. Defaults to None.
     """
 
     filename = kwargs.get("filename", None)
     figsize = kwargs.get("figsize", FIGSIZE)
     fontsize = kwargs.get("fontsize", FONTSIZE)
+    show = kwargs.get("show", True)
+    ax = kwargs.get("ax", None)
 
     if simulator.population_game.num_populations > 1:
         if potential_function is not None:
@@ -479,6 +426,8 @@ def plot_ternary_trajectories(
             figsize=figsize,
             plot_edm_trajectory=plot_deterministic_approximation,
             filename=filename,
+            show=show,
+            ax=ax,
         )
 
     else:
@@ -498,6 +447,8 @@ def plot_ternary_trajectories(
             fontsize=fontsize,
             figsize=figsize,
             filename=filename,
+            show=show,
+            ax=ax,
         )
 
 
@@ -510,6 +461,7 @@ def make_ternary_plot_single_population(
     plot_edm_trajectory: bool = False,
     filename: str = None,
     show: bool = True,
+    ax: Axes = None,
 ) -> None:
     """
     Plot the trajectory of a single population in a ternary plot.
@@ -525,7 +477,10 @@ def make_ternary_plot_single_population(
         plot_edm_trajectory (bool, optional): Whether to plot edm trajectory. Defaults to False.
         filename (str, optional): Filename to save the figure. Defaults to None.
         show (bool, optional): Whether to show the figure. Defaults to True.
+        ax (Axes, optional): Existing ``matplotlib`` axes to draw on. The figure is then neither saved, shown, nor
+            closed. Defaults to None.
     """
+    panels = Panels(ax, 1, filename)
 
     # Check number of strategies
     points = []
@@ -571,8 +526,7 @@ def make_ternary_plot_single_population(
         gne = [(gne[2], gne[0], gne[1])]  # Permute
 
     # Initialize plot
-    figure, tax = ternary.figure(scale=scale)
-    figure.set_size_inches(figsize[0], figsize[1])
+    figure, tax = panels.new_ternary(figsize, scale=scale)
 
     # Plot heatmap (if a potential function is provided)
     if potential_function is not None:
@@ -705,11 +659,7 @@ def make_ternary_plot_single_population(
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis("off")
     tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
-    if filename is not None:
-        figure.savefig(filename, format="pdf", bbox_inches="tight")
-
-    if show:
-        tax.show()
+    panels.finish(figure, filename, None, show)
 
 
 def make_ternary_plot_multi_population(
@@ -720,6 +670,7 @@ def make_ternary_plot_multi_population(
     plot_edm_trajectory=False,
     filename=None,
     show: bool = True,
+    ax: Axes | Sequence[Axes] = None,
 ) -> None:
     """
     Plot the trajectory of a multiple population in multiple ternary plots.
@@ -734,7 +685,10 @@ def make_ternary_plot_multi_population(
         plot_edm_trajectory (bool, optional): Whether to plot edm trajectory. Defaults to False.
         filename (str, optional): Filename to save the figure. Defaults to None.
         show (bool, optional): Whether to show the figure. Defaults to True.
+        ax (Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population. The figures are
+            then neither saved, shown, nor closed. Defaults to None.
     """
+    panels = Panels(ax, simulator.population_game.num_populations, filename)
 
     # Slice trajectories
     points = dict()
@@ -798,8 +752,7 @@ def make_ternary_plot_multi_population(
     # Make ternary plots (one for each population)
     for k in range(simulator.population_game.num_populations):
         # Initialize plot
-        figure, tax = ternary.figure(scale=scale)
-        figure.set_size_inches(figsize[0], figsize[1])
+        figure, tax = panels.new_ternary(figsize, scale=scale)
 
         # Plot boundary
         tax.boundary(linewidth=1.0)
@@ -882,10 +835,4 @@ def make_ternary_plot_multi_population(
         tax.clear_matplotlib_ticks()
         tax.get_axes().axis("off")
         tax.legend(handles=custom_legend, loc=1, fontsize=fontsize)
-        if filename is not None:
-            name, ext = filename.split(".")
-            filename_k = "_".join([name, f"pop_{k + 1}"])
-            filename_k = ".".join([filename_k, ext])
-            figure.savefig(filename_k, format="pdf", bbox_inches="tight")
-        if show:
-            tax.show()
+        panels.finish(figure, filename, f"pop_{k + 1}", show)

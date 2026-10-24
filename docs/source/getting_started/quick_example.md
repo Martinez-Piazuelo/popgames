@@ -155,6 +155,18 @@ plt.show()
 PopGames also provides built-in visualization utilities supporting ternary plots, univariate projections, and custom 
 key performance indicators. For more details, see the API reference documentation.
 
+Every plot type accepts `ax`: existing `matplotlib` axes to draw on (one per figure the plot would otherwise create),
+which makes it easy to compose several plots into one figure. The figure then belongs to you: it is neither saved,
+shown, nor closed by PopGames.
+
+```python
+fig, axes = plt.subplots(1, 3, figsize=(12, 3))
+sim.plot(plot_type="kpi", ax=axes[0])
+sim.plot(plot_type="univariate", ax=axes[1:])  # x(t) and p(t)
+fig.tight_layout()
+fig.savefig("simulation.pdf")
+```
+
 ---
 
 ### Run an ensemble of simulations

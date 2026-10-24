@@ -79,7 +79,9 @@ class VisualizationMixin:
             figsize (tuple[int, int], optional): Matplotlib's figsize. Defaults to (3, 3).
             fontsize (int, optional): Matplotlib's fontsize. Defaults to 10.
             show (bool, optional): Whether to show the figure. Defaults to True.
-            **kwargs: Additional keyword arguments to bypass to the selected plot_type.
+            **kwargs: Additional keyword arguments to bypass to the selected plot_type, e.g., ``ax`` to draw on
+                existing ``matplotlib`` axes (one per figure the plot would otherwise create; the figure is then
+                neither saved, shown, nor closed).
                 Warning: unrecognized arguments are silently ignored.
         """
         plot_method = PLOT_DISPATCH.get(plot_type, None)
@@ -140,8 +142,9 @@ class EnsembleVisualizationMixin:
         * ``'final'``: distribution of the strategic distributions at the final (or a given) time
           (``plot_ensemble_final``).
 
-        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, and
-        ``plot_deterministic_approximation``.
+        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, ``plot_deterministic_approximation``,
+        and ``ax`` (existing ``matplotlib`` axes to draw on, one per figure the plot would otherwise create; the
+        figure is then neither saved, shown, nor closed).
 
         Args:
             plot_type (str): Plot type. Defaults to 'bands'.

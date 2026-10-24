@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import logging
-import os
 import typing
 from types import SimpleNamespace
 
 import matplotlib.pyplot as plt
 import numpy as np
-import ternary
 
+from popgames.plotting._figures import Panels
 from popgames.plotting._plot_config import (
-    DPI,
     FIGSIZE,
     FIGSIZE_TERNARY,
     FONTSIZE,
@@ -21,7 +19,6 @@ if typing.TYPE_CHECKING:
     from typing import Callable, Sequence
 
     from matplotlib.axes import Axes
-    from matplotlib.figure import Figure
 
     from popgames.ensemble import EnsembleResult
 
@@ -52,6 +49,7 @@ def plot_ensemble_bands(
     figsize: tuple[float, float] = FIGSIZE,
     fontsize: int = FONTSIZE,
     show: bool = True,
+    ax: Axes | Sequence[Axes] = None,
 ) -> None:
     """
     Plot the median and quantile bands of the runs over time.
@@ -82,6 +80,10 @@ def plot_ensemble_bands(
         figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figures. Defaults to True.
+        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would
+            otherwise be generated, in the order of the initial states and, for each one, of ``x`` (per population),
+            ``p`` (per population), and ``q``. The figures are then neither saved, shown, nor closed. Defaults to
+            None.
     """
     _check_variables(variables)
     group_ids = _selected_groups(ensemble, initial_state)
@@ -104,11 +106,12 @@ def plot_ensemble_bands(
         rows = list(range(d))
         panels.append(("q", None, rows, [rf"$q_{{{i + 1}}}$" for i in rows], "q"))
 
+    figures = Panels(ax, len(group_ids) * len(panels), filename)
     for g in group_ids:
         runs = ensemble.groups[g]
         for var, k, rows, labels, suffix in panels:
             values = getattr(ensemble, var)[runs]
-            fig, ax = plt.subplots(figsize=figsize)
+            fig, ax = figures.new(figsize)
             for c, (row, label) in enumerate(zip(rows, labels)):
                 color = f"C{c % 10}"
                 _plot_bands(
@@ -135,8 +138,9 @@ def plot_ensemble_bands(
                 else rf"$\mathbf{{{var}}}^{{{k + 1}}}(t)$"
             )
             _format_time_axes(ax, ylabel, fontsize)
+            figures.tight_layout(fig)
             ax.legend(fontsize=fontsize, ncol=len(rows))
-            _finish(fig, filename, suffix, show)
+            figures.finish(fig, filename, suffix, show)
 
 
 def plot_ensemble_kpi(
@@ -152,6 +156,7 @@ def plot_ensemble_kpi(
     figsize: tuple[float, float] = FIGSIZE,
     fontsize: int = FONTSIZE,
     show: bool = True,
+    ax: Axes = None,
 ) -> None:
     """
     Plot the median and quantile bands of a KPI over time.
@@ -177,7 +182,10 @@ def plot_ensemble_kpi(
         figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figure. Defaults to True.
+        ax (Axes, optional): Existing ``matplotlib`` axes to draw on. The figure is then neither saved, shown, nor
+            closed. Defaults to None.
     """
+    figures = Panels(ax, 1, filename)
     if kpi_function is None:
         kpi_function = make_default_kpi_function(ensemble.simulator)
         if kpi_function is None:
@@ -193,7 +201,7 @@ def plot_ensemble_kpi(
     kpi = np.vstack([np.asarray(kpi_function(run)).reshape(-1) for run in ensemble])
     det = ensemble.deterministic() if plot_deterministic_approximation else None
 
-    fig, ax = plt.subplots(figsize=figsize)
+    fig, ax = figures.new(figsize)
     for g, runs in enumerate(ensemble.groups):
         color = "black" if G == 1 else _group_color(g, G)
         label = (
@@ -220,8 +228,8 @@ def plot_ensemble_kpi(
         ax.set_ylim(ylim)
     ax.set_yscale(yscale)
     _format_time_axes(ax, r"$\operatorname{KPI}(t)$", fontsize)
-    _legend(ax, fontsize, outside=G > 1)
-    _finish(fig, filename, None, show)
+    _legend(figures, ax, fontsize, outside=G > 1)
+    figures.finish(fig, filename, None, show)
 
 
 def plot_ensemble_ternary(
@@ -235,6 +243,7 @@ def plot_ensemble_ternary(
     figsize: tuple[float, float] = FIGSIZE_TERNARY,
     fontsize: int = FONTSIZE,
     show: bool = True,
+    ax: Axes | Sequence[Axes] = None,
 ) -> None:
     """
     Plot the trajectories of the runs on the simplex, as semi-transparent lines.
@@ -256,15 +265,19 @@ def plot_ensemble_ternary(
         figsize (tuple[float, float], optional): Figure size. Defaults to (4, 3).
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figures. Defaults to True.
+        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population with 3
+            strategies. The figures are then neither saved, shown, nor closed. Defaults to None.
     """
+    populations = list(_ternary_populations(ensemble))
+    figures = Panels(ax, len(populations), filename)
     G = ensemble.num_groups
     det = ensemble.deterministic() if plot_deterministic_approximation else None
     gne = ensemble.simulator.population_game.compute_gne() if plot_gne else None
     run_color = "black" if G == 1 else None
     legend_color = "black" if G == 1 else "gray"
 
-    for k, s, suffix in _ternary_populations(ensemble):
-        fig, tax = _ternary_figure(figsize)
+    for k, s, suffix in populations:
+        fig, tax = _ternary_figure(figures, figsize)
         for g, runs in enumerate(ensemble.groups):
             color = run_color or _group_color(g, G)
             for r in runs[:max_runs]:
@@ -335,7 +348,7 @@ def plot_ensemble_ternary(
             handles.append(_plot_gne(tax, gne[s], ensemble))
 
         _format_ternary(tax, handles, fontsize)
-        _finish(fig, filename, suffix, show)
+        figures.finish(fig, filename, suffix, show)
 
 
 def plot_ensemble_final(
@@ -349,6 +362,7 @@ def plot_ensemble_final(
     figsize: tuple[float, float] = None,
     fontsize: int = FONTSIZE,
     show: bool = True,
+    ax: Axes | Sequence[Axes] = None,
 ) -> None:
     """
     Plot the distribution of the strategic distributions of the runs at a given time (the final time by default).
@@ -375,8 +389,14 @@ def plot_ensemble_final(
             scatter plots on the simplex and (4, 2) for histograms.
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figures. Defaults to True.
+        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would
+            otherwise be generated, in the order of the populations (and, for histograms with several initial
+            states, of the strategies). The figures are then neither saved, shown, nor closed. Defaults to None.
     """
     G = ensemble.num_groups
+    game = ensemble.simulator.population_game
+    num_panels = sum(1 if nk <= 3 or G == 1 else nk for nk in game.num_strategies)
+    figures = Panels(ax, num_panels, filename)
     snapshot = ensemble.final() if t is None else ensemble.at(t)
     k_t = int(np.flatnonzero(ensemble.t == snapshot.t)[-1])
     x_det = (
@@ -388,7 +408,6 @@ def plot_ensemble_final(
     if gne is not None:
         gne = gne.reshape(-1)
 
-    game = ensemble.simulator.population_game
     P = game.num_populations
     pos = 0
     for k in range(P):
@@ -398,7 +417,7 @@ def plot_ensemble_final(
         suffix = f"pop_{k + 1}" if P > 1 else None
 
         if nk == 3:
-            fig, tax = _ternary_figure(figsize or FIGSIZE_TERNARY)
+            fig, tax = _ternary_figure(figures, figsize or FIGSIZE_TERNARY)
             for g, runs in enumerate(ensemble.groups):
                 color = "black" if G == 1 else _group_color(g, G)
                 tax.plot(
@@ -448,13 +467,13 @@ def plot_ensemble_final(
                 handles.append(_plot_gne(tax, gne[s], ensemble))
             _format_ternary(tax, handles, fontsize)
             tax.set_title(rf"$t = {snapshot.t:g}$", fontsize=fontsize, pad=20)
-            _finish(fig, filename, suffix, show)
+            figures.finish(fig, filename, suffix, show)
             continue
 
         strategies = range(s.start, s.start + 1) if nk == 2 else range(s.start, s.stop)
         if G == 1:
             # One figure per population, one color per strategy
-            fig, ax = plt.subplots(figsize=figsize or FIGSIZE)
+            fig, ax = figures.new(figsize or FIGSIZE)
             for c, i in enumerate(strategies):
                 color = f"C{c % 10}"
                 ax.hist(
@@ -469,13 +488,14 @@ def plot_ensemble_final(
                 if gne is not None:
                     ax.axvline(gne[i], color=color, linestyle="dashed", linewidth=1)
             _format_histogram(ax, r"$\mathbf{x}(t)$", snapshot.t, fontsize)
+            figures.tight_layout(fig)
             ax.legend(fontsize=fontsize, ncol=len(strategies))
-            _finish(fig, filename, suffix, show)
+            figures.finish(fig, filename, suffix, show)
             continue
 
         # One figure per strategy, one color per initial state
         for i in strategies:
-            fig, ax = plt.subplots(figsize=figsize or FIGSIZE)
+            fig, ax = figures.new(figsize or FIGSIZE)
             edges = np.histogram_bin_edges(snapshot.x[:, i], bins=bins)
             for g, runs in enumerate(ensemble.groups):
                 color = _group_color(g, G)
@@ -493,10 +513,11 @@ def plot_ensemble_final(
             if gne is not None:
                 ax.axvline(gne[i], color="tab:red", linestyle="dashed", linewidth=1)
             _format_histogram(ax, _strategy_label("x", i, k, P), snapshot.t, fontsize)
+            figures.tight_layout(fig)
             if G <= MAX_GROUP_COLORS:
-                _legend(ax, fontsize, outside=True)
+                _legend(figures, ax, fontsize, outside=True)
             strategy_suffix = f"x_{i + 1}"
-            _finish(
+            figures.finish(
                 fig,
                 filename,
                 f"{suffix}_{strategy_suffix}" if suffix else strategy_suffix,
@@ -537,13 +558,13 @@ def _run(ns: SimpleNamespace, r: int) -> SimpleNamespace:
     return SimpleNamespace(t=ns.t, x=ns.x[r], q=ns.q[r], p=ns.p[r])
 
 
-def _legend(ax: Axes, fontsize: int, outside: bool = False) -> None:
+def _legend(figures: Panels, ax: Axes, fontsize: int, outside: bool = False) -> None:
     """Add a legend, inside the axes or to their right (e.g., one entry per initial state)."""
     if outside:
         ax.legend(fontsize=fontsize, loc="upper left", bbox_to_anchor=(1.02, 1.0))
     else:
         ax.legend(fontsize=fontsize)
-    ax.figure.tight_layout()
+    figures.tight_layout(ax.figure)
 
 
 def _format_histogram(ax: Axes, xlabel: str, t: float, fontsize: int) -> None:
@@ -551,7 +572,6 @@ def _format_histogram(ax: Axes, xlabel: str, t: float, fontsize: int) -> None:
     ax.set_xlabel(rf"{xlabel},  $t = {t:g}$", fontsize=fontsize)
     ax.set_ylabel("Number of runs", fontsize=fontsize)
     ax.grid()
-    ax.figure.tight_layout()
 
 
 def _strategy_label(var: str, i: int, k: int, P: int) -> str:
@@ -584,7 +604,6 @@ def _format_time_axes(ax: Axes, ylabel: str, fontsize: int) -> None:
     ax.set_xlabel(r"$t$", fontsize=fontsize)
     ax.set_ylabel(ylabel, fontsize=fontsize)
     ax.grid()
-    ax.figure.tight_layout()
 
 
 def _ternary_populations(ensemble: EnsembleResult):
@@ -609,9 +628,8 @@ def _to_ternary(x_k: np.ndarray) -> np.ndarray:
     return (x_k[[2, 0, 1]] / x_k.sum(axis=0)).T
 
 
-def _ternary_figure(figsize: tuple[float, float]):
-    fig, tax = ternary.figure(scale=1)
-    fig.set_size_inches(figsize[0], figsize[1])
+def _ternary_figure(figures: Panels, figsize: tuple[float, float]):
+    fig, tax = figures.new_ternary(figsize)
     tax.boundary(linewidth=1.0)
     return fig, tax
 
@@ -643,20 +661,3 @@ def _format_ternary(tax, handles: list, fontsize: int) -> None:
     tax.clear_matplotlib_ticks()
     tax.get_axes().axis("off")
     tax.legend(handles=handles, loc=1, fontsize=fontsize)
-
-
-def _finish(fig: Figure, filename: str | None, suffix: str | None, show: bool) -> None:
-    """Save the figure (with the suffix appended to the file name), then show or close it."""
-    if filename is not None:
-        name, ext = os.path.splitext(filename)
-        path = f"{name}_{suffix}{ext}" if suffix else filename
-        fig.savefig(
-            path,
-            bbox_inches="tight",
-            pad_inches=0.05,
-            dpi=DPI if ext == ".png" else None,
-        )
-    if show:
-        plt.show()
-    else:
-        plt.close(fig)
