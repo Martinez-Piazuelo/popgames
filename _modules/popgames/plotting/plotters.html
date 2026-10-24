@@ -328,6 +328,7 @@
     <span class="n">simulator</span><span class="p">:</span> <span class="n">Simulator</span><span class="p">,</span>
     <span class="n">reference</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">derived_sizes</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make the reference values plotted as horizontal lines (e.g., an equilibrium) per variable.</span>
@@ -335,9 +336,12 @@
 <span class="sd">    Args:</span>
 <span class="sd">        simulator (Simulator): The simulator defining the dimensions and the GNE.</span>
 <span class="sd">        reference (dict[str, np.ndarray], optional): Reference values per variable, among &#39;x&#39;, &#39;p&#39; (``n`` entries,</span>
-<span class="sd">            e.g., of shape ``(n, 1)``) and &#39;q&#39; (``d`` entries). Defaults to None.</span>
+<span class="sd">            e.g., of shape ``(n, 1)``), &#39;q&#39; (``d`` entries), and the derived quantities (if any). A scalar is used</span>
+<span class="sd">            for all the entries of the variable. Defaults to None.</span>
 <span class="sd">        plot_gne (bool, optional): Whether to use the GNE (``PopulationGame.compute_gne``) as the reference of &#39;x&#39;.</span>
 <span class="sd">            Cannot be combined with ``reference[&#39;x&#39;]``. Defaults to False.</span>
+<span class="sd">        derived_sizes (dict[str, int], optional): The number of entries of each derived quantity, by name. Defaults</span>
+<span class="sd">            to None.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict[str, np.ndarray]: The flattened reference values per variable.</span>
@@ -346,14 +350,16 @@
         <span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
         <span class="s2">&quot;p&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
         <span class="s2">&quot;q&quot;</span><span class="p">:</span> <span class="n">simulator</span><span class="o">.</span><span class="n">payoff_mechanism</span><span class="o">.</span><span class="n">d</span><span class="p">,</span>
-    <span class="p">}</span>
+    <span class="p">}</span> <span class="o">|</span> <span class="p">(</span><span class="n">derived_sizes</span> <span class="ow">or</span> <span class="p">{})</span>
     <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="n">reference</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sizes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Unknown reference variable </span><span class="si">{</span><span class="n">var</span><span class="si">!r}</span><span class="s2">. Use &#39;x&#39;, &#39;p&#39;, and/or &#39;q&#39;.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Unknown reference variable </span><span class="si">{</span><span class="n">var</span><span class="si">!r}</span><span class="s2">. Use one of: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">sizes</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
         <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">sizes</span><span class="p">[</span><span class="n">var</span><span class="p">],</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">sizes</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;reference[</span><span class="si">{</span><span class="n">var</span><span class="si">!r}</span><span class="s2">] must have </span><span class="si">{</span><span class="n">sizes</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="si">}</span><span class="s2"> entries, got </span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">.&quot;</span>

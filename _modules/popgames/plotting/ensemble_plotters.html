@@ -312,6 +312,7 @@
     <span class="n">ncols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">reference</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">derived</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SimpleNamespace</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">xlim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ylim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -333,6 +334,10 @@
 <span class="sd">    axis, e.g., for games with many strategies. Reference values, such as an equilibrium, are plotted as dashed</span>
 <span class="sd">    horizontal lines in the color of each strategy, and the deterministic approximation as dotted lines.</span>
 
+<span class="sd">    Quantities derived from the state (``derived``), e.g., temperatures that depend on ``x``, are plotted like the</span>
+<span class="sd">    variables, after them. Their statistics are computed on the derived values of the runs (which differs from</span>
+<span class="sd">    applying the function to the statistics of ``x`` if the function is nonlinear).</span>
+
 <span class="sd">    By default, the bands of a finite-agent ensemble only mix runs with the same initial state: if the ensemble has</span>
 <span class="sd">    several initial states (groups), the figures are generated for each of them (or only for ``initial_state``). With</span>
 <span class="sd">    ``pool_initial_states=True``, the bands mix all runs instead, e.g., to show how trajectories from many initial</span>
@@ -342,6 +347,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        ensemble (EnsembleResult): The ensemble to plot.</span>
 <span class="sd">        variables (Sequence[str], optional): The variables to plot, among &#39;x&#39;, &#39;p&#39;, and &#39;q&#39;. Defaults to all of them.</span>
+<span class="sd">            Use ``[]`` to plot only the derived quantities.</span>
 <span class="sd">        bands (Sequence[tuple[float, float]], optional): Pairs of lower and upper quantiles delimiting the bands</span>
 <span class="sd">            (with ``statistic=&#39;quantile&#39;``). Defaults to ((0.05, 0.95), (0.25, 0.75)).</span>
 <span class="sd">        plot_median (bool, optional): Whether to plot the central line: the median, or the mean with</span>
@@ -363,12 +369,16 @@
 <span class="sd">        ncols (int, optional): Number of columns of the grid of panels (with ``layout=&#39;per_strategy&#39;``). Defaults</span>
 <span class="sd">            to 3.</span>
 <span class="sd">        reference (dict[str, np.ndarray], optional): Reference values plotted as dashed horizontal lines, per</span>
-<span class="sd">            variable, e.g., ``{&#39;x&#39;: x_star}`` with ``x_star`` of shape ``(n, 1)``. Defaults to None.</span>
+<span class="sd">            variable or derived quantity, e.g., ``{&#39;x&#39;: x_star}`` with ``x_star`` of shape ``(n, 1)``. A scalar is</span>
+<span class="sd">            used for all entries, e.g., ``{&#39;T&#39;: 30.0}``. Defaults to None.</span>
 <span class="sd">        plot_gne (bool, optional): Whether to plot the GNE (if one is found) as the reference of ``x``. Cannot be</span>
 <span class="sd">            combined with ``reference[&#39;x&#39;]``. Defaults to False.</span>
+<span class="sd">        derived (dict[str, Callable[[SimpleNamespace], np.ndarray]], optional): Quantities derived from the state, by</span>
+<span class="sd">            name (a short symbol, used in the labels, e.g., ``&#39;T&#39;``): functions mapping a run (see</span>
+<span class="sd">            ``EnsembleResult.apply``) to an array of shape ``(m, K)``, one row per entry. Defaults to None.</span>
 <span class="sd">        xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.</span>
-<span class="sd">        ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable, e.g.,</span>
-<span class="sd">            ``{&#39;x&#39;: (0, 1)}``. Defaults to None.</span>
+<span class="sd">        ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable or derived quantity,</span>
+<span class="sd">            e.g., ``{&#39;x&#39;: (0, 1)}``. Defaults to None.</span>
 <span class="sd">        filename (str, optional): If provided, each figure is saved with the variable and population (and the group,</span>
 <span class="sd">            if there are several and they are not pooled) appended to the file name, e.g., ``bands_x_1.pdf`` or</span>
 <span class="sd">            ``bands_x_1_x0_2.pdf``. Defaults to None.</span>
@@ -378,7 +388,7 @@
 <span class="sd">        show (bool, optional): Whether to show the figures. Defaults to True.</span>
 <span class="sd">        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per panel that would</span>
 <span class="sd">            otherwise be generated, in the order of the initial states (unless pooled) and, for each one, of ``x``</span>
-<span class="sd">            (per population), ``p`` (per population), and ``q`` (and of the strategies, with</span>
+<span class="sd">            (per population), ``p`` (per population), ``q``, and the derived quantities (and of the entries, with</span>
 <span class="sd">            ``layout=&#39;per_strategy&#39;``), e.g., the array of axes from ``plt.subplots(2, 3)``. The figures are then</span>
 <span class="sd">            neither saved, shown, nor closed. Defaults to None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -388,9 +398,26 @@
     <span class="n">stat</span> <span class="o">=</span> <span class="n">_statistic</span><span class="p">(</span><span class="n">statistic</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">num_std</span><span class="p">)</span>
     <span class="n">run_sets</span> <span class="o">=</span> <span class="n">_run_sets</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">pool_initial_states</span><span class="p">)</span>
     <span class="n">det</span> <span class="o">=</span> <span class="n">_deterministic</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">plot_deterministic_approximation</span><span class="p">)</span>
-    <span class="n">references</span> <span class="o">=</span> <span class="n">make_reference_values</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">plot_gne</span><span class="p">)</span>
     <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
     <span class="n">P</span> <span class="o">=</span> <span class="n">game</span><span class="o">.</span><span class="n">num_populations</span>
+
+    <span class="c1"># Values of each variable and derived quantity, of shape (M, rows, K)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">)}</span>
+    <span class="n">data_det</span> <span class="o">=</span> <span class="p">{</span><span class="n">var</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">data</span><span class="p">}</span> <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">function</span> <span class="ow">in</span> <span class="p">(</span><span class="n">derived</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Derived quantities need a name other than &#39;x&#39;, &#39;p&#39;, and &#39;q&#39;, got </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data_det</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">references</span> <span class="o">=</span> <span class="n">make_reference_values</span><span class="p">(</span>
+        <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="p">,</span>
+        <span class="n">reference</span><span class="p">,</span>
+        <span class="n">plot_gne</span><span class="p">,</span>
+        <span class="n">derived_sizes</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">derived</span> <span class="ow">or</span> <span class="p">{}},</span>
+    <span class="p">)</span>
 
     <span class="n">panels</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># (variable, population, rows, labels, file suffix)</span>
     <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;p&quot;</span><span class="p">):</span>
@@ -406,13 +433,21 @@
     <span class="k">if</span> <span class="s2">&quot;q&quot;</span> <span class="ow">in</span> <span class="n">variables</span> <span class="ow">and</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
         <span class="n">panels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;q&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="p">[</span><span class="sa">rf</span><span class="s2">&quot;$q_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">],</span> <span class="s2">&quot;q&quot;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">derived</span> <span class="ow">or</span> <span class="p">{}:</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">[</span><span class="sa">rf</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="k">else</span> <span class="p">[</span><span class="sa">rf</span><span class="s2">&quot;$</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="se">{{</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">}}</span><span class="s2">$&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">panels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
 
     <span class="n">per_strategy</span> <span class="o">=</span> <span class="n">layout</span> <span class="o">==</span> <span class="s2">&quot;per_strategy&quot;</span>
     <span class="n">num_panels</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span> <span class="k">if</span> <span class="n">per_strategy</span> <span class="k">else</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">)</span>
     <span class="n">figures</span> <span class="o">=</span> <span class="n">Panels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">run_sets</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_panels</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">runs</span> <span class="ow">in</span> <span class="n">run_sets</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">suffix</span> <span class="ow">in</span> <span class="n">panels</span><span class="p">:</span>
-            <span class="n">values</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">ensemble</span><span class="p">,</span> <span class="n">var</span><span class="p">)[</span><span class="n">runs</span><span class="p">]</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">runs</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">per_strategy</span><span class="p">:</span>
                 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">figures</span><span class="o">.</span><span class="n">new_grid</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">FIGSIZE</span><span class="p">,</span> <span class="n">figsize</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -425,7 +460,7 @@
                     <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">values</span><span class="p">[:,</span> <span class="n">row</span><span class="p">],</span> <span class="n">stat</span><span class="p">,</span> <span class="n">plot_median</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">center</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">det</span><span class="p">,</span> <span class="n">var</span><span class="p">)[</span><span class="n">runs</span><span class="p">,</span> <span class="n">row</span><span class="p">])</span>
+                    <span class="n">center</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">data_det</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">runs</span><span class="p">,</span> <span class="n">row</span><span class="p">])</span>
                     <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
                     <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>

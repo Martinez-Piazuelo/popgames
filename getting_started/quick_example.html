@@ -446,6 +446,9 @@ mean and standard deviation instead of the median and quantiles:</p>
 </div>
 <p>For games with many strategies, <code class="docutils literal notranslate"><span class="pre">layout=&quot;per_strategy&quot;</span></code> draws one panel per strategy, and <code class="docutils literal notranslate"><span class="pre">reference={&quot;x&quot;:</span> <span class="pre">x_star}</span></code>
 (or <code class="docutils literal notranslate"><span class="pre">plot_gne=True</span></code>) adds the equilibrium as dashed lines.
+Quantities derived from the state, such as temperatures that depend on <code class="docutils literal notranslate"><span class="pre">x</span></code>, can be plotted the same way with
+<code class="docutils literal notranslate"><span class="pre">derived={&quot;T&quot;:</span> <span class="pre">lambda</span> <span class="pre">run:</span> <span class="pre">...}</span></code> (a function of each run returning an array of shape <code class="docutils literal notranslate"><span class="pre">(m,</span> <span class="pre">K)</span></code>), and evaluated on all
+runs with <code class="docutils literal notranslate"><span class="pre">ens.apply(...)</span></code>.
 See the usage examples in the documentation for more details.</p>
 </section>
 </section>
