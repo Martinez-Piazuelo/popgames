@@ -6,7 +6,7 @@
         <link rel="prefetch" href="../../../_static/logo.png" as="image">
 
     <link rel="shortcut icon" href="../../../_static/favicon.png"><!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
-        <title>popgames.plotting.visualization_mixin - PopGames v1.0.3</title>
+        <title>popgames.plotting.visualization_mixin - PopGames v1.1.1</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -164,7 +164,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../../../index.html"><div class="brand">PopGames v1.0.3</div></a>
+      <a href="../../../index.html"><div class="brand">PopGames v1.1.1</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -188,7 +188,7 @@
     <img class="sidebar-logo" src="../../../_static/logo.png" alt="Logo"/>
   </div>
   
-  <span class="sidebar-brand-text">PopGames v1.0.3</span>
+  <span class="sidebar-brand-text">PopGames v1.1.1</span>
   
 </a><form class="sidebar-search-container" method="get" action="../../../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -338,7 +338,9 @@
 <span class="sd">            figsize (tuple[int, int], optional): Matplotlib&#39;s figsize. Defaults to (3, 3).</span>
 <span class="sd">            fontsize (int, optional): Matplotlib&#39;s fontsize. Defaults to 10.</span>
 <span class="sd">            show (bool, optional): Whether to show the figure. Defaults to True.</span>
-<span class="sd">            **kwargs: Additional keyword arguments to bypass to the selected plot_type.</span>
+<span class="sd">            **kwargs: Additional keyword arguments to bypass to the selected plot_type, e.g., ``ax`` to draw on</span>
+<span class="sd">                existing ``matplotlib`` axes (one per figure the plot would otherwise create; the figure is then</span>
+<span class="sd">                neither saved, shown, nor closed).</span>
 <span class="sd">                Warning: unrecognized arguments are silently ignored.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">plot_method</span> <span class="o">=</span> <span class="n">PLOT_DISPATCH</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">plot_type</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -405,8 +407,9 @@
 <span class="sd">        * ``&#39;final&#39;``: distribution of the strategic distributions at the final (or a given) time</span>
 <span class="sd">          (``plot_ensemble_final``).</span>
 
-<span class="sd">        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, and</span>
-<span class="sd">        ``plot_deterministic_approximation``.</span>
+<span class="sd">        All plot types accept ``filename``, ``figsize``, ``fontsize``, ``show``, ``plot_deterministic_approximation``,</span>
+<span class="sd">        and ``ax`` (existing ``matplotlib`` axes to draw on, one per figure the plot would otherwise create; the</span>
+<span class="sd">        figure is then neither saved, shown, nor closed).</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            plot_type (str): Plot type. Defaults to &#39;bands&#39;.</span>
