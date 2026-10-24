@@ -22,8 +22,8 @@ The simulator is equipped with a ``VisualizationMixin`` implementing useful visu
 
 **Ensemble Result**
 
-Returned by ``Simulator.run_ensemble``: finite-agent simulations sampled at common times, from the same initial state
-or from different ones.
+Returned by ``Simulator.run_ensemble`` (finite-agent simulations) and ``Simulator.integrate_ensemble`` (the
+deterministic approximation), sampled at common times, from the same initial state or from different ones.
 
 .. autoclass:: popgames.ensemble.EnsembleResult
    :members:
@@ -62,3 +62,9 @@ or from different ones.
 
 .. automodule:: popgames.plotting.ensemble_plotters
    :members:
+
+---
+
+**Plotting helpers**
+
+.. autofunction:: popgames.plotting.add_shared_legend

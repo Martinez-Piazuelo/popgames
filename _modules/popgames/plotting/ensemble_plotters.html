@@ -206,6 +206,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../usage_examples/coordination_ensemble_example.html">Equilibrium selection in a coordination game</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../visualization/index.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../performance/index.html">Performance</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../api/population_game.html">Population Game</a></li>
@@ -262,7 +263,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting._figures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panels</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting._figures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panels</span><span class="p">,</span> <span class="n">ternary_legend</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">popgames.plotting._plot_config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">FIGSIZE</span><span class="p">,</span>
     <span class="n">FIGSIZE_TERNARY</span><span class="p">,</span>
@@ -308,10 +309,13 @@
     <span class="n">pool_initial_states</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">statistic</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
     <span class="n">num_std</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_NUM_STD</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">band_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">layout</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;joint&quot;</span><span class="p">,</span> <span class="s2">&quot;per_strategy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;joint&quot;</span><span class="p">,</span>
     <span class="n">ncols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
     <span class="n">reference</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">plot_gne</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">reference_style</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">derived</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SimpleNamespace</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">xlim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ylim</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -320,6 +324,7 @@
     <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the median and quantile bands (or the mean and standard deviation bands) of the runs over time.</span>
@@ -364,6 +369,9 @@
 <span class="sd">            region, e.g., become negative. Defaults to &#39;quantile&#39;.</span>
 <span class="sd">        num_std (Sequence[float], optional): The widths of the bands in standard deviations (with</span>
 <span class="sd">            ``statistic=&#39;mean_std&#39;``). Defaults to (1,).</span>
+<span class="sd">        linewidth (float, optional): Line width of the central line. Defaults to 1.</span>
+<span class="sd">        band_alpha (float | Sequence[float], optional): Opacity of the bands: one value for all of them, or one per</span>
+<span class="sd">            band (widest first). Defaults to None, in which case 0.15 for the widest band, 0.25 for the next one, etc.</span>
 <span class="sd">        layout (str, optional): &#39;joint&#39; for one panel per figure, or &#39;per_strategy&#39; for one panel per strategy.</span>
 <span class="sd">            Defaults to &#39;joint&#39;.</span>
 <span class="sd">        ncols (int, optional): Number of columns of the grid of panels (with ``layout=&#39;per_strategy&#39;``). Defaults</span>
@@ -373,6 +381,9 @@
 <span class="sd">            used for all entries, e.g., ``{&#39;T&#39;: 30.0}``. Defaults to None.</span>
 <span class="sd">        plot_gne (bool, optional): Whether to plot the GNE (if one is found) as the reference of ``x``. Cannot be</span>
 <span class="sd">            combined with ``reference[&#39;x&#39;]``. Defaults to False.</span>
+<span class="sd">        reference_style (dict, optional): Keyword arguments of ``matplotlib.axes.Axes.axhline`` overriding the style</span>
+<span class="sd">            of the reference lines (dashed, in the color of each entry), e.g.,</span>
+<span class="sd">            ``{&#39;color&#39;: &#39;black&#39;, &#39;linestyle&#39;: &#39;dotted&#39;}``. Defaults to None.</span>
 <span class="sd">        derived (dict[str, Callable[[SimpleNamespace], np.ndarray]], optional): Quantities derived from the state, by</span>
 <span class="sd">            name (a short symbol, used in the labels, e.g., ``&#39;T&#39;``): functions mapping a run (see</span>
 <span class="sd">            ``EnsembleResult.apply``) to an array of shape ``(m, K)``, one row per entry. Defaults to None.</span>
@@ -391,6 +402,9 @@
 <span class="sd">            (per population), ``p`` (per population), ``q``, and the derived quantities (and of the entries, with</span>
 <span class="sd">            ``layout=&#39;per_strategy&#39;``), e.g., the array of axes from ``plt.subplots(2, 3)``. The figures are then</span>
 <span class="sd">            neither saved, shown, nor closed. Defaults to None.</span>
+<span class="sd">        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through</span>
+<span class="sd">            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see</span>
+<span class="sd">            ``popgames.plotting.add_shared_legend``). Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_check_variables</span><span class="p">(</span><span class="n">variables</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">layout</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;joint&quot;</span><span class="p">,</span> <span class="s2">&quot;per_strategy&quot;</span><span class="p">):</span>
@@ -457,14 +471,25 @@
             <span class="k">for</span> <span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">labels</span><span class="p">)):</span>
                 <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">c</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">_plot_bands</span><span class="p">(</span>
-                    <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">values</span><span class="p">[:,</span> <span class="n">row</span><span class="p">],</span> <span class="n">stat</span><span class="p">,</span> <span class="n">plot_median</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">],</span>
+                    <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+                    <span class="n">values</span><span class="p">[:,</span> <span class="n">row</span><span class="p">],</span>
+                    <span class="n">stat</span><span class="p">,</span>
+                    <span class="n">plot_median</span><span class="p">,</span>
+                    <span class="n">color</span><span class="p">,</span>
+                    <span class="n">label</span><span class="p">,</span>
+                    <span class="n">linewidth</span><span class="p">,</span>
+                    <span class="n">band_alpha</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">center</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">data_det</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">runs</span><span class="p">,</span> <span class="n">row</span><span class="p">])</span>
                     <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">DETERMINISTIC_STYLE</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">references</span><span class="p">:</span>
                     <span class="n">axes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span>
-                        <span class="n">references</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">row</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">REFERENCE_STYLE</span>
+                        <span class="n">references</span><span class="p">[</span><span class="n">var</span><span class="p">][</span><span class="n">row</span><span class="p">],</span>
+                        <span class="o">**</span><span class="p">(</span>
+                            <span class="n">REFERENCE_STYLE</span> <span class="o">|</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="n">color</span><span class="p">}</span> <span class="o">|</span> <span class="p">(</span><span class="n">reference_style</span> <span class="ow">or</span> <span class="p">{})</span>
+                        <span class="p">),</span>
                     <span class="p">)</span>
 
             <span class="n">group_title</span> <span class="o">=</span> <span class="kc">None</span>
@@ -499,7 +524,8 @@
                     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">per_strategy</span><span class="p">:</span>
-                <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
 
 
@@ -515,6 +541,8 @@
     <span class="n">pool_initial_states</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">statistic</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;quantile&quot;</span><span class="p">,</span> <span class="s2">&quot;mean_std&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;quantile&quot;</span><span class="p">,</span>
     <span class="n">num_std</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_NUM_STD</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">band_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">xlim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ylim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">yscale</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span>
@@ -523,6 +551,7 @@
     <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the median and quantile bands (or the mean and standard deviation bands) of a KPI over time.</span>
@@ -548,6 +577,9 @@
 <span class="sd">        statistic (str, optional): &#39;quantile&#39; or &#39;mean_std&#39;, see ``plot_ensemble_bands``. Defaults to &#39;quantile&#39;.</span>
 <span class="sd">        num_std (Sequence[float], optional): The widths of the bands in standard deviations (with</span>
 <span class="sd">            ``statistic=&#39;mean_std&#39;``). Defaults to (1,).</span>
+<span class="sd">        linewidth (float, optional): Line width of the central line. Defaults to 1.</span>
+<span class="sd">        band_alpha (float | Sequence[float], optional): Opacity of the bands: one value for all of them, or one per</span>
+<span class="sd">            band (widest first). Defaults to None, in which case 0.15 for the widest band, 0.25 for the next one, etc.</span>
 <span class="sd">        xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.</span>
 <span class="sd">        ylim (tuple[float, float], optional): Limits of the vertical axis. Defaults to None.</span>
 <span class="sd">        yscale (str, optional): Scale of the vertical axis. Defaults to &#39;linear&#39;.</span>
@@ -557,6 +589,9 @@
 <span class="sd">        show (bool, optional): Whether to show the figure. Defaults to True.</span>
 <span class="sd">        ax (Axes, optional): Existing ``matplotlib`` axes to draw on. The figure is then neither saved, shown, nor</span>
 <span class="sd">            closed. Defaults to None.</span>
+<span class="sd">        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through</span>
+<span class="sd">            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see</span>
+<span class="sd">            ``popgames.plotting.add_shared_legend``). Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">figures</span> <span class="o">=</span> <span class="n">Panels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
     <span class="n">stat</span> <span class="o">=</span> <span class="n">_statistic</span><span class="p">(</span><span class="n">statistic</span><span class="p">,</span> <span class="n">bands</span><span class="p">,</span> <span class="n">num_std</span><span class="p">)</span>
@@ -597,7 +632,17 @@
             <span class="k">if</span> <span class="n">G</span> <span class="o">==</span> <span class="mi">1</span>
             <span class="k">else</span> <span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;$\mathbf</span><span class="se">{{</span><span class="s2">x</span><span class="se">}}</span><span class="s2">_0$ #</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">_plot_bands</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">kpi</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span> <span class="n">stat</span><span class="p">,</span> <span class="n">plot_median</span><span class="p">,</span> <span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">_plot_bands</span><span class="p">(</span>
+            <span class="n">ax</span><span class="p">,</span>
+            <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
+            <span class="n">kpi</span><span class="p">[</span><span class="n">runs</span><span class="p">],</span>
+            <span class="n">stat</span><span class="p">,</span>
+            <span class="n">plot_median</span><span class="p">,</span>
+            <span class="n">color</span><span class="p">,</span>
+            <span class="n">label</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="p">,</span>
+            <span class="n">band_alpha</span><span class="p">,</span>
+        <span class="p">)</span>
         <span class="k">if</span> <span class="n">det</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
                 <span class="n">ensemble</span><span class="o">.</span><span class="n">t</span><span class="p">,</span>
@@ -615,7 +660,10 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="n">yscale</span><span class="p">)</span>
     <span class="n">_format_time_axes</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\operatorname</span><span class="si">{KPI}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
-    <span class="n">_legend</span><span class="p">(</span><span class="n">figures</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">outside</span><span class="o">=</span><span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+        <span class="n">_legend</span><span class="p">(</span><span class="n">figures</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">outside</span><span class="o">=</span><span class="n">G</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">figures</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
     <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
 
 
@@ -634,6 +682,7 @@
     <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the trajectories of the runs on the simplex, as semi-transparent lines.</span>
@@ -657,6 +706,9 @@
 <span class="sd">        show (bool, optional): Whether to show the figures. Defaults to True.</span>
 <span class="sd">        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per population with 3</span>
 <span class="sd">            strategies. The figures are then neither saved, shown, nor closed. Defaults to None.</span>
+<span class="sd">        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through</span>
+<span class="sd">            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see</span>
+<span class="sd">            ``popgames.plotting.add_shared_legend``). Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">populations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_ternary_populations</span><span class="p">(</span><span class="n">ensemble</span><span class="p">))</span>
     <span class="n">figures</span> <span class="o">=</span> <span class="n">Panels</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">populations</span><span class="p">),</span> <span class="n">filename</span><span class="p">)</span>
@@ -739,7 +791,7 @@
         <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_plot_gne</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">gne</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">ensemble</span><span class="p">))</span>
 
-        <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">legend</span><span class="p">)</span>
         <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span></div>
 
 
@@ -758,6 +810,7 @@
     <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">FONTSIZE</span><span class="p">,</span>
     <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">ax</span><span class="p">:</span> <span class="n">Axes</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Axes</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plot the distribution of the strategic distributions of the runs at a given time (the final time by default).</span>
@@ -787,6 +840,9 @@
 <span class="sd">        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would</span>
 <span class="sd">            otherwise be generated, in the order of the populations (and, for histograms with several initial</span>
 <span class="sd">            states, of the strategies). The figures are then neither saved, shown, nor closed. Defaults to None.</span>
+<span class="sd">        legend (bool, optional): Whether to draw the legend(s). If False, the entries remain available through</span>
+<span class="sd">            ``ax.get_legend_handles_labels()``, e.g., for one legend shared by several plots (see</span>
+<span class="sd">            ``popgames.plotting.add_shared_legend``). Defaults to True.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">G</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">num_groups</span>
     <span class="n">game</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">population_game</span>
@@ -857,7 +913,7 @@
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">gne</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">handles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_plot_gne</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">gne</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">ensemble</span><span class="p">))</span>
-            <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
+            <span class="n">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">legend</span><span class="p">)</span>
             <span class="n">tax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;$t = </span><span class="si">{</span><span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
             <span class="k">continue</span>
@@ -881,7 +937,8 @@
                     <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">gne</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">_format_histogram</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\mathbf</span><span class="si">{x}</span><span class="s2">(t)$&quot;</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">strategies</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">strategies</span><span class="p">))</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">show</span><span class="p">)</span>
             <span class="k">continue</span>
 
@@ -906,7 +963,7 @@
                 <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">gne</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;tab:red&quot;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">_format_histogram</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">_strategy_label</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">P</span><span class="p">),</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">)</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">legend</span> <span class="ow">and</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span><span class="p">:</span>
                 <span class="n">_legend</span><span class="p">(</span><span class="n">figures</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">outside</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">strategy_suffix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;x_</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">figures</span><span class="o">.</span><span class="n">finish</span><span class="p">(</span>
@@ -1009,6 +1066,25 @@
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;statistic must be &#39;quantile&#39; or &#39;mean_std&#39;, got </span><span class="si">{</span><span class="n">statistic</span><span class="si">!r}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_band_alphas</span><span class="p">(</span>
+    <span class="n">band_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">num_bands</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The opacity of each band, widest first: 0.15, 0.25, ... by default, the same for all bands if a scalar is given,</span>
+<span class="sd">    or one per band.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">band_alpha</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mf">0.15</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bands</span><span class="p">)]</span>
+    <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">band_alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">alphas</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">alphas</span><span class="p">,</span> <span class="n">num_bands</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">alphas</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">num_bands</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">((</span><span class="n">alphas</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">alphas</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;band_alpha must be a number in [0, 1] or one per band (</span><span class="si">{</span><span class="n">num_bands</span><span class="si">}</span><span class="s2">), got </span><span class="si">{</span><span class="n">band_alpha</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">alphas</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_group_color</span><span class="p">(</span><span class="n">g</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">G</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">g</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">10</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">G</span> <span class="o">&lt;=</span> <span class="n">MAX_GROUP_COLORS</span> <span class="k">else</span> <span class="s2">&quot;black&quot;</span>
 
@@ -1046,13 +1122,17 @@
     <span class="n">plot_center</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">color</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">linewidth</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">band_alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot the central line and bands (see ``_statistic``) of ``values`` (shape ``(M, K)``) over ``t``.&quot;&quot;&quot;</span>
     <span class="n">center</span><span class="p">,</span> <span class="n">intervals</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">intervals</span><span class="p">):</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">j</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">),</span> <span class="n">alpha</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+        <span class="n">intervals</span><span class="p">,</span> <span class="n">_band_alphas</span><span class="p">(</span><span class="n">band_alpha</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">intervals</span><span class="p">))</span>
+    <span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">upper</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">plot_center</span><span class="p">:</span>
-        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">([],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
 
@@ -1112,13 +1192,13 @@
     <span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_format_ternary</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">tax</span><span class="o">.</span><span class="n">top_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_1$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
     <span class="n">tax</span><span class="o">.</span><span class="n">left_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_2$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
     <span class="n">tax</span><span class="o">.</span><span class="n">right_corner_label</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$e_3$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
     <span class="n">tax</span><span class="o">.</span><span class="n">clear_matplotlib_ticks</span><span class="p">()</span>
     <span class="n">tax</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
-    <span class="n">tax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">handles</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+    <span class="n">ternary_legend</span><span class="p">(</span><span class="n">tax</span><span class="p">,</span> <span class="n">handles</span><span class="p">,</span> <span class="n">fontsize</span><span class="p">,</span> <span class="n">legend</span><span class="p">)</span>
 </pre></div>
         </article>
       </div>
