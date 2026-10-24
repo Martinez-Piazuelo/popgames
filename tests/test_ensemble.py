@@ -969,5 +969,93 @@ class TestPerStrategyBands(unittest.TestCase):
             )
 
 
+def _distance_to_vertex(run):
+    """Distance of x to each vertex of the simplex, of shape (3, K)."""
+    return np.linalg.norm(run.x[None, :, :] - np.eye(3)[:, :, None], axis=1)
+
+
+class TestDerivedQuantities(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        sim = _make_rps_simulator(seed=0)
+        t_eval = np.linspace(0, 2, 11)
+        cls.ens = sim.run_ensemble(
+            T_sim=2, x0=np.repeat(_X0S, 2, axis=0), seed=0, t_eval=t_eval
+        )
+        cls.det = sim.integrate_ensemble(T_sim=2, x0=_X0S, t_eval=t_eval)
+
+    def setUp(self) -> None:
+        plt.close("all")
+        self.addCleanup(plt.close, "all")
+
+    def test_apply(self) -> None:
+        values = self.ens.apply(_distance_to_vertex)
+        self.assertEqual(values.shape, (6, 3, 11))
+        np.testing.assert_allclose(values[4], _distance_to_vertex(self.ens[4]))
+        # Scalar quantities have one row
+        self.assertEqual(self.ens.apply(lambda run: run.x[0]).shape, (6, 1, 11))
+        # On the deterministic approximation
+        values_det = self.ens.apply(_distance_to_vertex, deterministic=True)
+        np.testing.assert_allclose(
+            values_det[2], _distance_to_vertex(self.det[1]), atol=1e-6
+        )
+
+    def test_apply_rejects_wrong_shapes(self) -> None:
+        with self.assertRaises(ValueError):
+            self.ens.apply(lambda run: run.x[:, :-1])
+        with self.assertRaises(ValueError):
+            self.ens.apply(lambda run: run.x[None])
+
+    def test_bands_of_derived_quantity_use_its_own_statistics(self) -> None:
+        fig, axes = plt.subplots(1, 3)
+        self.det.plot(
+            plot_type="bands",
+            variables=[],
+            derived={"d": _distance_to_vertex},
+            statistic="mean_std",
+            layout="per_strategy",
+            reference={"d": 0.5},
+            ax=axes,
+        )
+        values = self.det.apply(_distance_to_vertex)
+        for i, ax in enumerate(axes):
+            # Mean of the derived values (not the distance of the mean of x)
+            np.testing.assert_allclose(
+                ax.lines[0].get_ydata(), values[:, i].mean(axis=0)
+            )
+            self.assertEqual(ax.get_title(), f"$d_{{{i + 1}}}$")
+            dashed = [line for line in ax.lines if line.get_linestyle() == "--"]
+            np.testing.assert_allclose(dashed[0].get_ydata(), 0.5)
+
+    def test_derived_after_variables_with_deterministic_overlay(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            derived={"d": _distance_to_vertex, "s": lambda run: run.x.sum(axis=0)},
+            plot_deterministic_approximation=True,
+            filename=os.path.join(tmp.name, "b.png"),
+            show=False,
+        )
+        self.assertEqual(
+            sorted(os.listdir(tmp.name)),
+            [f"b_{v}_x0_{g}.png" for v in ("d", "s", "x_1") for g in (1, 2, 3)],
+        )
+
+    def test_invalid_derived_quantities(self) -> None:
+        with self.assertRaises(ValueError):
+            self.det.plot(
+                plot_type="bands", derived={"x": _distance_to_vertex}, show=False
+            )
+        with self.assertRaises(ValueError):
+            self.det.plot(
+                plot_type="bands",
+                derived={"d": _distance_to_vertex},
+                reference={"d": [0.0, 1.0]},
+                show=False,
+            )
+
+
 if __name__ == "__main__":
     unittest.main()  # pragma: no cover

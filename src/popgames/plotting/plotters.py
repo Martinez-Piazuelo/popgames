@@ -68,6 +68,7 @@ def make_reference_values(
     simulator: Simulator,
     reference: dict[str, np.ndarray] | None = None,
     plot_gne: bool = False,
+    derived_sizes: dict[str, int] | None = None,
 ) -> dict[str, np.ndarray]:
     """
     Make the reference values plotted as horizontal lines (e.g., an equilibrium) per variable.
@@ -75,9 +76,12 @@ def make_reference_values(
     Args:
         simulator (Simulator): The simulator defining the dimensions and the GNE.
         reference (dict[str, np.ndarray], optional): Reference values per variable, among 'x', 'p' (``n`` entries,
-            e.g., of shape ``(n, 1)``) and 'q' (``d`` entries). Defaults to None.
+            e.g., of shape ``(n, 1)``), 'q' (``d`` entries), and the derived quantities (if any). A scalar is used
+            for all the entries of the variable. Defaults to None.
         plot_gne (bool, optional): Whether to use the GNE (``PopulationGame.compute_gne``) as the reference of 'x'.
             Cannot be combined with ``reference['x']``. Defaults to False.
+        derived_sizes (dict[str, int], optional): The number of entries of each derived quantity, by name. Defaults
+            to None.
 
     Returns:
         dict[str, np.ndarray]: The flattened reference values per variable.
@@ -86,14 +90,16 @@ def make_reference_values(
         "x": simulator.population_game.n,
         "p": simulator.population_game.n,
         "q": simulator.payoff_mechanism.d,
-    }
+    } | (derived_sizes or {})
     values = {}
     for var, value in (reference or {}).items():
         if var not in sizes:
             raise ValueError(
-                f"Unknown reference variable {var!r}. Use 'x', 'p', and/or 'q'."
+                f"Unknown reference variable {var!r}. Use one of: {list(sizes)}."
             )
         value = np.asarray(value, dtype=float).reshape(-1)
+        if value.size == 1:
+            value = np.full(sizes[var], value[0])
         if value.size != sizes[var]:
             raise ValueError(
                 f"reference[{var!r}] must have {sizes[var]} entries, got {value.size}."

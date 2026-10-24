@@ -8,7 +8,7 @@ import numpy as np
 from popgames.plotting import EnsembleVisualizationMixin
 
 if typing.TYPE_CHECKING:
-    from typing import Sequence, Union
+    from typing import Callable, Sequence, Union
 
     from popgames import Simulator
 
@@ -146,6 +146,43 @@ class EnsembleResult(EnsembleVisualizationMixin):
             q=np.quantile(self.q, quantiles, axis=0),
             p=np.quantile(self.p, quantiles, axis=0),
         )
+
+    def apply(
+        self,
+        function: Callable[[SimpleNamespace], np.ndarray],
+        deterministic: bool = False,
+    ) -> np.ndarray:
+        """
+        Evaluate a quantity derived from the state on every run, e.g., a temperature or a constraint residual.
+
+        Args:
+            function (Callable[[SimpleNamespace], np.ndarray]): Function mapping a run (with fields ``t``, ``x``,
+                ``q``, and ``p`` in the layout of ``Simulator.log``, see ``__getitem__``) to the quantity over time,
+                of shape ``(m, K)`` (or ``(K,)`` for a scalar quantity).
+            deterministic (bool, optional): Whether to evaluate it on the deterministic approximation from the
+                initial state of each run (see ``deterministic``) instead. Defaults to False.
+
+        Returns:
+            np.ndarray: The quantity, of shape ``(M, m, K)``.
+        """
+        source = self.deterministic() if deterministic else self
+        K = self.t.size
+        values = []
+        for r in range(self.num_runs):
+            run = SimpleNamespace(t=self.t, x=source.x[r], q=source.q[r], p=source.p[r])
+            value = np.asarray(function(run), dtype=float)
+            if value.ndim == 1:
+                value = value.reshape(1, -1)
+            if value.ndim != 2 or value.shape[1] != K:
+                raise ValueError(
+                    f"The function must return an array of shape (m, {K}) or ({K},), got {value.shape}."
+                )
+            values.append(value)
+        if len({value.shape for value in values}) > 1:
+            raise ValueError(
+                "The function must return arrays of the same shape for all runs."
+            )
+        return np.stack(values)
 
     def at(self, t: float) -> SimpleNamespace:
         """

@@ -202,4 +202,7 @@ ens.plot(plot_type="bands", variables=["x"], statistic="mean_std")
 
 For games with many strategies, `layout="per_strategy"` draws one panel per strategy, and `reference={"x": x_star}`
 (or `plot_gne=True`) adds the equilibrium as dashed lines.
+Quantities derived from the state, such as temperatures that depend on `x`, can be plotted the same way with
+`derived={"T": lambda run: ...}` (a function of each run returning an array of shape `(m, K)`), and evaluated on all
+runs with `ens.apply(...)`.
 See the usage examples in the documentation for more details.
