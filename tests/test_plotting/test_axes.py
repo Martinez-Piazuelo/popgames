@@ -105,6 +105,28 @@ class TestAxes(unittest.TestCase):
         self.sim.plot(plot_type="univariate_split", ax=axes_split.flat, show=True)
         self._assert_drawn_in_place(fig_split, list(axes_split.flat))
 
+    def test_simulator_reference_lines(self) -> None:
+        x_star = np.array([[0.2], [0.3], [0.5]])
+        fig, axes = plt.subplots(1, 2)
+        self.sim.plot(plot_type="univariate", reference={"x": x_star}, ax=axes)
+        dashed = [line for line in axes[0].lines if line.get_linestyle() == "--"]
+        np.testing.assert_allclose(
+            [line.get_ydata()[0] for line in dashed], [0.2, 0.3, 0.5]
+        )
+        self.assertEqual(
+            [line.get_color() for line in dashed],
+            [line.get_color() for line in axes[0].lines if line.get_linestyle() == "-"],
+        )
+        self.assertFalse(
+            [line for line in axes[1].lines if line.get_linestyle() == "--"]
+        )
+
+        fig, axes = plt.subplots(2, 3)
+        self.sim.plot(plot_type="univariate_split", plot_gne=True, ax=axes)
+        for ax in axes[0]:
+            dashed = [line for line in ax.lines if line.get_linestyle() == "--"]
+            np.testing.assert_allclose(dashed[0].get_ydata(), 1 / 3, atol=1e-3)
+
     def test_ternary_multi_population_draws_one_axes_per_population(self) -> None:
         sim = _make_two_population_simulator()
         sim.run(T_sim=1)

@@ -24,6 +24,8 @@ if typing.TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+REFERENCE_STYLE = {"linestyle": "dashed", "linewidth": 0.9}
+
 
 def make_default_kpi_function(
     simulator: Simulator,
@@ -60,6 +62,53 @@ def make_default_kpi_function(
         return _kpi / max(_kpi[0], 1e-8)
 
     return kpi_function
+
+
+def make_reference_values(
+    simulator: Simulator,
+    reference: dict[str, np.ndarray] | None = None,
+    plot_gne: bool = False,
+) -> dict[str, np.ndarray]:
+    """
+    Make the reference values plotted as horizontal lines (e.g., an equilibrium) per variable.
+
+    Args:
+        simulator (Simulator): The simulator defining the dimensions and the GNE.
+        reference (dict[str, np.ndarray], optional): Reference values per variable, among 'x', 'p' (``n`` entries,
+            e.g., of shape ``(n, 1)``) and 'q' (``d`` entries). Defaults to None.
+        plot_gne (bool, optional): Whether to use the GNE (``PopulationGame.compute_gne``) as the reference of 'x'.
+            Cannot be combined with ``reference['x']``. Defaults to False.
+
+    Returns:
+        dict[str, np.ndarray]: The flattened reference values per variable.
+    """
+    sizes = {
+        "x": simulator.population_game.n,
+        "p": simulator.population_game.n,
+        "q": simulator.payoff_mechanism.d,
+    }
+    values = {}
+    for var, value in (reference or {}).items():
+        if var not in sizes:
+            raise ValueError(
+                f"Unknown reference variable {var!r}. Use 'x', 'p', and/or 'q'."
+            )
+        value = np.asarray(value, dtype=float).reshape(-1)
+        if value.size != sizes[var]:
+            raise ValueError(
+                f"reference[{var!r}] must have {sizes[var]} entries, got {value.size}."
+            )
+        values[var] = value
+
+    if plot_gne:
+        if "x" in values:
+            raise ValueError("plot_gne cannot be combined with reference['x'].")
+        gne = simulator.population_game.compute_gne()
+        if gne is None:
+            logger.warning("No GNE was found: its reference lines are not plotted.")
+        else:
+            values["x"] = gne.reshape(-1)
+    return values
 
 
 def plot_kpi_over_time(
@@ -153,7 +202,9 @@ def plot_univariate_trajectories_joint(
             the deterministic approximation. Defaults to False.
         **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing
             ``matplotlib`` axes: one per plot, in the order ``x`` (per population), ``p`` (per population), and ``q``
-            (if ``d > 0``). The figures are then neither saved, shown, nor closed.
+            (if ``d > 0``). The figures are then neither saved, shown, nor closed. ``reference`` (values per
+            variable, e.g., ``{'x': x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed
+            horizontal lines, see ``make_reference_values``.
     """
 
     filename = kwargs.get("filename", None)
@@ -169,6 +220,9 @@ def plot_univariate_trajectories_joint(
     P = simulator.population_game.num_populations
     d = simulator.payoff_mechanism.d
     panels = Panels(kwargs.get("ax", None), 2 * P + (d > 0), filename)
+    references = make_reference_values(
+        simulator, kwargs.get("reference", None), kwargs.get("plot_gne", False)
+    )
 
     sim_log = simulator.log
     if plot_deterministic_approximation:
@@ -188,7 +242,7 @@ def plot_univariate_trajectories_joint(
             fig, ax = panels.new(figsize)
             nk = simulator.population_game.num_strategies[k]
             for _ in range(nk):
-                ax.plot(
+                (line,) = ax.plot(
                     sim_log.t,
                     val[idx],
                     label=rf"${{{var}}}_{{{idx + 1}}}$"
@@ -196,6 +250,10 @@ def plot_univariate_trajectories_joint(
                     else rf"${{{var}}}_{{{idx + 1}}}^{{{k + 1}}}$",
                     linewidth=1,
                 )
+                if var in references:
+                    ax.axhline(
+                        references[var][idx], color=line.get_color(), **REFERENCE_STYLE
+                    )
                 idx += 1
 
             if plot_deterministic_approximation:
@@ -225,7 +283,13 @@ def plot_univariate_trajectories_joint(
     if d > 0:
         fig, ax = panels.new(figsize)
         for i in range(d):
-            ax.plot(sim_log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1)
+            (line,) = ax.plot(
+                sim_log.t, out.q[i, :], label=rf"$q_{{{i + 1}}}$", linewidth=1
+            )
+            if "q" in references:
+                ax.axhline(
+                    references["q"][i], color=line.get_color(), **REFERENCE_STYLE
+                )
 
         if plot_deterministic_approximation:
             ax.set_prop_cycle(None)
@@ -258,7 +322,9 @@ def plot_univariate_trajectories_split(
             the deterministic approximation. Defaults to False.
         **kwargs (dict[str, Any]): Keyword arguments to specify plotting options, e.g., ``ax`` to draw on existing
             ``matplotlib`` axes: one per plot, in the order ``x_1, ..., x_n``, ``p_1, ..., p_n``, and
-            ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed.
+            ``q_1, ..., q_d``. The figures are then neither saved, shown, nor closed. ``reference`` (values per
+            variable, e.g., ``{'x': x_star}``) and ``plot_gne`` (the GNE as the reference of ``x``) add dashed
+            horizontal lines, see ``make_reference_values``.
     """
 
     filename = kwargs.get("filename", None)
@@ -274,6 +340,9 @@ def plot_univariate_trajectories_split(
     n = simulator.population_game.n
     d = simulator.payoff_mechanism.d
     panels = Panels(kwargs.get("ax", None), 2 * n + d, filename)
+    references = make_reference_values(
+        simulator, kwargs.get("reference", None), kwargs.get("plot_gne", False)
+    )
 
     sim_log = simulator.log
     if plot_deterministic_approximation:
@@ -310,6 +379,9 @@ def plot_univariate_trajectories_split(
                         linewidth=1.5,
                     )
 
+                if var in references:
+                    ax.axhline(references[var][idx], color="tab:red", **REFERENCE_STYLE)
+
                 _set_axes_options(ax, var, xlim, ylim, xscale, yscale)
                 _format_time_axes(
                     ax, rf"${var}_{{{idx + 1}}}^{{{k + 1}}}(t)$", fontsize
@@ -342,6 +414,9 @@ def plot_univariate_trajectories_split(
                 color="magenta",
                 linewidth=1.5,
             )
+
+        if "q" in references:
+            ax.axhline(references["q"][i], color="tab:red", **REFERENCE_STYLE)
 
         _set_axes_options(ax, "q", xlim, ylim, None, None)
         _format_time_axes(ax, rf"$q_{{{i + 1}}}(t)$", fontsize)

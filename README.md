@@ -249,6 +249,9 @@ mean and standard deviation instead of the median and quantiles:
 ens = sim.integrate_ensemble(T_sim=10, x0=x0s)
 ens.plot(plot_type="bands", variables=["x"], statistic="mean_std")
 ```
+
+For games with many strategies, `layout="per_strategy"` draws one panel per strategy, and `reference={"x": x_star}`
+(or `plot_gne=True`) adds the equilibrium as dashed lines.
 See the usage examples in the documentation for more details.
 
 ## Contributing
