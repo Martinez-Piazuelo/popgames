@@ -870,5 +870,104 @@ class TestPooledBands(unittest.TestCase):
             )
 
 
+class TestPerStrategyBands(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        sim = _make_rps_simulator(seed=0)
+        cls.ens = sim.integrate_ensemble(T_sim=2, x0=_X0S, t_eval=np.linspace(0, 2, 11))
+        sim = _make_multi_population_pdm_simulator()
+        sim.reset(x0=np.array([[1.0], [0.0], [2.0], [0.0], [0.0]]))
+        cls.ens_multi = sim.run_ensemble(
+            T_sim=2, num_runs=3, seed=0, t_eval=np.linspace(0, 2, 11)
+        )
+
+    def setUp(self) -> None:
+        plt.close("all")
+        self.addCleanup(plt.close, "all")
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_one_panel_per_strategy_in_a_grid(self) -> None:
+        path = os.path.join(self._tmp.name, "b.png")
+        with patch("popgames.plotting._figures.plt.close") as close:
+            self.ens.plot(
+                plot_type="bands",
+                variables=["x"],
+                layout="per_strategy",
+                ncols=2,
+                filename=path,
+                show=False,
+            )
+        fig = close.call_args.args[0]
+        self.assertEqual(os.listdir(self._tmp.name), ["b_x_1.png"])
+        self.assertEqual(len(fig.axes), 3)  # 2x2 grid, the unused axes removed
+        self.assertEqual(
+            [ax.get_title() for ax in fig.axes], ["$x_{1}$", "$x_{2}$", "$x_{3}$"]
+        )
+        # Time labels on the bottom of each column, vertical labels on the left column
+        self.assertEqual(
+            [bool(ax.get_xlabel()) for ax in fig.axes], [False, True, True]
+        )
+        self.assertEqual(
+            [bool(ax.get_ylabel()) for ax in fig.axes], [True, False, True]
+        )
+
+    def test_given_axes_one_per_strategy_with_references(self) -> None:
+        x_star = np.array([[0.2], [0.3], [0.5]])
+        fig, axes = plt.subplots(1, 3, sharey=True)
+        self.ens.plot(
+            plot_type="bands",
+            variables=["x"],
+            layout="per_strategy",
+            reference={"x": x_star},
+            ax=axes,
+        )
+        for i, ax in enumerate(axes):
+            dashed = [line for line in ax.lines if line.get_linestyle() == "--"]
+            self.assertEqual(len(dashed), 1)
+            np.testing.assert_allclose(dashed[0].get_ydata(), x_star[i, 0])
+            self.assertEqual(dashed[0].get_color(), f"C{i}")
+        self.assertEqual([bool(ax.get_ylabel()) for ax in axes], [True, False, False])
+        with self.assertRaises(ValueError):
+            self.ens.plot(
+                plot_type="bands", variables=["x"], layout="per_strategy", ax=axes[0]
+            )
+
+    def test_gne_reference_in_joint_layout(self) -> None:
+        fig, ax = plt.subplots()
+        self.ens.plot(plot_type="bands", variables=["x"], plot_gne=True, ax=ax)
+        dashed = [line for line in ax.lines if line.get_linestyle() == "--"]
+        gne = self.ens.simulator.population_game.compute_gne().reshape(-1)
+        np.testing.assert_allclose(
+            [line.get_ydata()[0] for line in dashed], gne, atol=1e-6
+        )
+
+    def test_multi_population_with_pdm_references(self) -> None:
+        fig, axes = plt.subplots(2, 3)
+        axes = axes.flat
+        self.ens_multi.plot(
+            plot_type="bands",
+            variables=["x", "q"],
+            layout="per_strategy",
+            reference={"q": [0.0]},
+            ax=list(axes)[:6],  # x: 2 + 3 strategies, q: 1
+        )
+
+    def test_invalid_layout_and_references(self) -> None:
+        with self.assertRaises(ValueError):
+            self.ens.plot(plot_type="bands", layout="grid", show=False)
+        with self.assertRaises(ValueError):
+            self.ens.plot(plot_type="bands", reference={"x": [1.0, 0.0]}, show=False)
+        with self.assertRaises(ValueError):
+            self.ens.plot(plot_type="bands", reference={"y": [1.0]}, show=False)
+        with self.assertRaises(ValueError):
+            self.ens.plot(
+                plot_type="bands",
+                reference={"x": [1.0, 0.0, 0.0]},
+                plot_gne=True,
+                show=False,
+            )
+
+
 if __name__ == "__main__":
     unittest.main()  # pragma: no cover

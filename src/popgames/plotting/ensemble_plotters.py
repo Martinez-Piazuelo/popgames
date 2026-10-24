@@ -13,7 +13,11 @@ from popgames.plotting._plot_config import (
     FIGSIZE_TERNARY,
     FONTSIZE,
 )
-from popgames.plotting.plotters import make_default_kpi_function
+from popgames.plotting.plotters import (
+    REFERENCE_STYLE,
+    make_default_kpi_function,
+    make_reference_values,
+)
 
 if typing.TYPE_CHECKING:
     from typing import Callable, Literal, Sequence
@@ -47,10 +51,14 @@ def plot_ensemble_bands(
     pool_initial_states: bool = None,
     statistic: Literal["quantile", "mean_std"] = "quantile",
     num_std: Sequence[float] = DEFAULT_NUM_STD,
+    layout: Literal["joint", "per_strategy"] = "joint",
+    ncols: int = 3,
+    reference: dict[str, np.ndarray] = None,
+    plot_gne: bool = False,
     xlim: tuple[float, float] = None,
     ylim: dict[str, tuple[float, float]] = None,
     filename: str = None,
-    figsize: tuple[float, float] = FIGSIZE,
+    figsize: tuple[float, float] = None,
     fontsize: int = FONTSIZE,
     show: bool = True,
     ax: Axes | Sequence[Axes] = None,
@@ -62,6 +70,11 @@ def plot_ensemble_bands(
     its own color: the solid line is the median over the runs, and the shaded regions are the bands between the given
     quantiles (e.g., 90% and 50% of the runs at each time with the default bands). With ``statistic='mean_std'``, the
     solid line is the mean instead, and the bands are the mean plus or minus ``num_std`` standard deviations.
+
+    With ``layout='joint'``, all the strategies of a figure share one panel. With ``layout='per_strategy'``, each
+    strategy has its own panel (titled with the strategy), laid out in a grid of ``ncols`` columns sharing the time
+    axis, e.g., for games with many strategies. Reference values, such as an equilibrium, are plotted as dashed
+    horizontal lines in the color of each strategy, and the deterministic approximation as dotted lines.
 
     By default, the bands of a finite-agent ensemble only mix runs with the same initial state: if the ensemble has
     several initial states (groups), the figures are generated for each of them (or only for ``initial_state``). With
@@ -88,24 +101,37 @@ def plot_ensemble_bands(
             region, e.g., become negative. Defaults to 'quantile'.
         num_std (Sequence[float], optional): The widths of the bands in standard deviations (with
             ``statistic='mean_std'``). Defaults to (1,).
+        layout (str, optional): 'joint' for one panel per figure, or 'per_strategy' for one panel per strategy.
+            Defaults to 'joint'.
+        ncols (int, optional): Number of columns of the grid of panels (with ``layout='per_strategy'``). Defaults
+            to 3.
+        reference (dict[str, np.ndarray], optional): Reference values plotted as dashed horizontal lines, per
+            variable, e.g., ``{'x': x_star}`` with ``x_star`` of shape ``(n, 1)``. Defaults to None.
+        plot_gne (bool, optional): Whether to plot the GNE (if one is found) as the reference of ``x``. Cannot be
+            combined with ``reference['x']``. Defaults to False.
         xlim (tuple[float, float], optional): Limits of the time axis. Defaults to None.
         ylim (dict[str, tuple[float, float]], optional): Limits of the vertical axis per variable, e.g.,
             ``{'x': (0, 1)}``. Defaults to None.
         filename (str, optional): If provided, each figure is saved with the variable and population (and the group,
             if there are several and they are not pooled) appended to the file name, e.g., ``bands_x_1.pdf`` or
             ``bands_x_1_x0_2.pdf``. Defaults to None.
-        figsize (tuple[float, float], optional): Figure size. Defaults to (4, 2).
+        figsize (tuple[float, float], optional): Figure size. Defaults to None, in which case (4, 2) is used per
+            panel.
         fontsize (int, optional): Font size. Defaults to 8.
         show (bool, optional): Whether to show the figures. Defaults to True.
-        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per figure that would
+        ax (Axes | Sequence[Axes], optional): Existing ``matplotlib`` axes to draw on, one per panel that would
             otherwise be generated, in the order of the initial states (unless pooled) and, for each one, of ``x``
-            (per population), ``p`` (per population), and ``q``. The figures are then neither saved, shown, nor
-            closed. Defaults to None.
+            (per population), ``p`` (per population), and ``q`` (and of the strategies, with
+            ``layout='per_strategy'``), e.g., the array of axes from ``plt.subplots(2, 3)``. The figures are then
+            neither saved, shown, nor closed. Defaults to None.
     """
     _check_variables(variables)
+    if layout not in ("joint", "per_strategy"):
+        raise ValueError(f"layout must be 'joint' or 'per_strategy', got {layout!r}.")
     stat = _statistic(statistic, bands, num_std)
     run_sets = _run_sets(ensemble, initial_state, pool_initial_states)
     det = _deterministic(ensemble, plot_deterministic_approximation)
+    references = make_reference_values(ensemble.simulator, reference, plot_gne)
     game = ensemble.simulator.population_game
     P = game.num_populations
 
@@ -124,35 +150,64 @@ def plot_ensemble_bands(
         rows = list(range(d))
         panels.append(("q", None, rows, [rf"$q_{{{i + 1}}}$" for i in rows], "q"))
 
-    figures = Panels(ax, len(run_sets) * len(panels), filename)
+    per_strategy = layout == "per_strategy"
+    num_panels = sum(len(rows) if per_strategy else 1 for _, _, rows, _, _ in panels)
+    figures = Panels(ax, len(run_sets) * num_panels, filename)
     for g, runs in run_sets:
         for var, k, rows, labels, suffix in panels:
             values = getattr(ensemble, var)[runs]
-            fig, ax = figures.new(figsize)
+            if per_strategy:
+                fig, axes, edges = figures.new_grid(len(rows), ncols, FIGSIZE, figsize)
+            else:
+                fig, ax = figures.new(figsize or FIGSIZE)
+                axes, edges = [ax] * len(rows), [(True, True)] * len(rows)
+
             for c, (row, label) in enumerate(zip(rows, labels)):
                 color = f"C{c % 10}"
                 _plot_bands(
-                    ax, ensemble.t, values[:, row], stat, plot_median, color, label
+                    axes[c], ensemble.t, values[:, row], stat, plot_median, color, label
                 )
                 if det is not None:
                     center, _ = stat(getattr(det, var)[runs, row])
-                    ax.plot(ensemble.t, center, color=color, **DETERMINISTIC_STYLE)
+                    axes[c].plot(ensemble.t, center, color=color, **DETERMINISTIC_STYLE)
+                if var in references:
+                    axes[c].axhline(
+                        references[var][row], color=color, **REFERENCE_STYLE
+                    )
 
-            if xlim is not None:
-                ax.set_xlim(xlim)
-            if isinstance(ylim, dict) and var in ylim:
-                ax.set_ylim(ylim[var])
+            group_title = None
             if g is not None and ensemble.num_groups > 1:
-                ax.set_title(f"Initial state {g + 1}", fontsize=fontsize)
+                group_title = f"Initial state {g + 1}"
                 suffix = f"{suffix}_x0_{g + 1}"
+            if per_strategy:
+                titles = [
+                    label if group_title is None else f"{label}, {group_title.lower()}"
+                    for label in labels
+                ]
+                to_format = zip(axes, edges, titles)
+            else:
+                to_format = [(axes[0], (True, True), group_title)]
             ylabel = (
                 rf"$\mathbf{{{var}}}(t)$"
                 if k is None or P == 1
                 else rf"$\mathbf{{{var}}}^{{{k + 1}}}(t)$"
             )
-            _format_time_axes(ax, ylabel, fontsize)
+            for ax, (bottom, left), title in to_format:
+                if xlim is not None:
+                    ax.set_xlim(xlim)
+                if isinstance(ylim, dict) and var in ylim:
+                    ax.set_ylim(ylim[var])
+                if title is not None:
+                    ax.set_title(title, fontsize=fontsize)
+                ax.tick_params(labelsize=fontsize)
+                ax.grid()
+                if bottom:
+                    ax.set_xlabel(r"$t$", fontsize=fontsize)
+                if left:
+                    ax.set_ylabel(ylabel, fontsize=fontsize)
             figures.tight_layout(fig)
-            ax.legend(fontsize=fontsize, ncol=len(rows))
+            if not per_strategy:
+                axes[0].legend(fontsize=fontsize, ncol=len(rows))
             figures.finish(fig, filename, suffix, show)
 
 
