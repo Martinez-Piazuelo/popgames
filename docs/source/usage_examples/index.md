@@ -10,4 +10,7 @@ prisoners_dilemma_example
 rock_paper_scissors_example
 rock_paper_scissors_ensemble_example
 coordination_ensemble_example
+economic_dispatch_example
+data_center_thermal_example
+custom_protocol_example
 ```
